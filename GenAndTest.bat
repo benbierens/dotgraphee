@@ -1,3 +1,3 @@
 dotnet run ./input.json
-cd ../demo
+cd ../dotgraphee-demo
 dotnet test test

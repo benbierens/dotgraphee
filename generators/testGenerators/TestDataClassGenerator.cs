@@ -65,6 +65,7 @@ public class TestDataClassGenerator : BaseGenerator
             liner.Add("TestInt = 12345;");
             liner.Add("TestFloat = 12.34f;");
             liner.Add("TestDouble = 23.45;");
+            liner.Add("TestDateTime = new DateTime(2022, 1, 2, 11, 12, 13, DateTimeKind.Utc);");
             liner.AddBlankLine();
 
             IterateModelsInDependencyOrder(m =>
@@ -136,6 +137,7 @@ public class TestDataClassGenerator : BaseGenerator
 
     public string DummyDateTime()
     {
-        return "DateTime.Now";
+        return "DateTime.UtcNow";
     }
+
 }

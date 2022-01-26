@@ -16,7 +16,7 @@
       "Npgsql.EntityFrameworkCore.PostgreSQL --version 5.0.10"
     ],
     "output": {
-      "projectRoot": "../demo",
+      "projectRoot": "../dotgraphee-demo",
       "sourceFolder": "src",
       "testFolder": "test",
       "generatedFolder": "generated",
