@@ -5,7 +5,7 @@ public static class TypeUtils
 {
     private class TypeInfo
     {
-        public TypeInfo(string type, string defaultInitializer, string valueAccessor, string requiredUsing = "", bool requiresQuotes = false, string toStringConverter = "", string converterUsing = "")
+        public TypeInfo(string type, string defaultInitializer, string valueAccessor, string requiredUsing = "", bool requiresQuotes = false, string toStringConverter = "", string converterUsing = "", string assertPostfix = "")
         {
             Type = type;
             DefaultInitializer = defaultInitializer;
@@ -14,6 +14,7 @@ public static class TypeUtils
             RequiresQuotes = requiresQuotes;
             ToStringConverter = toStringConverter;
             ConverterUsing = converterUsing;
+            AssertPostfix = assertPostfix;
         }
 
         public string Type { get; }
@@ -23,6 +24,7 @@ public static class TypeUtils
         public bool RequiresQuotes { get; }
         public string ToStringConverter { get; }
         public string ConverterUsing { get; }
+        public string AssertPostfix { get; }
     }
 
     private static List<TypeInfo> types = new List<TypeInfo>
@@ -32,7 +34,7 @@ public static class TypeUtils
         new TypeInfo("string", " = \"\";", "", null, true),
         new TypeInfo("float", "", ".Value", "", false, ".ToString(CultureInfo.InvariantCulture)", "System.Globalization"),
         new TypeInfo("double", "", ".Value", "", false, ".ToString(CultureInfo.InvariantCulture)", "System.Globalization"),
-        new TypeInfo("DateTime", "", ".Value", "System", true, ".ToString(\"o\")")
+        new TypeInfo("DateTime", "", ".Value", "System", true, ".ToString(\"o\")", "", ".Within(0.01).Seconds")
     };
 
     public static bool IsNullableRequiredForType(string type)
@@ -68,6 +70,11 @@ public static class TypeUtils
     public static string GetConverterRequiredUsing(string type)
     {
         return Get(type).ConverterUsing;
+    }
+
+    public static string GetAssertPostfix(string type)
+    {
+        return Get(type).AssertPostfix;
     }
 
     private static TypeInfo Get(string type)

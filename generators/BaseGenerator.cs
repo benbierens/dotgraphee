@@ -156,16 +156,58 @@ public class BaseGenerator
     {
         foreach (var f in m.Fields)
         {
-            liner.Add("Assert.That(entity." + f.Name + ", Is.EqualTo(TestData.Test" + m.Name + "." + f.Name + "), \"" + errorMessage + " " + m.Name + "." + f.Name + "\");");
+            AddAssertEqualsTestEntity(liner, m, f, errorMessage);
         }
         var foreignProperties = GetForeignProperties(m);
         foreach (var f in foreignProperties)
         {
             if (!f.IsSelfReference)
             {
-                liner.Add("Assert.That(entity." + f.WithId + ", Is.EqualTo(TestData.Test" + f.Type + ".Id), \"" + errorMessage+ " " + m.Name + "." + f.WithId + "\");");
+                AddAssertIdEquals(liner, m, f, errorMessage);
             }
         }
+    }
+
+    protected void AddAssertEqualsTestEntity(Liner liner, GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
+    {
+        var target = m.Name + "." + f.Name;
+        AddAssertEquals(liner, m, f, target, errorMessage);
+    }
+
+    protected void AddAssertEqualsTestScalar(Liner liner, GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
+    {
+        var target = f.Type.FirstToUpper();
+        AddAssertEquals(liner, m, f, target, errorMessage);
+    }
+
+    private void AddAssertEquals(Liner liner, GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string testTarget, string errorMessage)
+    {
+        liner.Add("Assert.That(entity." + f.Name + ", Is.EqualTo(TestData.Test" + testTarget + ")" + TypeUtils.GetAssertPostfix(f.Type) + "," + FormatErrorMessage(m, f, errorMessage) + ");");
+    }
+
+    protected void AddAssertIdEquals(Liner liner, GeneratorConfig.ModelConfig m, ForeignProperty f, string errorMessage)
+    {
+        liner.Add("Assert.That(entity." + f.WithId + ", Is.EqualTo(TestData.Test" + f.Type + ".Id)," + FormatErrorMessage(m, f, errorMessage) + ");");
+    }
+
+    protected void AddAssertCollectionOne(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        liner.Add("Assert.That(all.Count, Is.EqualTo(1), \"Expected only 1 " + m.Name + "\");");
+    }
+
+    private string FormatErrorMessage(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
+    {
+        return FormatErrorMessage(m, f.Name, errorMessage);
+    }
+
+    private string FormatErrorMessage(GeneratorConfig.ModelConfig m, ForeignProperty f, string errorMessage)
+    {
+        return FormatErrorMessage(m, f.Name, errorMessage);
+    }
+
+    private string FormatErrorMessage(GeneratorConfig.ModelConfig m, string f, string errorMessage)
+    {
+        return " \"" + errorMessage + " (" + m.Name + "." + f + ")\"";
     }
 
     private string GetForeignPropertyPrefix(GeneratorConfig.ModelConfig m, string hasManyEntry)

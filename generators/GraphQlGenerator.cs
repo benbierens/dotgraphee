@@ -29,6 +29,11 @@ public class GraphQlGenerator : BaseGenerator
             {
                 liner.Add("return await " + Config.Database.DbAccesserClassName + ".Context." + model.Name + "s.ToArrayAsync();");
             });
+
+            cm.AddClosure("public async Task<" + model.Name + "> " + model.Name + "(" + Config.IdType + " id)", liner =>
+            {
+                liner.Add("return await " + Config.Database.DbAccesserClassName + ".Context." + model.Name + "s.FindAsync(id);");
+            });
         }
 
         fm.Build();

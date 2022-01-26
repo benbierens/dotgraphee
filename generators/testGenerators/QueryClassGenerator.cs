@@ -20,10 +20,24 @@ public class QueryClassGenerator : BaseGenerator
 
     private void CreateQueryClassForModel(FileMaker fm, GeneratorConfig.ModelConfig m)
     {
+        CreateAllQueryClass(fm, m);
+        CreateOneQueryClass(fm, m);
+    }
+
+    private void CreateAllQueryClass(FileMaker fm, GeneratorConfig.ModelConfig m)
+    {
         var cm = AddClass(fm, "All" + m.Name + "sQuery");
         cm.AddUsing("System.Collections.Generic");
         cm.AddProperty(m.Name)
             .IsListOfType(m.Name)
+            .Build();
+    }
+
+    private void CreateOneQueryClass(FileMaker fm, GeneratorConfig.ModelConfig m)
+    {
+        var cm = AddClass(fm, "One" + m.Name + "Query");
+        cm.AddProperty(m.Name)
+            .IsType(m.Name)
             .Build();
     }
 

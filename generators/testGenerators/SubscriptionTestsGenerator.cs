@@ -85,7 +85,7 @@ public class SubscriptionTestsGenerator : BaseGenerator
             liner.Add("var entity = handle.AssertReceived();");
             foreach (var f in m.Fields)
             {
-                liner.Add("Assert.That(entity." + f.Name + ", Is.EqualTo(TestData.Test" + f.Type.FirstToUpper() + "), \"Incorrect entity published with " + Config.GraphQl.GqlSubscriptionUpdatedMethod + " subscription:" + m.Name + "." + f.Name + "\");");
+                AddAssertEqualsTestScalar(liner, m, f, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionUpdatedMethod + " subscription.");
             }
         });
     }

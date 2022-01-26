@@ -49,7 +49,7 @@ public class UpdateTestsGenerator : BaseGenerator
 
             foreach (var f in m.Fields)
             {
-                liner.Add("Assert.That(entity." + f.Name + ", Is.EqualTo(TestData.Test" + f.Type.FirstToUpper() + "), \"Update failed for " + m.Name + "." + f.Name + "\");");
+                AddAssertEqualsTestScalar(liner, m, f, "Update failed.");
             }
         });
     }
@@ -73,10 +73,11 @@ public class UpdateTestsGenerator : BaseGenerator
             liner.EndClosure(");");
 
             liner.Add("var all = await Gql.QueryAll" + m.Name + "s();");
-            liner.Add("Assert.That(all.Count, Is.EqualTo(1), \"Expected only 1 " + m.Name + "\");");
+            AddAssertCollectionOne(liner, m);
+            liner.Add("var entity = all[0];");
             foreach (var f in m.Fields)
             {
-                liner.Add("Assert.That(all[0]." + f.Name + ", Is.EqualTo(TestData.Test" + f.Type.FirstToUpper() + "), \"Update failed for " + m.Name + "." + f.Name + "\");");
+                AddAssertEqualsTestScalar(liner, m, f, "Update failed.");
             }
         });
     }

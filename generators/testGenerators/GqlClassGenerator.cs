@@ -4,14 +4,14 @@ using System.Linq;
 
 public class GqlClassGenerator : BaseGenerator
 {
-    private readonly QueryAllMethodSubgenerator queryAllMethodSubgenerator;
+    private readonly QueryMethodsSubgenerator queryAllMethodSubgenerator;
     private readonly MutationMethodsSubgenerator mutationMethodsSubgenerator;
     private readonly SubscriptionMethodsSubgenerator subscriptionMethodsSubgenerator;
 
     public GqlClassGenerator(GeneratorConfig config)
         : base(config)
     {
-        queryAllMethodSubgenerator = new QueryAllMethodSubgenerator(config);
+        queryAllMethodSubgenerator = new QueryMethodsSubgenerator(config);
         mutationMethodsSubgenerator = new MutationMethodsSubgenerator(config);
         subscriptionMethodsSubgenerator = new SubscriptionMethodsSubgenerator(config);
     }
@@ -38,9 +38,14 @@ public class GqlClassGenerator : BaseGenerator
 
         foreach (var m in Models)
         {
+            cm.AddLine("#region " + m.Name);
+            cm.AddBlankLine();
             queryAllMethodSubgenerator.AddQueryAllMethod(cm, m);
+            queryAllMethodSubgenerator.AddQueryOneMethod(cm, m);
             mutationMethodsSubgenerator.AddMutationMethods(cm, m);
             subscriptionMethodsSubgenerator.AddSubscribeMethods(cm, m);
+            cm.AddLine("#endregion");
+            cm.AddBlankLine();
         }
 
         cm.AddClosure("private async Task<SubscriptionHandle<T>> SubscribeTo<T>(string modelName, params string[] fields)", liner =>
@@ -54,9 +59,9 @@ public class GqlClassGenerator : BaseGenerator
         fm.Build();
     }
 
-    public class QueryAllMethodSubgenerator : BaseGenerator
+    public class QueryMethodsSubgenerator : BaseGenerator
     {
-        public QueryAllMethodSubgenerator(GeneratorConfig config)
+        public QueryMethodsSubgenerator(GeneratorConfig config)
             : base(config)
         {
         }
@@ -68,6 +73,16 @@ public class GqlClassGenerator : BaseGenerator
                 liner.Add("var query = \"{ \\\"query\\\": \\\"query { " + m.Name.FirstToLower() + "s { " + GetQueryFields(m) + " } } \\\" }\";");
                 liner.Add("var data = await Client.PostRequest<All" + m.Name + "sQuery>(query);");
                 liner.Add("return data." + m.Name + "s;");
+            });
+        }
+
+        public void AddQueryOneMethod(ClassMaker cm, GeneratorConfig.ModelConfig m)
+        {
+            cm.AddClosure("public async Task<" + m.Name + "> QueryOne" + m.Name + "(" + Config.IdType + " id)", liner =>
+            {
+                liner.Add("var query = \"{ \\\"query\\\": \\\"query { " + m.Name.FirstToLower() + "(id: \" + id + \") { " + GetQueryFields(m) + " } } \\\" }\";");
+                liner.Add("var data = await Client.PostRequest<One" + m.Name + "Query>(query);");
+                liner.Add("return data." + m.Name + ";");
             });
         }
 
