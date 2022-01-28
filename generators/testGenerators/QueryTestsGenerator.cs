@@ -1,6 +1,4 @@
 ﻿
-using System;
-
 public class QueryTestsGenerator : BaseGenerator
 {
     public QueryTestsGenerator(GeneratorConfig config)
@@ -21,6 +19,7 @@ public class QueryTestsGenerator : BaseGenerator
         {
             AddQueryAllTest(cm, m);
             AddQueryOneTest(cm, m);
+            AddQueryOneFailedToFindTest(cm, m);
         }
         
         fm.Build();
@@ -35,7 +34,7 @@ public class QueryTestsGenerator : BaseGenerator
             liner.AddBlankLine();
             liner.Add("var all = await Gql.QueryAll" + m.Name + "s();");
             liner.AddBlankLine();
-            AddAssertCollectionOne(liner, m);
+            AddAssertCollectionOne(liner, m, "all");
             liner.AddBlankLine();
 
             liner.Add("var entity = all[0];");
@@ -76,6 +75,19 @@ public class QueryTestsGenerator : BaseGenerator
                     AddAssertIdEquals(liner, m, f, "One-query incorrect.");
                 }
             }
+        });
+    }
+
+    private void AddQueryOneFailedToFindTest(ClassMaker cm, GeneratorConfig.ModelConfig m)
+    {
+        cm.AddLine("[Test]");
+        cm.AddClosure("public async Task ShouldReturnErrorWhenQueryOne" + m.Name + "ByIncorrectId()", liner =>
+        {
+            liner.Add("var errors = await Gql.GetErrorsForQueryOne" + m.Name + "(TestData.Test" + Config.IdType.FirstToUpper() + ");");
+            liner.AddBlankLine();
+
+            AddAssertCollectionOne(liner, m, "errors");
+            AddAssertErrorMessage(liner, m, "TestData.Test" + Config.IdType.FirstToUpper());
         });
     }
 }

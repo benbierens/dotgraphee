@@ -8,6 +8,8 @@ public class QueryClassGenerator : BaseGenerator
     {
         var fm = StartTestUtilsFile("QueryClasses");
         CreateQueryDataClass(fm);
+        CreateQueryErrorClass(fm);
+        CreateMutationResponseClass(fm);
 
         foreach (var m in Models)
         {
@@ -62,11 +64,26 @@ public class QueryClassGenerator : BaseGenerator
 
         cm.AddProperty("Data")
             .IsType("T")
-            .IsNullable()
+            .DefaultInitializer()
             .Build();
 
-        var cm2 = AddClass(fm, "MutationResponse");
-        cm2.AddProperty("Id")
+        cm.AddProperty("Error")
+            .IsListOfType("GqlError")
+            .Build();
+    }
+
+    private void CreateQueryErrorClass(FileMaker fm)
+    {
+        var cm = AddClass(fm, "GqlError");
+        cm.AddProperty("Message")
+            .IsType("string")
+            .Build();
+    }
+
+    private void CreateMutationResponseClass(FileMaker fm)
+    {
+        var cm = AddClass(fm, "MutationResponse");
+        cm.AddProperty("Id")
             .IsType(Config.IdType)
             .Build();
     }

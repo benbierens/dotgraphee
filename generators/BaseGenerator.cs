@@ -215,9 +215,15 @@ public class BaseGenerator
         liner.Add("Assert.That(entity." + f.WithId + ", Is.EqualTo(TestData.Test" + f.Type + ".Id)," + FormatErrorMessage(m, f, errorMessage) + ");");
     }
 
-    protected void AddAssertCollectionOne(Liner liner, GeneratorConfig.ModelConfig m)
+    protected void AddAssertCollectionOne(Liner liner, GeneratorConfig.ModelConfig m, string collectionName)
     {
-        liner.Add("Assert.That(all.Count, Is.EqualTo(1), \"Expected only 1 " + m.Name + "\");");
+        liner.Add("Assert.That(" + collectionName + ".Count, Is.EqualTo(1), \"Expected only 1 " + m.Name + "\");");
+    }
+
+    protected void AddAssertErrorMessage(Liner liner, GeneratorConfig.ModelConfig m, string idTag)
+    {
+        var expectedErrorMessage = "Unable to find '" + m.Name + "' by Id: '\" + " + idTag + " + \"'";
+        liner.Add("Assert.That(errors[0].Message, Is.EqualTo(\"" + expectedErrorMessage + "\"), \"Unexpected error message.\");");
     }
 
     private string FormatErrorMessage(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)

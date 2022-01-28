@@ -73,7 +73,7 @@ public class UpdateTestsGenerator : BaseGenerator
             liner.EndClosure(");");
 
             liner.Add("var all = await Gql.QueryAll" + m.Name + "s();");
-            AddAssertCollectionOne(liner, m);
+            AddAssertCollectionOne(liner, m, "all");
             liner.Add("var entity = all[0];");
             foreach (var f in m.Fields)
             {

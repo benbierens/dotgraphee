@@ -20,7 +20,9 @@ public class GqlClassGenerator : BaseGenerator
     {
         var fm = StartTestUtilsFile("Gql");
         var cm = fm.AddClass("Gql");
-
+        
+        cm.AddUsing("System");
+        cm.AddUsing("System.Linq");
         cm.AddUsing("System.Collections.Generic");
         cm.AddUsing("System.Threading.Tasks");
         cm.AddUsing(Config.GenerateNamespace);
@@ -42,11 +44,20 @@ public class GqlClassGenerator : BaseGenerator
             cm.AddBlankLine();
             queryAllMethodSubgenerator.AddQueryAllMethod(cm, m);
             queryAllMethodSubgenerator.AddQueryOneMethod(cm, m);
+            queryAllMethodSubgenerator.AddGetErrorsQueryOneMethod(cm, m);
             mutationMethodsSubgenerator.AddMutationMethods(cm, m);
             subscriptionMethodsSubgenerator.AddSubscribeMethods(cm, m);
             cm.AddLine("#endregion");
             cm.AddBlankLine();
         }
+
+        cm.AddClosure("private T GetDataAssertNoErrors<T>(GqlData<T> response)", liner =>
+        {
+            liner.StartClosure("if (response.Errors.Any())");
+            liner.Add("throw new Exception(\"Expected no errors but found: \" + string.Join(\", \", response.Errors.Select(e => e.Message)));");
+            liner.EndClosure();
+            liner.Add("return response.Data;");
+        });
 
         cm.AddClosure("private async Task<SubscriptionHandle<T>> SubscribeTo<T>(string modelName, params string[] fields)", liner =>
         {
@@ -71,8 +82,8 @@ public class GqlClassGenerator : BaseGenerator
             cm.AddClosure("public async Task<List<" + m.Name + ">> QueryAll" + m.Name + "s()", liner =>
             {
                 liner.Add("var query = \"{ \\\"query\\\": \\\"query { " + m.Name.FirstToLower() + "s { " + GetQueryFields(m) + " } } \\\" }\";");
-                liner.Add("var data = await Client.PostRequest<All" + m.Name + "sQuery>(query);");
-                liner.Add("return data." + m.Name + "s;");
+                liner.Add("var response = await Client.PostRequest<All" + m.Name + "sQuery>(query);");
+                liner.Add("return GetDataAssertNoErrors(response)." + m.Name + "s;");
             });
         }
 
@@ -81,8 +92,18 @@ public class GqlClassGenerator : BaseGenerator
             cm.AddClosure("public async Task<" + m.Name + "> QueryOne" + m.Name + "(" + Config.IdType + " id)", liner =>
             {
                 liner.Add("var query = \"{ \\\"query\\\": \\\"query { " + m.Name.FirstToLower() + "(id: \" + id + \") { " + GetQueryFields(m) + " } } \\\" }\";");
-                liner.Add("var data = await Client.PostRequest<One" + m.Name + "Query>(query);");
-                liner.Add("return data." + m.Name + ";");
+                liner.Add("var response = await Client.PostRequest<One" + m.Name + "Query>(query);");
+                liner.Add("return GetDataAssertNoErrors(response)." + m.Name + ";");
+            });
+        }
+
+        public void AddGetErrorsQueryOneMethod(ClassMaker cm, GeneratorConfig.ModelConfig m)
+        {
+            cm.AddClosure("public async Task<List<GqlError>> GetErrorsForQueryOne" + m.Name + "(" + Config.IdType + " id)", liner =>
+            {
+                liner.Add("var query = \"{ \\\"query\\\": \\\"query { " + m.Name.FirstToLower() + "(id: \" + id + \") { " + GetQueryFields(m) + " } } \\\" }\";");
+                liner.Add("var response = await Client.PostRequest<One" + m.Name + "Query>(query);");
+                liner.Add("return response.Errors;");
             });
         }
 
@@ -141,8 +162,8 @@ public class GqlClassGenerator : BaseGenerator
 
                 var templateField = Config.GraphQl.GqlMutationsCreateMethod + m.Name;
                 var templateType = templateField + "Response";
-                liner.Add("var data = await Client.PostRequest<" + templateType + ">(mutation);");
-                liner.Add("return data." + templateField + ";");
+                liner.Add("var response = await Client.PostRequest<" + templateType + ">(mutation);");
+                liner.Add("return GetDataAssertNoErrors(response)." + templateField + ";");
             });
         }
 
@@ -171,8 +192,8 @@ public class GqlClassGenerator : BaseGenerator
 
                 var templateField = Config.GraphQl.GqlMutationsUpdateMethod + m.Name;
                 var templateType = templateField + "Response";
-                liner.Add("var data = await Client.PostRequest<" + templateType + ">(mutation);");
-                liner.Add("return data." + templateField + ";");
+                liner.Add("var response = await Client.PostRequest<" + templateType + ">(mutation);");
+                liner.Add("return GetDataAssertNoErrors(response)." + templateField + ";");
             });
         }
 
@@ -182,8 +203,8 @@ public class GqlClassGenerator : BaseGenerator
             {
                 var fields = m.Name.FirstToLower() + "Id: \" + input." + m.Name + "Id + \"";
                 liner.Add("var mutation = \"{ \\\"query\\\": \\\"mutation { " + Config.GraphQl.GqlMutationsDeleteMethod.FirstToLower() + m.Name + "(input: {" + fields + "}) { id } }\\\"}\";");
-                liner.Add("var data = await Client.PostRequest<MutationResponse>(mutation);");
-                liner.Add("return data.Id;");
+                liner.Add("var response = await Client.PostRequest<MutationResponse>(mutation);");
+                liner.Add("return GetDataAssertNoErrors(response).Id;");
             });
         }
 
