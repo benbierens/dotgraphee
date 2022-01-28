@@ -226,6 +226,16 @@ public class BaseGenerator
         liner.Add("Assert.That(errors[0].Message, Is.EqualTo(\"" + expectedErrorMessage + "\"), \"Unexpected error message.\");");
     }
 
+    protected void AddAssertNoErrors(Liner liner)
+    {
+        liner.Add("gqlData.AssertNoErrors();");
+    }
+
+    protected void AddAssertDeleteResponse(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        liner.Add("Assert.That(response.Data.Id, Is.EqualTo(TestData.Test" + m.Name + ".Id), \"Incorrect Id returned by " + Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
+    }
+
     private string FormatErrorMessage(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
     {
         return FormatErrorMessage(m, f.Name, errorMessage);

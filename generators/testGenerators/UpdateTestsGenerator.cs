@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 
 public class UpdateTestsGenerator : BaseGenerator
 {
@@ -23,6 +24,7 @@ public class UpdateTestsGenerator : BaseGenerator
             {
                 AddUpdateTest(cm, m);
                 AddUpdateAndQueryTest(cm, m);
+                AddUpdateFailedToFindTest(cm, m);
             }
         }
 
@@ -39,13 +41,10 @@ public class UpdateTestsGenerator : BaseGenerator
             liner.Add("await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
 
-            liner.StartClosure("var entity = await Gql.Update" + m.Name + "(new " + inputTypes.Update);
-            liner.Add(m.Name + "Id = TestData.Test" + m.Name + ".Id,");
-            foreach (var f in m.Fields)
-            {
-                liner.Add(f.Name + " = TestData.Test" + f.Type.FirstToUpper() + ",");
-            }
-            liner.EndClosure(");");
+            liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
+            AddAssertNoErrors(liner);
+            liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsUpdateMethod + m.Name + ";");
+            liner.AddBlankLine();
 
             foreach (var f in m.Fields)
             {
@@ -67,13 +66,33 @@ public class UpdateTestsGenerator : BaseGenerator
             liner.Add("await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
             liner.AddBlankLine();            
 
-            liner.Add("var all = await Gql.QueryAll" + m.Name + "s();");
+            liner.Add("var gqlData = await Gql.QueryAll" + m.Name + "s();");
+            AddAssertNoErrors(liner);
+            liner.Add("var all = gqlData.Data." + m.Name + "s;");
+            liner.AddBlankLine();
+
             AddAssertCollectionOne(liner, m, "all");
             liner.Add("var entity = all[0];");
             foreach (var f in m.Fields)
             {
                 AddAssertEqualsTestScalar(liner, m, f, "Update failed.");
             }
+        });
+    }
+
+    private void AddUpdateFailedToFindTest(ClassMaker cm, GeneratorConfig.ModelConfig m)
+    {
+        var inputTypes = GetInputTypeNames(m);
+
+        cm.AddLine("[Test]");
+        cm.AddClosure("public async Task UpdateShouldReturnErrorWhenFailedToFind" + m.Name + "()", liner =>
+        {
+            liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
+            liner.Add("var errors = gqlData.Errors;");
+            liner.AddBlankLine();
+
+            AddAssertCollectionOne(liner, m, "errors");
+            AddAssertErrorMessage(liner, m, "TestData.Test" + Config.IdType.FirstToUpper());
         });
     }
 }

@@ -9,7 +9,7 @@ public class QueryClassGenerator : BaseGenerator
         var fm = StartTestUtilsFile("QueryClasses");
         CreateQueryDataClass(fm);
         CreateQueryErrorClass(fm);
-        CreateMutationResponseClass(fm);
+        CreateDeleteMutationResponseClass(fm);
 
         foreach (var m in Models)
         {
@@ -61,6 +61,8 @@ public class QueryClassGenerator : BaseGenerator
     {
         var cm = AddClass(fm, "GqlData<T>");
         cm.AddUsing(Config.GenerateNamespace);
+        cm.AddUsing("System");
+        cm.AddUsing("System.Linq");
 
         cm.AddProperty("Data")
             .IsType("T")
@@ -70,6 +72,14 @@ public class QueryClassGenerator : BaseGenerator
         cm.AddProperty("Error")
             .IsListOfType("GqlError")
             .Build();
+
+
+        cm.AddClosure("public void AssertNoErrors()", liner =>
+        {
+            liner.StartClosure("if (Errors.Any())");
+            liner.Add("throw new Exception(\"Expected no errors but found: \" + string.Join(\", \", Errors.Select(e => e.Message)));");
+            liner.EndClosure();
+        });
     }
 
     private void CreateQueryErrorClass(FileMaker fm)
@@ -80,9 +90,9 @@ public class QueryClassGenerator : BaseGenerator
             .Build();
     }
 
-    private void CreateMutationResponseClass(FileMaker fm)
+    private void CreateDeleteMutationResponseClass(FileMaker fm)
     {
-        var cm = AddClass(fm, "MutationResponse");
+        var cm = AddClass(fm, "DeleteMutationResponse");
         cm.AddProperty("Id")
             .IsType(Config.IdType)
             .Build();

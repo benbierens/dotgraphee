@@ -62,7 +62,9 @@ public class BaseGqlTestClassGenerator : BaseGenerator
             cm.AddClosure("public async Task<" + m.Name + "> CreateTest" + m.Name + "()", liner =>
             {
                 var args = GetCreateInputArguments(liner, m);
-                liner.Add("var entity = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
+                liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
+                AddAssertNoErrors(liner);
+                liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsCreateMethod + m.Name + ";");
                 liner.Add("TestData.Test" + m.Name + ".Id = entity.Id;");
                 liner.Add("return entity;");
             });

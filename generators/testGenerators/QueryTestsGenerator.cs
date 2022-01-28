@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 public class QueryTestsGenerator : BaseGenerator
 {
     public QueryTestsGenerator(GeneratorConfig config)
@@ -32,7 +34,10 @@ public class QueryTestsGenerator : BaseGenerator
         {
             liner.Add("await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
-            liner.Add("var all = await Gql.QueryAll" + m.Name + "s();");
+            liner.Add("var gqlData = await Gql.QueryAll" + m.Name + "s();");
+            AddAssertNoErrors(liner);
+            liner.Add("var all = gqlData.Data." + m.Name + "s;");
+
             liner.AddBlankLine();
             AddAssertCollectionOne(liner, m, "all");
             liner.AddBlankLine();
@@ -60,7 +65,9 @@ public class QueryTestsGenerator : BaseGenerator
         {
             liner.Add("await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
-            liner.Add("var entity = await Gql.QueryOne" + m.Name + "(TestData.Test" + m.Name + ".Id);");
+            liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData.Test" + m.Name + ".Id);");
+            AddAssertNoErrors(liner);
+            liner.Add("var entity = gqlData.Data." + m.Name + ";");
             liner.AddBlankLine();
 
             foreach (var f in m.Fields)
@@ -83,7 +90,8 @@ public class QueryTestsGenerator : BaseGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldReturnErrorWhenQueryOne" + m.Name + "ByIncorrectId()", liner =>
         {
-            liner.Add("var errors = await Gql.GetErrorsForQueryOne" + m.Name + "(TestData.Test" + Config.IdType.FirstToUpper() + ");");
+            liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData.Test" + Config.IdType.FirstToUpper() + ");");
+            liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
 
             AddAssertCollectionOne(liner, m, "errors");
