@@ -23,9 +23,9 @@ public class DockerGenerator : BaseGenerator
 
         WriteRawFile(liner =>
         {
-            liner.Add("FROM mcr.microsoft.com/dotnet/aspnet:5.0");
+            liner.Add("FROM mcr.microsoft.com/dotnet/aspnet:6.0");
             liner.Add("WORKDIR /app");
-            liner.Add("COPY src/bin/release/net5.0/publish/ ./");
+            liner.Add("COPY src/bin/release/net6.0/publish/ ./");
             liner.Add("ENTRYPOINT [\"dotnet\", \"src.dll\"]");
         }, dockerFolder, "Dockerfile");
 
