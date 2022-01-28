@@ -130,24 +130,16 @@ public class BaseGenerator
         };
     }
 
-    protected NullabilityPostfixes GetNullabilityPostfixes()
+    protected string GetNullabilityTypePostfix()
     {
         var strategy = Config.GetFailedToFindStrategy();
         switch (strategy)
         {
             case GeneratorConfig.FailedToFindStrategy.useNullObject:
-                return new NullabilityPostfixes
-                {
-                    TypePostfix = "?",
-                    InvocationPostfix = ""
-                };
+                return "?";
 
             case GeneratorConfig.FailedToFindStrategy.useErrorCode:
-                return new NullabilityPostfixes
-                {
-                    TypePostfix = "",
-                    InvocationPostfix = "!"
-                };
+                return "";
         }
 
         throw new Exception("Unknown FailedToFindStrategy: " + strategy);
