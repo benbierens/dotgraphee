@@ -64,13 +64,8 @@ public class UpdateTestsGenerator : BaseGenerator
             liner.Add("await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
 
-            liner.StartClosure("await Gql.Update" + m.Name + "(new " + inputTypes.Update);
-            liner.Add(m.Name + "Id = TestData.Test" + m.Name + ".Id,");
-            foreach (var f in m.Fields)
-            {
-                liner.Add(f.Name + " = TestData.Test" + f.Type.FirstToUpper() + ",");
-            }
-            liner.EndClosure(");");
+            liner.Add("await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
+            liner.AddBlankLine();            
 
             liner.Add("var all = await Gql.QueryAll" + m.Name + "s();");
             AddAssertCollectionOne(liner, m, "all");

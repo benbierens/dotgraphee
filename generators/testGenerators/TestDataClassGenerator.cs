@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 
 public class TestDataClassGenerator : BaseGenerator
@@ -54,7 +55,78 @@ public class TestDataClassGenerator : BaseGenerator
 
         AddConstructor(cm);
 
+        foreach (var m in Models)
+        {
+            var inputNames = GetInputTypeNames(m);
+            AddToCreateInputMethod(cm, m, inputNames);
+            AddToUpdateInputMethod(cm, m, inputNames);
+            AddToDeleteInputMethod(cm, m, inputNames);
+        }
+
         fm.Build();
+    }
+
+    private void AddToCreateInputMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
+    {
+        var foreignProperties = GetForeignProperties(m);
+        var l = m.Name.FirstToLower();
+
+        cm.AddClosure("public " + inputNames.Create + " To" + inputNames.Create + GetCreateArguments(m, l, foreignProperties), liner =>
+        {
+            liner.StartClosure("return new " + inputNames.Create);
+            foreach (var f in m.Fields)
+            {
+                liner.Add(f.Name + " = " + l + "." + f.Name + ",");
+            }
+            foreach (var f in foreignProperties)
+            {
+                liner.Add(f.WithId + " = " + f.WithId.FirstToLower() + ",");
+            }
+            liner.EndClosure(";");
+        });
+    }
+
+    private void AddToUpdateInputMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
+    {
+        cm.AddClosure("public " + inputNames.Update + " To" + inputNames.Update + "()", liner =>
+        {
+            liner.StartClosure("return new " + inputNames.Update);
+            liner.Add(m.Name + "Id = TestData.Test" + m.Name + ".Id,");
+            foreach (var f in m.Fields)
+            {
+                liner.Add(f.Name + " = TestData.Test" + f.Type.FirstToUpper() + ",");
+            }
+            liner.EndClosure(";");
+        });
+    }
+
+    private void AddToDeleteInputMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
+    {
+        cm.AddClosure("public " + inputNames.Delete + " To" + inputNames.Delete + "()", liner =>
+        {
+            liner.StartClosure("return new " + inputNames.Delete);
+            liner.Add(m.Name + "Id = TestData.Test" + m.Name + ".Id,");
+            liner.EndClosure(";");
+        });
+    }
+
+    private string GetCreateArguments(GeneratorConfig.ModelConfig model, string l, ForeignProperty[] foreignProperties)
+    {
+        var args = new List<string>();
+        args.Add("this " + model.Name + " " + l);
+        foreach (var f in foreignProperties)
+        {
+            if (f.IsSelfReference)
+            {
+                args.Add(Config.IdType + "? " + f.WithId.FirstToLower());
+            }
+            else
+            {
+                args.Add(Config.IdType + " " + f.WithId.FirstToLower());
+            }
+        }
+
+        return "(" + string.Join(", ", args) + ")";
     }
 
     private void AddConstructor(ClassMaker cm)

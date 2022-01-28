@@ -32,10 +32,9 @@
         {
             liner.Add("await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
-            liner.StartClosure("await Gql.Delete" + m.Name + "(new " + inputTypes.Delete);
-            liner.Add(m.Name + "Id = TestData.Test" + m.Name + ".Id,");
-            liner.EndClosure(");");
 
+            liner.Add("await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            
             liner.Add("var all = await Gql.QueryAll" + m.Name + "s();");
             liner.AddBlankLine();
             liner.Add("CollectionAssert.IsEmpty(all, \"Expected " + m.Name + " to have been deleted.\");");

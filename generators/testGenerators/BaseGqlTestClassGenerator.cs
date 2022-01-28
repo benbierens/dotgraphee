@@ -57,29 +57,37 @@ public class BaseGqlTestClassGenerator : BaseGenerator
 
         IterateModelsInDependencyOrder(m =>
         {
-            var foreignProperties = GetForeignProperties(m);
+            var inputTypes = GetInputTypeNames(m);
+
             cm.AddClosure("public async Task<" + m.Name + "> CreateTest" + m.Name + "()", liner =>
             {
-                var arguments = new List<string>();
-                foreach (var f in foreignProperties)
-                {
-                    if (!f.IsSelfReference)
-                    {
-                        liner.Add("await CreateTest" + f.Type + "();");
-                        arguments.Add("TestData.Test" + f.Type + ".Id");
-                    }
-                    else
-                    {
-                        arguments.Add("null");
-                    }
-                }
-
-                var args = string.Join(", ", arguments);
-                liner.Add("var entity = await Gql.Create" + m.Name + "(TestData.Test" + m.Name + ".ToCreate(" + args + "));");
+                var args = GetCreateInputArguments(liner, m);
+                liner.Add("var entity = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
                 liner.Add("TestData.Test" + m.Name + ".Id = entity.Id;");
                 liner.Add("return entity;");
             });
         });
+    }
+
+    private string GetCreateInputArguments(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        var foreignProperties = GetForeignProperties(m);
+
+        var arguments = new List<string>();
+        foreach (var f in foreignProperties)
+        {
+            if (!f.IsSelfReference)
+            {
+                liner.Add("await CreateTest" + f.Type + "();");
+                arguments.Add("TestData.Test" + f.Type + ".Id");
+            }
+            else
+            {
+                arguments.Add("null");
+            }
+        }
+
+        return string.Join(", ", arguments);
     }
 
     private void AddDockerInitializer(ClassMaker cm)
