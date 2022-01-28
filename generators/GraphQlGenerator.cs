@@ -23,6 +23,8 @@ public class GraphQlGenerator : BaseGenerator
         cm.AddUsing("System.Threading.Tasks");
         cm.AddUsing("Microsoft.EntityFrameworkCore");
 
+        var postfixes = GetNullabilityPostfixes();
+
         foreach (var model in Models)
         {
             cm.AddClosure("public async Task<" + model.Name + "[]> " + model.Name + "s()", liner =>
@@ -30,9 +32,17 @@ public class GraphQlGenerator : BaseGenerator
                 liner.Add("return await " + Config.Database.DbAccesserClassName + ".Context." + model.Name + "s.ToArrayAsync();");
             });
 
-            cm.AddClosure("public async Task<" + model.Name + "> " + model.Name + "(" + Config.IdType + " id)", liner =>
+            cm.AddClosure("public async Task<" + model.Name + postfixes.TypePostfix + "> " + model.Name + "(" + Config.IdType + " id)", liner =>
             {
-                liner.Add("return await " + Config.Database.DbAccesserClassName + ".Context." + model.Name + "s.FindAsync(id);");
+                if (IsFailedToFindStrategyErrorCode())
+                {
+                    liner.Add("var entity = await " + Config.Database.DbAccesserClassName + ".Context." + model.Name + "s.FindAsync(id)" + ";");
+                    liner.Add("return entity" + postfixes.InvocationPostfix + ";");
+                }
+                if (IsFailedToFindStrategyNullObject())
+                {
+                    liner.Add("return await " + Config.Database.DbAccesserClassName + ".Context." + model.Name + "s.FindAsync(id)" + ";");
+                }
             });
         }
 
@@ -214,11 +224,14 @@ public class GraphQlGenerator : BaseGenerator
 
     private void AddUpdateMutation(ClassMaker cm, GeneratorConfig.ModelConfig model, InputTypeNames inputTypeNames)
     {
-        cm.AddClosure("public async Task<" + model.Name + "> " + Config.GraphQl.GqlMutationsUpdateMethod + model.Name +
+        var postfixes = GetNullabilityPostfixes();
+
+        cm.AddClosure("public async Task<" + model.Name + postfixes.TypePostfix + "> " + Config.GraphQl.GqlMutationsUpdateMethod + model.Name +
         "(" + inputTypeNames.Update + " input, [Service] ITopicEventSender sender)", liner =>
         {
             AddDbVar(liner);
-            liner.Add("var updateEntity = db.Set<" + model.Name + ">().Find(input." + model.Name + "Id);");
+            liner.Add("var updateEntity = db.Set<" + model.Name + ">().Find(input." + model.Name + "Id)" + postfixes.InvocationPostfix + ";");
+            if (IsFailedToFindStrategyNullObject()) liner.Add("if (updateEntity == null) return null;");
             AddModelUpdater(liner, model, "input");
             liner.Add("db.SaveChanges();");
 
@@ -251,11 +264,14 @@ public class GraphQlGenerator : BaseGenerator
 
     private void AddDeleteMutation(ClassMaker cm, GeneratorConfig.ModelConfig model, InputTypeNames inputTypeNames)
     {
-        cm.AddClosure("public async Task<" + model.Name + "> " + Config.GraphQl.GqlMutationsDeleteMethod + model.Name +
+        var postfixes = GetNullabilityPostfixes();
+
+        cm.AddClosure("public async Task<" + model.Name + postfixes.TypePostfix + "> " + Config.GraphQl.GqlMutationsDeleteMethod + model.Name +
         "(" + inputTypeNames.Delete + " input, [Service] ITopicEventSender sender)", liner =>
         {
             AddDbVar(liner);
-            liner.Add("var deleteEntity = db.Set<" + model.Name + ">().Find(input." + model.Name + "Id);");
+            liner.Add("var deleteEntity = db.Set<" + model.Name + ">().Find(input." + model.Name + "Id)" + postfixes.InvocationPostfix + ";");
+            if (IsFailedToFindStrategyNullObject()) liner.Add("if (deleteEntity == null) return null;");
             liner.Add("db.Remove(deleteEntity);");
             liner.Add("db.SaveChanges();");
 

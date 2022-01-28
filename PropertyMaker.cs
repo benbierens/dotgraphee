@@ -82,7 +82,7 @@ public class PropertyMaker
 
     private string GetAccessor()
     {
-        if (isDbSet) return " =>";
+        if (isDbSet) return " => ";
         return " { get; set; }";
     }
 

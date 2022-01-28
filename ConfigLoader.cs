@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -37,6 +38,12 @@ public class ConfigLoader
 
 public class GeneratorConfig
 {
+    public enum FailedToFindStrategy
+    {
+        useNullObject,
+        useErrorCode
+    }
+
     public class ConfigSection
     {
         public string GenerateNamespace { get; set; }
@@ -45,8 +52,14 @@ public class GeneratorConfig
         public ConfigGraphQlSection GraphQl { get; set; }
         public ConfigTestSection Tests { get; set; }
         public string IdType { get; set; }
+        public string FailedToFindStrategy { get; set; }
         public string SelfRefNavigationPropertyPrefix { get; set; }
         public string[] Packages { get; set; }
+
+        public FailedToFindStrategy GetFailedToFindStrategy()
+        {
+            return Enum.Parse<FailedToFindStrategy>(FailedToFindStrategy);
+        }
     }
 
     public class ConfigOutputSection

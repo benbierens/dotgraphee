@@ -2,18 +2,19 @@
   "config": {
     "generateNamespace": "gqldemo_generated",
     "idType": "int",
+    "failedToFindStrategy": "useErrorCode",
     "selfRefNavigationPropertyPrefix": "Parent",
     "packages": [
-      "Microsoft.EntityFrameworkCore --version 5.0.13",
-      "Microsoft.EntityFrameworkCore.Design --version 5.0.13",
-      "Microsoft.EntityFrameworkCore.SqlServer --version 5.0.13",
-      "Microsoft.EntityFrameworkCore.Proxies --version 5.0.13",
+      "Microsoft.EntityFrameworkCore",
+      "Microsoft.EntityFrameworkCore.Design",
+      "Microsoft.EntityFrameworkCore.SqlServer",
+      "Microsoft.EntityFrameworkCore.Proxies",
       "HotChocolate.AspNetCore",
       "HotChocolate.AspNetCore.Subscriptions",
       "HotChocolate.AspNetCore.Playground",
       "HotChocolate.Subscriptions",
       "HotChocolate.Subscriptions.InMemory",
-      "Npgsql.EntityFrameworkCore.PostgreSQL --version 5.0.10"
+      "Npgsql.EntityFrameworkCore.PostgreSQL"
     ],
     "output": {
       "projectRoot": "../dotgraphee-demo",

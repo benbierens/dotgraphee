@@ -11,6 +11,9 @@ public class ProjectGenerator : BaseGenerator
         RunCommand("dotnet", "new", "sln");
         RunCommand("dotnet", "new", "graphql", "-o", Config.Output.SourceFolder);
 
+        BumpProjectToDotNetSix();
+
+
         foreach (var p in Config.Packages)
         {
             RunCommand("dotnet", "add", Config.Output.SourceFolder, "package", p);
@@ -30,6 +33,15 @@ public class ProjectGenerator : BaseGenerator
     {
         ModifyStartupFile();
         ModifyTestProjectFile();
+    }
+
+    private void BumpProjectToDotNetSix()
+    {
+        var mf = ModifyFile(Config.Output.SourceFolder, Config.Output.SourceFolder + ".csproj");
+        mf.ReplaceLine("<TargetFramework>net5.0</TargetFramework>",
+            "<TargetFramework>net6.0</TargetFramework>");
+
+        mf.Modify();
     }
 
     private void ModifyStartupFile()

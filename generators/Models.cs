@@ -17,3 +17,9 @@ public class ForeignProperty
         throw new System.Exception("Don't use this");
     }
 }
+
+public class NullabilityPostfixes
+{
+    public string TypePostfix { get; set; }
+    public string InvocationPostfix { get; set; }
+}

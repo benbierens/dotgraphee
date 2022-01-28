@@ -130,6 +130,39 @@ public class BaseGenerator
         };
     }
 
+    protected NullabilityPostfixes GetNullabilityPostfixes()
+    {
+        var strategy = Config.GetFailedToFindStrategy();
+        switch (strategy)
+        {
+            case GeneratorConfig.FailedToFindStrategy.useNullObject:
+                return new NullabilityPostfixes
+                {
+                    TypePostfix = "?",
+                    InvocationPostfix = ""
+                };
+
+            case GeneratorConfig.FailedToFindStrategy.useErrorCode:
+                return new NullabilityPostfixes
+                {
+                    TypePostfix = "",
+                    InvocationPostfix = "!"
+                };
+        }
+
+        throw new Exception("Unknown FailedToFindStrategy: " + strategy);
+    }
+
+    protected bool IsFailedToFindStrategyNullObject()
+    {
+        return Config.GetFailedToFindStrategy() == GeneratorConfig.FailedToFindStrategy.useNullObject;
+    }
+
+    protected bool IsFailedToFindStrategyErrorCode()
+    {
+        return Config.GetFailedToFindStrategy() == GeneratorConfig.FailedToFindStrategy.useErrorCode;
+    }
+
     protected void IterateModelsInDependencyOrder(Action<GeneratorConfig.ModelConfig> onModel)
     {
         var remainingModels = Models.ToList();
