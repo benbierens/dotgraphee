@@ -19,6 +19,13 @@ public class CodeFileModifier
         lines.Insert(0, "using " + usingNamespace + ";");
     }
 
+    public void Insert(int lineNumber, int indentLevel, string line)
+    {
+        var indent = "";
+        for (var i = 0; i < indentLevel; i++) indent += "    ";
+        lines.Insert(lineNumber, indent + line);
+    }
+
     public void ReplaceLine(string original, params string[] updated)
     {
         var source = lines.ToArray();

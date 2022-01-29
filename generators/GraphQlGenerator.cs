@@ -18,26 +18,34 @@ public class GraphQlGenerator : BaseGenerator
 
     private void GenerateQueries()
     {
-        var fm = StartSrcFile(Config.Output.GraphQlSubFolder, Config.GraphQl.GqlQueriesFileName);
-        var cm = StartClass(fm, Config.GraphQl.GqlQueriesClassName);
+        var className = Config.GraphQl.GqlQueriesFileName;
+        var dbInterface = "I" + Config.Database.DbAccesserClassName;
+
+        var fm = StartSrcFile(Config.Output.GraphQlSubFolder, className);
+        var cm = StartClass(fm, className);
         cm.AddUsing("HotChocolate");
-        cm.AddUsing("System.Threading.Tasks");
-        cm.AddUsing("Microsoft.EntityFrameworkCore");
 
         var typePostfix = GetNullabilityTypePostfix();
+        
+        cm.AddLine("private readonly " + dbInterface + " dbService;");
+        cm.AddBlankLine();
+        cm.AddClosure("public " + className + "(" + dbInterface + " dbService)", liner =>
+        {
+            liner.Add("this.dbService = dbService;");
+        });
 
         foreach (var model in Models)
         {
-            cm.AddClosure("public async Task<" + model.Name + "[]> " + model.Name + "s()", liner =>
+            cm.AddClosure("public " + model.Name + "[] " + model.Name + "s()", liner =>
             {
-                liner.Add("return await " + Config.Database.DbAccesserClassName + ".Context." + model.Name + "s.ToArrayAsync();");
+                liner.Add("return dbService.All<" + model.Name + ">();");
             });
 
-            cm.AddClosure("public async Task<" + model.Name + typePostfix + "> " + model.Name + "(" + Config.IdType + " id)", liner =>
+            cm.AddClosure("public " + model.Name + typePostfix + " " + model.Name + "(" + Config.IdType + " id)", liner =>
             {
                 if (IsFailedToFindStrategyErrorCode())
                 {
-                    liner.Add("var entity = await " + Config.Database.DbAccesserClassName + ".Context." + model.Name + "s.FindAsync(id)" + ";");
+                    liner.Add("var entity = dbService.Single<" + model.Name + ">(id);");
                     AddFailedToFindStrategyEarlyReturn(liner, model, "id");
                     liner.Add("return entity;");
                 }
@@ -164,11 +172,21 @@ public class GraphQlGenerator : BaseGenerator
 
     private void GenerateMutations()
     {
+        var className = Config.GraphQl.GqlMutationsClassName;
+        var dbInterface = "I" + Config.Database.DbAccesserClassName;
+
         var fm = StartSrcFile(Config.Output.GraphQlSubFolder, Config.GraphQl.GqlMutationsFilename);
-        var cm = StartClass(fm, Config.GraphQl.GqlMutationsClassName);
+        var cm = StartClass(fm, className);
         cm.AddUsing("System.Threading.Tasks");
         cm.AddUsing("HotChocolate");
         cm.AddUsing("HotChocolate.Subscriptions");
+
+        cm.AddLine("private readonly IDbService dbService;");
+        cm.AddBlankLine();
+        cm.AddClosure("public " + className + "(" + dbInterface + " dbService)", liner =>
+        {
+            liner.Add("this.dbService = dbService;");
+        });
 
         foreach (var model in Models)
         {
@@ -195,7 +213,7 @@ public class GraphQlGenerator : BaseGenerator
 
             AddDatabaseAddAndSave(liner);
 
-            liner.Add("await sender.SendAsync(\"" + model.Name + Config.GraphQl.GqlSubscriptionCreatedMethod + "\", createEntity);");
+            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, Config.GraphQl.GqlSubscriptionCreatedMethod) + ", createEntity);");
             liner.Add("return createEntity;");
         });
     }
@@ -215,30 +233,27 @@ public class GraphQlGenerator : BaseGenerator
 
     private void AddDatabaseAddAndSave(Liner liner)
     {
-        AddDbVar(liner);
-        liner.Add("db.Add(createEntity);");
-        liner.Add("db.SaveChanges();");
+        liner.Add("dbService.Add(createEntity);");
     }
 
     #endregion
 
     #region Update
 
-    private void AddUpdateMutation(ClassMaker cm, GeneratorConfig.ModelConfig model, InputTypeNames inputTypeNames)
+    private void AddUpdateMutation(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputTypeNames)
     {
         var typePostfix = GetNullabilityTypePostfix();
-        var idTag = "input." + model.Name + "Id";
+        var idTag = "input." + m.Name + "Id";
 
-        cm.AddClosure("public async Task<" + model.Name + typePostfix + "> " + Config.GraphQl.GqlMutationsUpdateMethod + model.Name +
+        cm.AddClosure("public async Task<" + m.Name + typePostfix + "> " + Config.GraphQl.GqlMutationsUpdateMethod + m.Name +
         "(" + inputTypeNames.Update + " input, [Service] ITopicEventSender sender)", liner =>
         {
-            AddDbVar(liner);
-            liner.Add("var entity = db.Set<" + model.Name + ">().Find(" + idTag + ");");
-            AddFailedToFindStrategyEarlyReturn(liner, model, idTag);
-            AddModelUpdater(liner, model, "input");
-            liner.Add("db.SaveChanges();");
+            liner.StartClosure("var entity = dbService.Update<" + m.Name + ">(" + idTag + ", entity =>");
+            AddModelUpdater(liner, m, "input");
+            liner.EndClosure(");");
 
-            liner.Add("await sender.SendAsync(\"" + model.Name + Config.GraphQl.GqlSubscriptionUpdatedMethod + "\", entity);");
+            AddFailedToFindStrategyEarlyReturn(liner, m, idTag);
+            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(m, Config.GraphQl.GqlSubscriptionUpdatedMethod) + ", entity);");
             liner.Add("return entity;");
         });
     }
@@ -273,13 +288,9 @@ public class GraphQlGenerator : BaseGenerator
         cm.AddClosure("public async Task<" + model.Name + typePostfix + "> " + Config.GraphQl.GqlMutationsDeleteMethod + model.Name +
         "(" + inputTypeNames.Delete + " input, [Service] ITopicEventSender sender)", liner =>
         {
-            AddDbVar(liner);
-            liner.Add("var entity = db.Set<" + model.Name + ">().Find(" + idTag + ");");
+            liner.Add("var entity = dbService.Delete<" + model.Name + ">(" + idTag + ");");
             AddFailedToFindStrategyEarlyReturn(liner, model, idTag);
-            liner.Add("db.Remove(entity);");
-            liner.Add("db.SaveChanges();");
-
-            liner.Add("await sender.SendAsync(\"" + model.Name + Config.GraphQl.GqlSubscriptionDeletedMethod + "\", entity);");
+            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, Config.GraphQl.GqlSubscriptionDeletedMethod) + ", entity);");
             liner.Add("return entity;");
         });
     }
@@ -288,14 +299,14 @@ public class GraphQlGenerator : BaseGenerator
 
     #endregion
 
+    private string GetSubscriptionTopicName(GeneratorConfig.ModelConfig model, string gqlSubscriptionMethod)
+    {
+        return "nameof(" + Config.GraphQl.GqlSubscriptionsClassName + "." + model.Name + gqlSubscriptionMethod + ")";
+    }
+
     private void AddFailedToFindStrategyEarlyReturn(Liner liner, GeneratorConfig.ModelConfig model, string idTag)
     {
         if (IsFailedToFindStrategyNullObject()) liner.Add("if (entity == null) return null;");
         if (IsFailedToFindStrategyErrorCode()) liner.Add("if (entity == null) throw new GraphQLException(\"Unable to find '" + model.Name + "' by Id: '\" + " + idTag + " + \"'\");");
-    }
-
-    private void AddDbVar(Liner liner)
-    {
-        liner.Add("var db = " + Config.Database.DbAccesserClassName + ".Context;");
     }
 }

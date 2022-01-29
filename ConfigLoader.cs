@@ -47,6 +47,8 @@ public class GeneratorConfig
     public class ConfigSection
     {
         public string GenerateNamespace { get; set; }
+        public string HeaderComment { get; set; }
+
         public ConfigOutputSection Output { get; set; }
         public ConfigDatabaseSection Database { get; set; }
         public ConfigGraphQlSection GraphQl { get; set; }
@@ -76,8 +78,9 @@ public class GeneratorConfig
     public class ConfigDatabaseSection
     {
         public string DbContextClassName { get; set; }
-        public string DbAccesserClassName { get; set; }
         public string DbContextFileName { get; set; }
+        public string DbAccesserClassName { get; set; }
+        public string DbAccesserFileName { get; set; }
         public string DbContainerName { get; set; }
 
         public ConfigDatabaseConnectionSection LocalDev { get; set; }

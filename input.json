@@ -1,6 +1,7 @@
 {
   "config": {
     "generateNamespace": "gqldemo_generated",
+    "HeaderComment": "// This file is generated.",
     "idType": "int",
     "failedToFindStrategy": "useErrorCode",
     "selfRefNavigationPropertyPrefix": "Parent",
@@ -27,8 +28,9 @@
     },
     "Database": {
       "dbContextClassName": "DatabaseContext",
-      "dbAccesserClassName": "Db",
       "dbContextFileName": "DatabaseContext",
+      "dbAccesserClassName": "DbService",
+      "dbAccesserFileName": "DbService",
       "dbContainerName": "db",
       "localDev": {
         "dbHost": "localhost",

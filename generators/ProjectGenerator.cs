@@ -50,12 +50,14 @@ public class ProjectGenerator : BaseGenerator
         mf.AddUsing(Config.GenerateNamespace);
         mf.AddUsing("HotChocolate.AspNetCore");
 
+        mf.Insert(23, 3, "services.Add(ServiceDescriptor.Transient<I" + Config.Database.DbAccesserClassName + ", " + Config.Database.DbAccesserClassName + ">());");
+
         mf.ReplaceLine(".AddQueryType<Query>();",
                 ".AddQueryType<" + Config.GraphQl.GqlQueriesClassName + ">()",
                 ".AddMutationType<" + Config.GraphQl.GqlMutationsClassName + ">()",
-                ".AddSubscriptionType<" + Config.GraphQl.GqlSubscriptionsClassName + ">();",
-                "",
-                "services.AddInMemorySubscriptions();");
+                ".AddSubscriptionType<" + Config.GraphQl.GqlSubscriptionsClassName + ">();");
+
+        mf.Insert(29, 3, "services.AddInMemorySubscriptions();");
 
         mf.ReplaceLine("app.UseDeveloperExceptionPage();",
             "app.UsePlayground();",
@@ -64,7 +66,7 @@ public class ProjectGenerator : BaseGenerator
         mf.ReplaceLine("app.UseRouting();", 
             "app.UseRouting();", 
             "app.UseWebSockets();",
-            "Db.Context.Database.EnsureCreated();");
+            "DbService.EnsureCreated();");
 
         mf.Modify();
     }

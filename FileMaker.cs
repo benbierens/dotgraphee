@@ -3,13 +3,15 @@ using System.Linq;
 
 public class FileMaker
 {
+    private readonly GeneratorConfig config;
     private readonly string filename;
     private readonly string @namespace;
     private readonly List<ClassMaker> classMakers = new List<ClassMaker>();
     private readonly List<string> usings = new List<string>();
 
-    public FileMaker(string filename, string @namespace)
+    public FileMaker(GeneratorConfig config, string filename, string @namespace)
     {
+        this.config = config;
         this.filename = filename;
         this.@namespace = @namespace;
     }
@@ -45,9 +47,9 @@ public class FileMaker
         {
             liner.Add("using " + EndStatement(u));
         }
-        liner.Add("");
-        liner.Add("// This file is generated.");
-        liner.Add("");
+        liner.AddBlankLine();
+
+        AddHeaderComment(liner);
 
         liner.StartClosure("namespace " + @namespace);
         
@@ -65,5 +67,14 @@ public class FileMaker
     {
         if (s.EndsWith(";")) return s;
         return s + ";";
+    }
+    private void AddHeaderComment(Liner liner)
+    {
+        if (string.IsNullOrWhiteSpace(config.Config.HeaderComment)) return;
+        var comment = config.Config.HeaderComment;
+        if (!comment.StartsWith("//")) comment = "//" + comment;
+
+        liner.Add(comment);
+        liner.Add("");
     }
 }
