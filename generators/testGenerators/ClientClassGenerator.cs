@@ -1,5 +1,6 @@
 ﻿public class ClientClassGenerator : BaseGenerator
 {
+    private const int Timeout = 30;
     public ClientClassGenerator(GeneratorConfig config)
         : base(config)
     {
@@ -50,12 +51,12 @@
         cm.AddClosure("public static async Task WaitUntilOnline()", liner =>
         {
             liner.Add("var start = DateTime.Now;");
-            liner.StartClosure("while ((DateTime.Now - start) < TimeSpan.FromSeconds(15))");
+            liner.StartClosure("while ((DateTime.Now - start) < TimeSpan.FromSeconds(" + Timeout + "))");
             liner.Add("var isOnline = await IsOnline();");
             liner.Add("if (isOnline) return;");
             liner.Add("Thread.Sleep(100);");
             liner.EndClosure();
-            liner.Add("throw new TimeoutException(\"Server didn't come online within 15 seconds.\");");
+            liner.Add("throw new TimeoutException(\"Server didn't come online within " + Timeout + " seconds.\");");
         });
 
         cm.AddClosure("public static async Task<bool> IsOnline()", liner =>

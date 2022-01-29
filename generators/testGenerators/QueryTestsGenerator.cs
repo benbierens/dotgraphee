@@ -52,7 +52,7 @@ public class QueryTestsGenerator : BaseGenerator
             {
                 if (!f.IsSelfReference)
                 {
-                    AddAssertIdEquals(liner, m, f, "All-query incorrect.");
+                    AddAssertForeignIdEquals(liner, m, f, "All-query incorrect.");
                 }
             }
         });
@@ -79,7 +79,7 @@ public class QueryTestsGenerator : BaseGenerator
             {
                 if (!f.IsSelfReference)
                 {
-                    AddAssertIdEquals(liner, m, f, "One-query incorrect.");
+                    AddAssertForeignIdEquals(liner, m, f, "One-query incorrect.");
                 }
             }
         });

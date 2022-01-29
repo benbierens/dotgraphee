@@ -176,11 +176,14 @@ public class GqlClassGenerator : BaseGenerator
 
         private void AddDeleteMutationMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
         {
-            cm.AddClosure("public async Task<GqlData<DeleteMutationResponse>> Delete" + m.Name + "(" + inputNames.Delete + " input)", liner =>
+            var templateField = Config.GraphQl.GqlMutationsDeleteMethod + m.Name;
+            var templateType = templateField + "Response";
+
+            cm.AddClosure("public async Task<GqlData<" + templateType+ ">> Delete" + m.Name + "(" + inputNames.Delete + " input)", liner =>
             {
                 var fields = m.Name.FirstToLower() + "Id: \" + input." + m.Name + "Id + \"";
                 liner.Add("var mutation = \"{ \\\"query\\\": \\\"mutation { " + Config.GraphQl.GqlMutationsDeleteMethod.FirstToLower() + m.Name + "(input: {" + fields + "}) { id } }\\\"}\";");
-                liner.Add("return await Client.PostRequest<DeleteMutationResponse>(mutation);");
+                liner.Add("return await Client.PostRequest<" + templateType + ">(mutation);");
             });
         }
 

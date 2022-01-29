@@ -60,7 +60,7 @@ public class DeleteTestsGenerator : BaseGenerator
             liner.AddBlankLine();
 
             AddAssertCollectionOne(liner, m, "errors");
-            AddAssertErrorMessage(liner, m, "TestData.Test" + Config.IdType.FirstToUpper());
+            AddAssertErrorMessage(liner, m, "TestData.Test" + m.Name + ".Id");
         });
     }
 

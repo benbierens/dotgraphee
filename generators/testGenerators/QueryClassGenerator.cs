@@ -47,6 +47,7 @@ public class QueryClassGenerator : BaseGenerator
     {
         AddMutationResponseClass(fm, m, Config.GraphQl.GqlMutationsCreateMethod);
         AddMutationResponseClass(fm, m, Config.GraphQl.GqlMutationsUpdateMethod);
+        AddMutationResponseClass(fm, m, Config.GraphQl.GqlMutationsDeleteMethod);
     }
 
     private void AddMutationResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string mutationMethod)

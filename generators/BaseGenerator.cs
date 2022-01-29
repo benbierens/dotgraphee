@@ -188,7 +188,7 @@ public class BaseGenerator
         {
             if (!f.IsSelfReference)
             {
-                AddAssertIdEquals(liner, m, f, errorMessage);
+                AddAssertForeignIdEquals(liner, m, f, errorMessage);
             }
         }
     }
@@ -197,6 +197,11 @@ public class BaseGenerator
     {
         var target = m.Name + "." + f.Name;
         AddAssertEquals(liner, m, f, target, errorMessage);
+    }
+
+    protected void AddAssertId(Liner liner, GeneratorConfig.ModelConfig m, string errorMessage)
+    {
+        liner.Add("Assert.That(entity.Id, Is.EqualTo(TestData.Test" + m.Name + ".Id)," + FormatErrorMessage(m, "Id", errorMessage) + ");");
     }
 
     protected void AddAssertEqualsTestScalar(Liner liner, GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
@@ -210,7 +215,7 @@ public class BaseGenerator
         liner.Add("Assert.That(entity." + f.Name + ", Is.EqualTo(TestData.Test" + testTarget + ")" + TypeUtils.GetAssertPostfix(f.Type) + "," + FormatErrorMessage(m, f, errorMessage) + ");");
     }
 
-    protected void AddAssertIdEquals(Liner liner, GeneratorConfig.ModelConfig m, ForeignProperty f, string errorMessage)
+    protected void AddAssertForeignIdEquals(Liner liner, GeneratorConfig.ModelConfig m, ForeignProperty f, string errorMessage)
     {
         liner.Add("Assert.That(entity." + f.WithId + ", Is.EqualTo(TestData.Test" + f.Type + ".Id)," + FormatErrorMessage(m, f, errorMessage) + ");");
     }
@@ -233,7 +238,7 @@ public class BaseGenerator
 
     protected void AddAssertDeleteResponse(Liner liner, GeneratorConfig.ModelConfig m)
     {
-        liner.Add("Assert.That(response.Data.Id, Is.EqualTo(TestData.Test" + m.Name + ".Id), \"Incorrect Id returned by " + Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
+        liner.Add("Assert.That(response.Data." + Config.GraphQl.GqlMutationsDeleteMethod + m.Name + ".Id, Is.EqualTo(TestData.Test" + m.Name + ".Id), \"Incorrect Id returned by " + Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
     }
 
     private string FormatErrorMessage(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)

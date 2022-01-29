@@ -46,6 +46,7 @@ public class UpdateTestsGenerator : BaseGenerator
             liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsUpdateMethod + m.Name + ";");
             liner.AddBlankLine();
 
+            AddAssertId(liner, m, "Update failed.");
             foreach (var f in m.Fields)
             {
                 AddAssertEqualsTestScalar(liner, m, f, "Update failed.");
@@ -73,6 +74,7 @@ public class UpdateTestsGenerator : BaseGenerator
 
             AddAssertCollectionOne(liner, m, "all");
             liner.Add("var entity = all[0];");
+            AddAssertId(liner, m, "Update failed.");
             foreach (var f in m.Fields)
             {
                 AddAssertEqualsTestScalar(liner, m, f, "Update failed.");
@@ -92,7 +94,7 @@ public class UpdateTestsGenerator : BaseGenerator
             liner.AddBlankLine();
 
             AddAssertCollectionOne(liner, m, "errors");
-            AddAssertErrorMessage(liner, m, "TestData.Test" + Config.IdType.FirstToUpper());
+            AddAssertErrorMessage(liner, m, "TestData.Test" + m.Name + ".Id");
         });
     }
 }
