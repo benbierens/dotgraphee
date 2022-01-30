@@ -78,9 +78,18 @@ public class GqlClassGenerator : BaseGenerator
         {
             cm.AddClosure("public async Task<GqlData<One" + m.Name + "Query>> QueryOne" + m.Name + "(" + Config.IdType + " id)", liner =>
             {
-                liner.Add("var query = \"{ \\\"query\\\": \\\"query { " + m.Name.FirstToLower() + "(id: \" + id + \") { " + GetQueryFields(m) + " } } \\\" }\";");
+                liner.Add("var query = \"{ \\\"query\\\": \\\"query { " + m.Name.FirstToLower() + GetIdExpression() + " { " + GetQueryFields(m) + " } } \\\" }\";");
                 liner.Add("return await Client.PostRequest<One" + m.Name + "Query>(query);");
             });
+        }
+
+        private string GetIdExpression()
+        {
+            if (TypeUtils.RequiresQuotes(Config.IdType))
+            {
+                return "(id: \\\\\\\"\" + id + \"\\\\\\\")";
+            }
+            return "(id: \" + id + \")";
         }
 
         private string GetQueryFields(GeneratorConfig.ModelConfig m)
@@ -128,11 +137,11 @@ public class GqlClassGenerator : BaseGenerator
                     fields.Add(f.WithId.FirstToLower());
                     if (f.IsSelfReference)
                     {
-                        liner.Add("if (input." + f.WithId + " != null) fields += \" " + f.WithId.FirstToLower() + ": \" + input." + f.WithId + ";");
+                        liner.Add("if (input." + f.WithId + " != null) fields += " + GetIdExpression(f) + ";");
                     }
                     else
                     {
-                        liner.Add("fields += \" " + f.WithId.FirstToLower() + ": \" + input." + f.WithId + ";");
+                        liner.Add("fields += " + GetIdExpression(f) + ";");
                     }
                 }
                 liner.AddBlankLine();
@@ -149,7 +158,7 @@ public class GqlClassGenerator : BaseGenerator
 
             cm.AddClosure("public async Task<GqlData<" + templateType + ">> Update" + m.Name + "(" + inputNames.Update + " input)", liner =>
             {
-                liner.Add("var fields = \"" + m.Name.FirstToLower() + "Id: \" + input." + m.Name + "Id;");
+                liner.Add(GetInitializeFieldsWithId(m));
                 var fields = new List<string>();
                 fields.Add("id");
 
@@ -162,7 +171,7 @@ public class GqlClassGenerator : BaseGenerator
                 foreach (var f in foreignProperties)
                 {
                     fields.Add(f.WithId.FirstToLower());
-                    liner.Add("if (input." + f.WithId + " != null) fields += \" " + f.WithId.FirstToLower() + ": \" + input." + f.WithId + ";");
+                    liner.Add("if (input." + f.WithId + " != null) fields += " + GetIdExpression(f) + ";");
                 }
                 liner.AddBlankLine();
                 var queryFields = string.Join(" ", fields);
@@ -178,7 +187,7 @@ public class GqlClassGenerator : BaseGenerator
 
             cm.AddClosure("public async Task<GqlData<" + templateType+ ">> Delete" + m.Name + "(" + inputNames.Delete + " input)", liner =>
             {
-                var fields = m.Name.FirstToLower() + "Id: \" + input." + m.Name + "Id + \"";
+                var fields = GetDeleteFields(m);
                 liner.Add("var mutation = \"{ \\\"query\\\": \\\"mutation { " + Config.GraphQl.GqlMutationsDeleteMethod.FirstToLower() + m.Name + "(input: {" + fields + "}) { id } }\\\"}\";");
                 liner.Add("return await Client.PostRequest<" + templateType + ">(mutation);");
             });
@@ -208,6 +217,34 @@ public class GqlClassGenerator : BaseGenerator
             {
                 return " \" " + f.Name.FirstToLower() + ": \" + input." + f.Name + accessor + converter + ";";
             }
+        }
+
+        private string GetIdExpression(ForeignProperty f)
+        {
+            if (TypeUtils.RequiresQuotes(Config.IdType))
+            {
+                return "\" " + f.WithId.FirstToLower() + ": \\\\\\\"\" + input." + f.WithId + " + \"\\\\\\\"\"";
+            }
+
+            return "\" " + f.WithId.FirstToLower() + ": \" + input." + f.WithId;
+        }
+
+        private string GetInitializeFieldsWithId(GeneratorConfig.ModelConfig m)
+        {
+            if (TypeUtils.RequiresQuotes(Config.IdType))
+            {
+                return "var fields = \"" + m.Name.FirstToLower() + "Id: \\\\\\\"\" + input." + m.Name + "Id + \"\\\\\\\"\";";
+            }
+            return "var fields = \"" + m.Name.FirstToLower() + "Id: \" + input." + m.Name + "Id;";
+        }
+    
+        private string GetDeleteFields(GeneratorConfig.ModelConfig m)
+        {
+            if (TypeUtils.RequiresQuotes(Config.IdType))
+            {
+                return m.Name.FirstToLower() + "Id: \\\\\\\"\" + input." + m.Name + "Id + \"\\\\\\\"";
+            }
+            return m.Name.FirstToLower() + "Id: \" + input." + m.Name + "Id + \"";
         }
     }
 

@@ -71,25 +71,34 @@ public class DatabaseGenerator : BaseGenerator
     {
         var fm = StartSrcFile(Config.Output.DatabaseSubFolder, Config.Database.DbAccesserClassName);
         AddAccessInterface(fm);
+        if (Config.IdType == "string") AddHasIdInterface(fm);
         AddAccessClass(fm);
         fm.Build();
     }
 
+    private void AddHasIdInterface(FileMaker fm)
+    {
+        var im = fm.AddInterface("IHasId");
+        im.AddLine(Config.IdType + " Id { get; set; }");
+    }
+
     private void AddAccessInterface(FileMaker fm)
     {
+        var idType = Config.IdType;
         var im = fm.AddInterface("I" + Config.Database.DbAccesserClassName);
         im.AddUsing("System");
         im.AddUsing("System.Linq");
 
         AddLineWithClassConstraint(im, "T[] All<T>()");
-        AddLineWithClassConstraint(im, "T? Single<T>(int id)");
+        AddLineWithClassConstraint(im, "T? Single<T>(" + idType + " id)");
         AddLineWithClassConstraint(im, "void Add<T>(T entity)");
-        AddLineWithClassConstraint(im, "T? Update<T>(int id, Action<T> onEntity)");
-        AddLineWithClassConstraint(im, "T? Delete<T>(int id)");
+        AddLineWithClassConstraint(im, "T? Update<T>(" + idType + " id, Action<T> onEntity)");
+        AddLineWithClassConstraint(im, "T? Delete<T>(" + idType + " id)");
     }
 
     private void AddAccessClass(FileMaker fm)
     {
+        var idType = Config.IdType;
         var cm = fm.AddClass(Config.Database.DbAccesserClassName);
         cm.Modifiers.Clear();
 
@@ -100,20 +109,20 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("return GetDb().Set<T>().ToArray();");
         });
 
-        AddClosureWithClassConstraint(cm, "public T? Single<T>(int id)", liner =>
+        AddClosureWithClassConstraint(cm, "public T? Single<T>(" + idType + " id)", liner =>
         {
             liner.Add("return GetDb().Set<T>().Find(id);");
         });
 
         AddClosureWithClassConstraint(cm, "public void Add<T>(T entity)", liner =>
         {
+            AddEntityIdInitializer(liner);
             liner.Add("var db = GetDb();");
             liner.Add("db.Set<T>().Add(entity);");
             liner.Add("db.SaveChanges();");
         });
 
-
-        AddClosureWithClassConstraint(cm, "public T? Update<T>(int id, Action<T> onEntity)", liner =>
+        AddClosureWithClassConstraint(cm, "public T? Update<T>(" + idType + " id, Action<T> onEntity)", liner =>
         {
             liner.Add("var db = GetDb();");
             liner.Add("var entity = db.Find<T>(id);");
@@ -124,7 +133,7 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("return entity;");
         });
 
-        AddClosureWithClassConstraint(cm, "public T? Delete<T>(int id)", liner =>
+        AddClosureWithClassConstraint(cm, "public T? Delete<T>(" + idType + " id)", liner =>
         {
             liner.Add("var db = GetDb();");
             liner.Add("var entity = db.Find<T>(id);");
@@ -147,13 +156,28 @@ public class DatabaseGenerator : BaseGenerator
         });
     }
 
+    private void AddEntityIdInitializer(Liner liner)
+    {
+        if (Config.IdType != "string") return;
+        liner.Add("entity.Id = Guid.NewGuid().ToString();");
+    }
+
     private void AddLineWithClassConstraint(ClassMaker im, string line)
     {
-        im.AddLine(line + " where T : class;");
+        im.AddLine(line + GetClassConstraint() + ";");
     }
 
     private void AddClosureWithClassConstraint(ClassMaker cm, string name, Action<Liner> inClosure)
     {
-        cm.AddClosure(name + " where T : class", inClosure);
+        cm.AddClosure(name + GetClassConstraint(), inClosure);
+    }
+
+    private string GetClassConstraint()
+    {
+        if (Config.IdType == "string")
+        {
+            return " where T : class, IHasId";
+        }
+        return " where T : class";
     }
 }

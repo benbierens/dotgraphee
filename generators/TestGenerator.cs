@@ -1,4 +1,3 @@
-
 public class TestGenerator : BaseGenerator
 {
     private readonly BaseGqlTestClassGenerator baseGqlTestClassGenerator;

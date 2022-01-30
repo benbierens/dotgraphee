@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -77,8 +78,14 @@ public static class TypeUtils
         return Get(type).AssertPostfix;
     }
 
+    public static string[] GetSupportedTypes()
+    {
+        return types.Select(t => t.Type).ToArray();
+    }
+
     private static TypeInfo Get(string type)
     {
         return types.Single(t => t.Type == type);
     }
+
 }

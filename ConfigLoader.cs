@@ -46,6 +46,7 @@ public class GeneratorConfig
 
     public class ConfigSection
     {
+        [Check(CheckType.NotEmpty)]
         public string GenerateNamespace { get; set; }
         public string HeaderComment { get; set; }
 
@@ -53,8 +54,13 @@ public class GeneratorConfig
         public ConfigDatabaseSection Database { get; set; }
         public ConfigGraphQlSection GraphQl { get; set; }
         public ConfigTestSection Tests { get; set; }
+
+        [Check(CheckType.OneOf, "int", "string")]
         public string IdType { get; set; }
+
+        [Check(CheckType.ParsesTo, typeof(FailedToFindStrategy))]
         public string FailedToFindStrategy { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string SelfRefNavigationPropertyPrefix { get; set; }
         public string[] Packages { get; set; }
 
@@ -66,64 +72,102 @@ public class GeneratorConfig
 
     public class ConfigOutputSection
     {
+        [Check(CheckType.NotEmpty)]
         public string ProjectRoot { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string SourceFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string TestFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GeneratedFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string DtoSubFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string DatabaseSubFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GraphQlSubFolder { get; set; }
     }
 
     public class ConfigDatabaseSection
     {
+        [Check(CheckType.NotEmpty)]
         public string DbContextClassName { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string DbContextFileName { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string DbAccesserClassName { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string DbAccesserFileName { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string DbContainerName { get; set; }
 
-        public ConfigDatabaseConnectionSection LocalDev { get; set; }
-        public ConfigDatabaseConnectionSection Docker { get; set; }
+        public ConfigDatabaseConnectionLocalSection LocalDev { get; set; }
+        public ConfigDatabaseConnectionDockerSection Docker { get; set; }
     }
 
-    public class ConfigDatabaseConnectionSection
+    public class ConfigDatabaseConnectionLocalSection : ConfigDatabaseConnectionDockerSection
     {
+        [Check(CheckType.NotEmpty)]
         public string DbHost { get; set; }
+    }
+
+    public class ConfigDatabaseConnectionDockerSection
+    {
+        [Check(CheckType.NotEmpty)]
         public string DbName { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string DbUsername { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string DbPassword { get; set; }
     }
 
     public class ConfigGraphQlSection
     {
+        [Check(CheckType.NotEmpty)]
         public string GqlTypesFileName { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlQueriesClassName { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlQueriesFileName { get; set; }
 
+        [Check(CheckType.NotEmpty)]
         public string GqlMutationsClassName { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlMutationsFilename { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlMutationsInputTypePostfix { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlMutationsCreateMethod { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlMutationsUpdateMethod { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlMutationsDeleteMethod { get; set; }
 
+        [Check(CheckType.NotEmpty)]
         public string GqlSubscriptionsClassName { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlSubscriptionsFilename { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlSubscriptionCreatedMethod { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlSubscriptionUpdatedMethod { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string GqlSubscriptionDeletedMethod { get; set; }
     }
 
     public class ConfigTestSection
     {
+        [Check(CheckType.NotEmpty)]
         public string TestCategory { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string SubFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string UtilsFolder { get; set; }
     }
 
     public class ModelConfig
     {
+        [Check(CheckType.NotEmpty)]
         public string Name { get; set; }
         public ModelField[] Fields { get; set; }
         public string[] HasMany { get; set; }
@@ -131,7 +175,9 @@ public class GeneratorConfig
 
     public class ModelField
     {
+        [Check(CheckType.NotEmpty)]
         public string Name { get; set; }
+        [Check(CheckType.OneOfSupportedTypes)]
         public string Type { get; set; }
     }
 

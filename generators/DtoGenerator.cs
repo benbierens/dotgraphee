@@ -16,6 +16,7 @@ public class DtoGenerator : BaseGenerator
             var fm = StartSrcFile(Config.Output.DtoSubFolder, model.Name);
 
             var cm = StartClass(fm, model.Name);
+            AddDtoInherritance(cm);
 
             if (model.HasMany.Any())
             {
@@ -38,6 +39,14 @@ public class DtoGenerator : BaseGenerator
             AddForeignProperties(cm, model);
 
             fm.Build();
+        }
+    }
+
+    private void AddDtoInherritance(ClassMaker cm)
+    {
+        if (Config.IdType == "string")
+        {
+            cm.AddInherrit("IHasId");
         }
     }
 

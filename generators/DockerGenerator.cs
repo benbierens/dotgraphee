@@ -1,5 +1,3 @@
-using System.IO;
-
 public class DockerGenerator : BaseGenerator
 {
     private const string dockerFolder = "docker";
@@ -9,7 +7,7 @@ public class DockerGenerator : BaseGenerator
     {
     }
 
-    private GeneratorConfig.ConfigDatabaseConnectionSection DockerDb
+    private GeneratorConfig.ConfigDatabaseConnectionDockerSection DockerDb
     {
         get
         {
