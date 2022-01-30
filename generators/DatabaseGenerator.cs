@@ -3,7 +3,7 @@ using System;
 public class DatabaseGenerator : BaseGenerator
 {
     public DatabaseGenerator(GeneratorConfig config)
-        :base(config)
+        : base(config)
     {
     }
 
@@ -40,7 +40,8 @@ public class DatabaseGenerator : BaseGenerator
 
         cm.AddBlankLine();
 
-        cm.AddClosure("private string GetEnvOrDefault(string env, string defaultValue)", liner => {
+        cm.AddClosure("private string GetEnvOrDefault(string env, string defaultValue)", liner =>
+        {
             liner.Add("var value = Environment.GetEnvironmentVariable(env);");
             liner.Add("if (value == null) return defaultValue;");
             liner.Add("return value;");

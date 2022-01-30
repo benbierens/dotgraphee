@@ -9,7 +9,6 @@ public class QueryClassGenerator : BaseGenerator
         var fm = StartTestUtilsFile("QueryClasses");
         CreateQueryDataClass(fm);
         CreateQueryErrorClass(fm);
-        CreateDeleteMutationResponseClass(fm);
 
         foreach (var m in Models)
         {
@@ -46,8 +45,8 @@ public class QueryClassGenerator : BaseGenerator
     private void CreateMutationResponseClassesForModel(FileMaker fm, GeneratorConfig.ModelConfig m)
     {
         AddMutationResponseClass(fm, m, Config.GraphQl.GqlMutationsCreateMethod);
-        AddMutationResponseClass(fm, m, Config.GraphQl.GqlMutationsUpdateMethod);
-        AddMutationResponseClass(fm, m, Config.GraphQl.GqlMutationsDeleteMethod);
+        AddMutationNullableResponseClass(fm, m, Config.GraphQl.GqlMutationsUpdateMethod);
+        AddMutationNullableResponseClass(fm, m, Config.GraphQl.GqlMutationsDeleteMethod);
     }
 
     private void AddMutationResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string mutationMethod)
@@ -56,6 +55,22 @@ public class QueryClassGenerator : BaseGenerator
         cm.AddProperty(mutationMethod + m.Name)
             .IsType(m.Name)
             .Build();
+    }
+
+    private void AddMutationNullableResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string mutationMethod)
+    {
+        if (IsFailedToFindStrategyNullObject())
+        {
+            var cm = AddClass(fm, mutationMethod + m.Name + "Response");
+            cm.AddProperty(mutationMethod + m.Name)
+                .IsType(m.Name)
+                .IsNullable()
+                .Build();
+        }
+        else
+        {
+            AddMutationResponseClass(fm, m, mutationMethod);
+        }
     }
 
     private void CreateQueryDataClass(FileMaker fm)
@@ -88,14 +103,6 @@ public class QueryClassGenerator : BaseGenerator
         var cm = AddClass(fm, "GqlError");
         cm.AddProperty("Message")
             .IsType("string")
-            .Build();
-    }
-
-    private void CreateDeleteMutationResponseClass(FileMaker fm)
-    {
-        var cm = AddClass(fm, "DeleteMutationResponse");
-        cm.AddProperty("Id")
-            .IsType(Config.IdType)
             .Build();
     }
 

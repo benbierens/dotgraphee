@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 public class DeleteTestsGenerator : BaseGenerator
 {
     public DeleteTestsGenerator(GeneratorConfig config)
@@ -51,14 +53,13 @@ public class DeleteTestsGenerator : BaseGenerator
         var inputTypes = GetInputTypeNames(m);
 
         cm.AddLine("[Test]");
-        cm.AddClosure("public async Task DeleteShouldReturnErrorWhenFailedToFind" + m.Name + "()", liner =>
+        cm.AddClosure("public async Task DeleteShouldReturn" + GetErrorOrNull() + "WhenFailedToFind" + m.Name + "()", liner =>
         {
             liner.Add("var gqlData = await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
             liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
 
-            AddAssertCollectionOne(liner, m, "errors");
-            AddAssertErrorMessage(liner, m, "TestData.Test" + m.Name + ".Id");
+            AddAssertsForFailedToFindMutationResponse(liner, m, Config.GraphQl.GqlMutationsDeleteMethod);
         });
     }
 

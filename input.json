@@ -3,7 +3,7 @@
     "generateNamespace": "gqldemo_generated",
     "HeaderComment": "",
     "idType": "int",
-    "failedToFindStrategy": "useErrorCode",
+    "failedToFindStrategy": "useNullObject",
     "selfRefNavigationPropertyPrefix": "Parent",
     "packages": [
       "Microsoft.EntityFrameworkCore",

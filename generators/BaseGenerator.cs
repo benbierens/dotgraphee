@@ -155,6 +155,13 @@ public class BaseGenerator
         return Config.GetFailedToFindStrategy() == GeneratorConfig.FailedToFindStrategy.useErrorCode;
     }
 
+    protected string GetErrorOrNull()
+    {
+        if (IsFailedToFindStrategyErrorCode()) return "Error";
+        if (IsFailedToFindStrategyNullObject()) return "Null";
+        throw new Exception("Unknown FailedToFind strategy");
+    }
+
     protected void IterateModelsInDependencyOrder(Action<GeneratorConfig.ModelConfig> onModel)
     {
         var remainingModels = Models.ToList();
@@ -231,6 +238,45 @@ public class BaseGenerator
         liner.Add("Assert.That(errors[0].Message, Is.EqualTo(\"" + expectedErrorMessage + "\"), \"Unexpected error message.\");");
     }
 
+    protected void AddAssertsForFailedToFindMutationResponse(Liner liner, GeneratorConfig.ModelConfig m, string mutation)
+    {
+        if (IsFailedToFindStrategyErrorCode())
+        {
+            AddAssertCollectionOne(liner, m, "errors");
+            AddAssertErrorMessage(liner, m, "TestData.Test" + m.Name + ".Id");
+        }
+        if (IsFailedToFindStrategyNullObject())
+        {
+            AddAssertNoErrors(liner, mutation);
+            AddAssertNullReturned(liner, m, mutation);
+        }
+    }
+
+    protected void AddAssertsForFailedToFindQueryResponse(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        if (IsFailedToFindStrategyErrorCode())
+        {
+            AddAssertCollectionOne(liner, m, "errors");
+            AddAssertErrorMessage(liner, m, "TestData.Test" + m.Name + ".Id");
+        }
+        if (IsFailedToFindStrategyNullObject())
+        {
+            AddAssertNoErrors(liner, "query");
+            AddAssertNullReturned(liner, m, "");
+        }
+    }
+
+    protected void AddAssertNoErrors(Liner liner, string queryOrMutation)
+    {
+        liner.Add("CollectionAssert.IsEmpty(errors, \"Expected " + queryOrMutation + " to not return errors.\");");
+    }
+
+    protected void AddAssertNullReturned(Liner liner, GeneratorConfig.ModelConfig m, string mutation)
+    {
+        var field = mutation + m.Name;
+        liner.Add("Assert.That(gqlData.Data." + field + ", Is.Null, \"Expected null object to be returned.\");");
+    }
+
     protected void AddAssertNoErrors(Liner liner)
     {
         liner.Add("gqlData.AssertNoErrors();");
@@ -238,7 +284,20 @@ public class BaseGenerator
 
     protected void AddAssertDeleteResponse(Liner liner, GeneratorConfig.ModelConfig m)
     {
-        liner.Add("Assert.That(response.Data." + Config.GraphQl.GqlMutationsDeleteMethod + m.Name + ".Id, Is.EqualTo(TestData.Test" + m.Name + ".Id), \"Incorrect Id returned by " + Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
+        var field = Config.GraphQl.GqlMutationsDeleteMethod + m.Name;
+        if (IsFailedToFindStrategyNullObject())
+        {
+            liner.Add("if (response.Data." + field + " == null) throw new AssertionException(\"Unexpected null returned by " + Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
+        }
+        liner.Add("Assert.That(response.Data." + field + ".Id, Is.EqualTo(TestData.Test" + m.Name + ".Id), \"Incorrect Id returned by " + Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
+    }
+
+    protected void AddAssertEntityNotNull(Liner liner, string mutation)
+    {
+        if (IsFailedToFindStrategyNullObject())
+        {
+            liner.Add("if (entity == null) throw new AssertionException(\"Unexpected null returned by " + mutation + " mutation.\");");
+        }
     }
 
     private string FormatErrorMessage(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
@@ -266,6 +325,7 @@ public class BaseGenerator
     {
         return hasManyEntry == model.Name;
     }
+
 
     private bool CanInitialize(GeneratorConfig.ModelConfig m, List<string> initialized)
     {

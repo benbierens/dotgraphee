@@ -88,14 +88,12 @@ public class QueryTestsGenerator : BaseGenerator
     private void AddQueryOneFailedToFindTest(ClassMaker cm, GeneratorConfig.ModelConfig m)
     {
         cm.AddLine("[Test]");
-        cm.AddClosure("public async Task ShouldReturnErrorWhenQueryOne" + m.Name + "ByIncorrectId()", liner =>
+        cm.AddClosure("public async Task ShouldReturn" + GetErrorOrNull() + "WhenQueryOne" + m.Name + "ByIncorrectId()", liner =>
         {
             liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData.Test" + Config.IdType.FirstToUpper() + ");");
             liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
-
-            AddAssertCollectionOne(liner, m, "errors");
-            AddAssertErrorMessage(liner, m, "TestData.Test" + Config.IdType.FirstToUpper());
+            AddAssertsForFailedToFindQueryResponse(liner, m);
         });
     }
 }

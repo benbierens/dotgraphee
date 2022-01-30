@@ -42,6 +42,7 @@ public class UpdateTestsGenerator : BaseGenerator
             liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
             AddAssertNoErrors(liner);
             liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsUpdateMethod + m.Name + ";");
+            AddAssertEntityNotNull(liner, Config.GraphQl.GqlMutationsUpdateMethod);
             liner.AddBlankLine();
 
             AddAssertId(liner, m, "Update failed.");
@@ -85,14 +86,13 @@ public class UpdateTestsGenerator : BaseGenerator
         var inputTypes = GetInputTypeNames(m);
 
         cm.AddLine("[Test]");
-        cm.AddClosure("public async Task UpdateShouldReturnErrorWhenFailedToFind" + m.Name + "()", liner =>
+        cm.AddClosure("public async Task UpdateShouldReturn" + GetErrorOrNull() + "WhenFailedToFind" + m.Name + "()", liner =>
         {
             liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
             liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
 
-            AddAssertCollectionOne(liner, m, "errors");
-            AddAssertErrorMessage(liner, m, "TestData.Test" + m.Name + ".Id");
+            AddAssertsForFailedToFindMutationResponse(liner, m, Config.GraphQl.GqlMutationsUpdateMethod);
         });
     }
 }

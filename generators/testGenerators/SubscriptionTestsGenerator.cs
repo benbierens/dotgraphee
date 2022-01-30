@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
 public class SubscriptionTestsGenerator : BaseGenerator
 {
@@ -14,7 +13,6 @@ public class SubscriptionTestsGenerator : BaseGenerator
         var cm = fm.AddClass("SubscriptionTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
-        cm.AddUsing(Config.GenerateNamespace);
         cm.AddInherrit("BaseGqlTest");
         cm.Modifiers.Clear();
 

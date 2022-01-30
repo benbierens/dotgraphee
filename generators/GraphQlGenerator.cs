@@ -23,7 +23,7 @@ public class GraphQlGenerator : BaseGenerator
 
         var fm = StartSrcFile(Config.Output.GraphQlSubFolder, className);
         var cm = StartClass(fm, className);
-        cm.AddUsing("HotChocolate");
+        if (IsFailedToFindStrategyErrorCode()) cm.AddUsing("HotChocolate");
 
         var typePostfix = GetNullabilityTypePostfix();
         
@@ -51,7 +51,7 @@ public class GraphQlGenerator : BaseGenerator
                 }
                 if (IsFailedToFindStrategyNullObject())
                 {
-                    liner.Add("return await " + Config.Database.DbAccesserClassName + ".Context." + model.Name + "s.FindAsync(id)" + ";");
+                    liner.Add("return dbService.Single<" + model.Name + ">(id);");
                 }
             });
         }
