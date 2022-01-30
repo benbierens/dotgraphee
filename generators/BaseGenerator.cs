@@ -18,19 +18,19 @@ public class BaseGenerator
     protected FileMaker StartSrcFile(string subfolder, string filename)
     {
         var f = Path.Join(Config.Output.ProjectRoot, Config.Output.SourceFolder, Config.Output.GeneratedFolder, subfolder, filename + ".cs");
-        return new FileMaker(f, Config.GenerateNamespace);
+        return new FileMaker(Config, f, Config.GenerateNamespace);
     }
 
     protected FileMaker StartTestUtilsFile(string filename)
     {
         var f = Path.Join(Config.Output.ProjectRoot, Config.Output.TestFolder, Config.Tests.SubFolder, Config.Tests.UtilsFolder, filename + ".cs");
-        return new FileMaker(f, Config.Output.TestFolder);
+        return new FileMaker(Config, f, Config.Output.TestFolder);
     }
 
     protected FileMaker StartTestFile(string filename)
     {
         var f = Path.Join(Config.Output.ProjectRoot, Config.Output.TestFolder, Config.Tests.SubFolder, filename + ".cs");
-        return new FileMaker(f, Config.Output.TestFolder);
+        return new FileMaker(Config, f, Config.Output.TestFolder);
     }
 
     protected CodeFileModifier ModifyFile(string filename)

@@ -74,13 +74,8 @@ public class SubscriptionTestsGenerator : BaseGenerator
             liner.Add("await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
 
-            liner.StartClosure("await Gql.Update" + m.Name + "(new " + inputTypes.Update);
-            liner.Add(m.Name + "Id = TestData.Test" + m.Name + ".Id,");
-            foreach (var f in m.Fields)
-            {
-                liner.Add(f.Name + " = TestData.Test" + f.Type.FirstToUpper() + ",");
-            }
-            liner.EndClosure(");");
+            liner.Add("await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
+            liner.AddBlankLine();
 
             liner.Add("var entity = handle.AssertReceived();");
             foreach (var f in m.Fields)
@@ -101,9 +96,8 @@ public class SubscriptionTestsGenerator : BaseGenerator
             liner.AddBlankLine();
             liner.Add("await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
-            liner.StartClosure("await Gql.Delete" + m.Name + "(new " + inputTypes.Delete);
-            liner.Add(m.Name + "Id = TestData.Test" + m.Name + ".Id,");
-            liner.EndClosure(");");
+            liner.Add("await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            liner.AddBlankLine();
 
             liner.Add("var entity = handle.AssertReceived();");
             AddEntityFieldAsserts(liner, m, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionDeletedMethod + " subscription:");

@@ -1,7 +1,7 @@
 {
   "config": {
     "generateNamespace": "gqldemo_generated",
-    "HeaderComment": "// This file is generated.",
+    "HeaderComment": "",
     "idType": "int",
     "failedToFindStrategy": "useErrorCode",
     "selfRefNavigationPropertyPrefix": "Parent",

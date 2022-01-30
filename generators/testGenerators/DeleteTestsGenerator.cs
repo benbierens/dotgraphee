@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 public class DeleteTestsGenerator : BaseGenerator
 {
     public DeleteTestsGenerator(GeneratorConfig config)
@@ -13,7 +12,6 @@ public class DeleteTestsGenerator : BaseGenerator
         var cm = fm.AddClass("DeleteTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
-        cm.AddUsing(Config.GenerateNamespace);
         cm.AddInherrit("BaseGqlTest");
         cm.Modifiers.Clear();
 

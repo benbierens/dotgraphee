@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 public class GqlClassGenerator : BaseGenerator
@@ -21,8 +20,6 @@ public class GqlClassGenerator : BaseGenerator
         var fm = StartTestUtilsFile("Gql");
         var cm = fm.AddClass("Gql");
         
-        cm.AddUsing("System");
-        cm.AddUsing("System.Linq");
         cm.AddUsing("System.Collections.Generic");
         cm.AddUsing("System.Threading.Tasks");
         cm.AddUsing(Config.GenerateNamespace);

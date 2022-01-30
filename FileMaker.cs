@@ -3,13 +3,13 @@ using System.Linq;
 
 public class FileMaker
 {
-    private readonly GeneratorConfig config;
+    private readonly GeneratorConfig.ConfigSection config;
     private readonly string filename;
     private readonly string @namespace;
     private readonly List<ClassMaker> classMakers = new List<ClassMaker>();
     private readonly List<string> usings = new List<string>();
 
-    public FileMaker(GeneratorConfig config, string filename, string @namespace)
+    public FileMaker(GeneratorConfig.ConfigSection config, string filename, string @namespace)
     {
         this.config = config;
         this.filename = filename;
@@ -70,8 +70,8 @@ public class FileMaker
     }
     private void AddHeaderComment(Liner liner)
     {
-        if (string.IsNullOrWhiteSpace(config.Config.HeaderComment)) return;
-        var comment = config.Config.HeaderComment;
+        if (string.IsNullOrWhiteSpace(config.HeaderComment)) return;
+        var comment = config.HeaderComment;
         if (!comment.StartsWith("//")) comment = "//" + comment;
 
         liner.Add(comment);

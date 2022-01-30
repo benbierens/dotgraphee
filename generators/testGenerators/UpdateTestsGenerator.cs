@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 
 public class UpdateTestsGenerator : BaseGenerator
 {
@@ -14,7 +13,6 @@ public class UpdateTestsGenerator : BaseGenerator
         var cm = fm.AddClass("UpdateTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
-        cm.AddUsing(Config.GenerateNamespace);
         cm.AddInherrit("BaseGqlTest");
         cm.Modifiers.Clear();
 
