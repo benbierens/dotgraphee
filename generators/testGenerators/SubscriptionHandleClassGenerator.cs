@@ -25,17 +25,15 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         cm.AddUsing("NUnit.Framework");
 
         cm.AddLine("private readonly string subscription;");
-        cm.AddLine("private readonly string[] fields;");
         cm.AddLine("private readonly CancellationTokenSource cts = new CancellationTokenSource();");
         cm.AddLine("private readonly ClientWebSocket ws = new ClientWebSocket();");
         cm.AddLine("private readonly List<string> received = new List<string>();");
         cm.AddLine("private bool running;");
         cm.AddBlankLine();
 
-        cm.AddClosure("public SubscriptionHandle(string subscription, params string[] fields)", liner => 
+        cm.AddClosure("public SubscriptionHandle(string subscription)", liner => 
         {
             liner.Add("this.subscription = subscription;");
-            liner.Add("this.fields = fields;");
             liner.Add("running = true;");
             liner.Add("ws.Options.AddSubProtocol(\"graphql-ws\");");
         });
@@ -44,9 +42,9 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         {
             liner.Add("await ws.ConnectAsync(new Uri(Client.WsUrl), cts.Token);");
             liner.Add("var _ = Task.Run(ReceivingLoop);");
-            liner.Add("var f = \"{\" + string.Join(\" \", fields) + \" }\";");
+            liner.Add("var query = GqlBuild.Subscription(subscription).WithOutput<T>().Build();");
             liner.Add("await Send(\"{type: \\\"connection_init\\\", payload: {}}\");");
-            liner.Add("await Send(\"{\\\"id\\\":\\\"1\\\",\\\"type\\\":\\\"start\\\",\\\"payload\\\":{\\\"query\\\":\\\"subscription { \" + subscription + f + \" }\\\"}}\");");
+            liner.Add("await Send(\"{\\\"id\\\":\\\"1\\\",\\\"type\\\":\\\"start\\\",\\\"payload\\\":\" + query + \"}\");");
         });
 
         cm.AddClosure("public async Task Unsubscribe()", liner => 

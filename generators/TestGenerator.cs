@@ -6,6 +6,7 @@ public class TestGenerator : BaseGenerator
     private readonly QueryClassGenerator queryClassGenerator;
     private readonly TestDataClassGenerator testDataClassGenerator;
     private readonly GqlClassGenerator gqlClassGenerator;
+    private readonly GqlBuildClassGenerator gqlBuildClassGenerator;
     private readonly ClientClassGenerator clientClassGenerator;
 
     private readonly CreateTestsGenerator createTestsGenerator;
@@ -23,6 +24,7 @@ public class TestGenerator : BaseGenerator
         queryClassGenerator = new QueryClassGenerator(config);
         testDataClassGenerator = new TestDataClassGenerator(config);
         gqlClassGenerator = new GqlClassGenerator(config);
+        gqlBuildClassGenerator = new GqlBuildClassGenerator(config);
         clientClassGenerator = new ClientClassGenerator(config);
 
         createTestsGenerator = new CreateTestsGenerator(config);
@@ -43,6 +45,7 @@ public class TestGenerator : BaseGenerator
         queryClassGenerator.CreateQueryClasses();
         testDataClassGenerator.CreateTestDataClass();
         gqlClassGenerator.CreateGqlClass();
+        gqlBuildClassGenerator.CreateGqlBuildClass();
         clientClassGenerator.CreateClientClass();
 
         createTestsGenerator.CreateCreateTests();
