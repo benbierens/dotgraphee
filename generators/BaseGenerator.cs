@@ -257,7 +257,7 @@ public class BaseGenerator
         if (IsFailedToFindStrategyErrorCode())
         {
             AddAssertCollectionOne(liner, m, "errors");
-            AddAssertErrorMessage(liner, m, "TestData.Test" + m.Name + ".Id");
+            AddAssertErrorMessage(liner, m, "TestData.Test" + Config.IdType.FirstToUpper());
         }
         if (IsFailedToFindStrategyNullObject())
         {
