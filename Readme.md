@@ -1,8 +1,8 @@
-# DotGraphEE
+# dotgraphee
 
-Dotnet + GraphQl + EntityFramework, Easy!
+dotnet + GraphQl + EntityFramework, Easy!
 
-DotGraphEE is a generator to kick-start your dotnet graphQL webserver projects.
+dotgraphee is a generator to kick-start your dotnet graphQL webserver projects.
 
 You do:
  - Modify default configuration file to your liking.
@@ -20,8 +20,18 @@ You get:
 
 To do!
 
-## Development of DotGraphEE
+## Development of dotgraphee
 
 ### How to pack as dotnet tool
+ - 'dotnet build'
+ - 'dotnet pack'
 
+### Install / Run / Uninstall (Only for development of dotgraphee!)
+ - dotnet tool install --global --add-source ./nupkg dotgraphee
+ - dotgraphee
+ - dotnet tool uninstall --global dotgraphee
 
+ ### Publish the tool
+
+ https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
+ 
