@@ -35,11 +35,11 @@ public class Generator : BaseGenerator
         graphQlGenerator.GenerateGraphQl();
 
         projectGenerator.ModifyDefaultFiles();
-        databaseGenerator.CreateInitialMigration();
-
+        
         dockerGenerator.GenerateDockerFiles();
-
         testGenerator.GenerateTests();
         readmeGenerator.GenerateReadme();
+
+        databaseGenerator.CreateInitialMigration();
     }
 }

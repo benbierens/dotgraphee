@@ -8,7 +8,7 @@ public class DefaultConfigGenerator
     public void CreateDefaultConfig()
     {
         var here = Directory.GetCurrentDirectory();
-        Log.Write("Writing default configuration to: " + Path.Join(here, defaultConfigFilename)  + "...");
+        Log.Write("Writing default configuration to: '" + Path.Join(here, defaultConfigFilename)  + "' ...");
 
         WriteToFile(ReadDefaultConfigResource());
 
