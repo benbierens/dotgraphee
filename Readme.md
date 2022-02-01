@@ -22,6 +22,9 @@ To do!
 
 ## Development of dotgraphee
 
+GenAndTest runs dotgraphee with its default configuration, then it executes the container tests.
+Running this script takes several minutes, but should result in an all-tests-passed message.
+
 ### How to pack as dotnet tool
  - 'dotnet build'
  - 'dotnet pack'
@@ -34,4 +37,3 @@ To do!
  ### Publish the tool
 
  https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
- 

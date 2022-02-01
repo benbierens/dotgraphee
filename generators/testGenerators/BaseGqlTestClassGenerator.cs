@@ -94,7 +94,9 @@ public class BaseGqlTestClassGenerator : BaseGenerator
 
     private void AddDockerInitializer(ClassMaker cm)
     {
+        cm.AddAttribute("Category(\"" + Config.Tests.TestCategory + "\")");
         cm.AddAttribute("SetUpFixture");
+
         cm.AddLine("[OneTimeSetUp]");
         cm.AddClosure("public async Task OneTimeGqlSetUp()", liner =>
         {
