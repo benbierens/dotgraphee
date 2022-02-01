@@ -1,98 +1,5 @@
 //// DotGraphEE Generator Configuration ///
 {
-  "config": {
-    "generateNamespace": "DotGraphEE_Demo",
-    "HeaderComment": "// This file has been generated.",
-
-    // "idType" options are "int", "string".
-    // Determines which scalar type to use for identifiers.
-    // "int" will use auto-incrementing integer values.
-    // "string" will use GUID/UUID string values.
-    "idType": "int",
-
-    // "failedToFindStrategy" options are "useErrorCode", "useNullObject".
-    // Determines how service responses when unable to find an entity by id.
-    // useErrorCode: "Query { user(id: -1 )" Results in error message: "Unable to find 'User' by id '-1'"
-    // useNullObject:"Query { user(id: -1 )" Results in null object: { "user": null }
-    // The strategy affects queries, update mutations, and delete mutations.
-    "failedToFindStrategy": "useErrorCode",
-
-    // Prefix used for any self-referencing property of a model.
-    "selfRefNavigationPropertyPrefix": "Parent",
-
-    "packages": [
-      "Microsoft.EntityFrameworkCore",
-      "Microsoft.EntityFrameworkCore.Design",
-      "Microsoft.EntityFrameworkCore.Proxies",
-      "HotChocolate.AspNetCore",
-      "HotChocolate.AspNetCore.Subscriptions",
-      "HotChocolate.AspNetCore.Playground",
-      "HotChocolate.Subscriptions",
-      "HotChocolate.Subscriptions.InMemory",
-      "Npgsql.EntityFrameworkCore.PostgreSQL"
-    ],
-
-    // Output path configuration.
-    "output": {
-      "projectRoot": "../dotgraphee-demo",
-      "sourceFolder": "src",
-      "testFolder": "test",
-      "generatedFolder": "generated",
-      "dataTypeObjectsSubFolder": "dto",
-      "databaseSubFolder": "db",
-      "graphQlSubFolder": "gql"
-    },
-
-    // Database configuration, both for local development and docker-compose.
-    "Database": {
-      "dbContextClassName": "DatabaseContext",
-      "dbContextFileName": "DatabaseContext",
-      "dbAccesserClassName": "DbService",
-      "dbAccesserFileName": "DbService",
-      "dbContainerName": "db",
-      "localDev": {
-        "dbHost": "localhost",
-        "dbName": "dotgraphee",
-        "dbUsername": "postgres",
-        "dbPassword": "admin"
-      },
-      "docker": {
-        "dbName": "dotgraphee",
-        "dbUsername": "postgres",
-        "dbPassword": "admin_password_please"
-      }
-    },
-
-    // GraphQL names.
-    "GraphQl": {
-      "gqlTypesFileName": "GraphQlTypes",
-      "gqlQueriesClassName": "Queries",
-      "gqlQueriesFileName": "Queries",
-      "gqlMutationsClassName": "Mutations",
-      "gqlMutationsFilename": "Mutations",
-      "gqlMutationsInputTypePostfix": "Input",
-      "gqlSubscriptionsClassName": "Subscriptions",
-      "gqlSubscriptionsFilename": "Subscriptions",
-
-      // Names for the create, update, and delete graphQL mutations.
-      "gqlMutationsCreateMethod": "Create",
-      "gqlMutationsUpdateMethod": "Update",
-      "gqlMutationsDeleteMethod": "Delete",
-
-      // Names for the subscriptions published by the create, update, and delete mutations.
-      "gqlSubscriptionCreatedMethod": "Created",
-      "gqlSubscriptionUpdatedMethod": "Updated",
-      "gqlSubscriptionDeletedMethod": "Deleted"
-    },
-
-    // Test configuration.
-    "Tests": {
-      "testCategory": "GraphQlTests",
-      "subFolder": "graphQlTests",
-      "utilsFolder": "utils"
-    }
-  },
-
   // Data model configuration.
   // Each model requires a 'name', any number of 'fields' entries, any number of 'hasMany' entries.
   // Each 'fields' entry requires a 'name' and a 'type'.
@@ -153,5 +60,98 @@
 
       ]
     }
-  ]
+  ],
+
+  "config": {
+    "generateNamespace": "DotGraphEE_Demo",
+    "HeaderComment": "// This file has been generated.",
+
+    // "idType" options are "int", "string".
+    // Determines which scalar type to use for identifiers.
+    // "int" will use auto-incrementing integer values.
+    // "string" will use GUID/UUID string values.
+    "idType": "int",
+
+    // "failedToFindStrategy" options are "useErrorCode", "useNullObject".
+    // Determines how service responses when unable to find an entity by id.
+    // useErrorCode: "Query { user(id: -1 )" Results in error message: "Unable to find 'User' by id '-1'"
+    // useNullObject:"Query { user(id: -1 )" Results in null object: { "user": null }
+    // The strategy affects queries, update mutations, and delete mutations.
+    "failedToFindStrategy": "useErrorCode",
+
+    // Prefix used for any self-referencing property of a model.
+    "selfRefNavigationPropertyPrefix": "Parent",
+
+    "packages": [
+      "Microsoft.EntityFrameworkCore",
+      "Microsoft.EntityFrameworkCore.Design",
+      "Microsoft.EntityFrameworkCore.Proxies",
+      "HotChocolate.AspNetCore",
+      "HotChocolate.AspNetCore.Subscriptions",
+      "HotChocolate.AspNetCore.Playground",
+      "HotChocolate.Subscriptions",
+      "HotChocolate.Subscriptions.InMemory",
+      "Npgsql.EntityFrameworkCore.PostgreSQL"
+    ],
+
+    // Output path configuration.
+    "output": {
+      "projectRoot": "dotgraphee-demo",
+      "sourceFolder": "src",
+      "testFolder": "test",
+      "generatedFolder": "generated",
+      "dataTypeObjectsSubFolder": "dto",
+      "databaseSubFolder": "db",
+      "graphQlSubFolder": "gql"
+    },
+
+    // Database configuration, both for local development and docker-compose.
+    "Database": {
+      "dbContextClassName": "DatabaseContext",
+      "dbContextFileName": "DatabaseContext",
+      "dbAccesserClassName": "DbService",
+      "dbAccesserFileName": "DbService",
+      "dbContainerName": "db",
+      "localDev": {
+        "dbHost": "localhost",
+        "dbName": "dotgraphee",
+        "dbUsername": "postgres",
+        "dbPassword": "admin"
+      },
+      "docker": {
+        "dbName": "dotgraphee",
+        "dbUsername": "postgres",
+        "dbPassword": "admin_password_please"
+      }
+    },
+
+    // GraphQL names.
+    "GraphQl": {
+      "gqlTypesFileName": "GraphQlTypes",
+      "gqlQueriesClassName": "Queries",
+      "gqlQueriesFileName": "Queries",
+      "gqlMutationsClassName": "Mutations",
+      "gqlMutationsFilename": "Mutations",
+      "gqlMutationsInputTypePostfix": "Input",
+      "gqlSubscriptionsClassName": "Subscriptions",
+      "gqlSubscriptionsFilename": "Subscriptions",
+
+      // Names for the create, update, and delete graphQL mutations.
+      "gqlMutationsCreateMethod": "Create",
+      "gqlMutationsUpdateMethod": "Update",
+      "gqlMutationsDeleteMethod": "Delete",
+
+      // Names for the subscriptions published by the create, update, and delete mutations.
+      "gqlSubscriptionCreatedMethod": "Created",
+      "gqlSubscriptionUpdatedMethod": "Updated",
+      "gqlSubscriptionDeletedMethod": "Deleted"
+    },
+
+    // Test configuration.
+    "Tests": {
+      "testCategory": "GraphQlTests",
+      "subFolder": "graphQlTests",
+      "utilsFolder": "utils"
+    }
+  }
 }

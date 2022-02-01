@@ -25,7 +25,7 @@ public class ReadmeGenerator : BaseGenerator
             Add2(liner, "### Without GraphQl container tests:");
             Add2(liner, "`dotnet test " + test + " --filter TestCategory!=" + Config.Tests.TestCategory + "`");
             Add2(liner, "## Build Release & Run Docker Image:");
-            Add1(liner, "`dotnet publish " + src + " -c release`");
+            Add1(liner, "`dotnet publish " + src + " -c Release`");
             Add2(liner, "`docker-compose up -d`");
             Add2(liner, "## Migrate the database");
             Add1(liner, "`cd " + Config.Output.SourceFolder + "`");

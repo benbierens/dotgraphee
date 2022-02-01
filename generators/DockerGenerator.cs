@@ -23,7 +23,7 @@ public class DockerGenerator : BaseGenerator
         {
             liner.Add("FROM mcr.microsoft.com/dotnet/aspnet:6.0");
             liner.Add("WORKDIR /app");
-            liner.Add("COPY src/bin/release/net6.0/publish/ ./");
+            liner.Add("COPY " + Config.Output.SourceFolder + "/bin/Release/net6.0/publish/ ./");
             liner.Add("ENTRYPOINT [\"dotnet\", \"src.dll\"]");
         }, dockerFolder, "Dockerfile");
 

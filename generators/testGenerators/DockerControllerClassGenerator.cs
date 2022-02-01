@@ -18,7 +18,7 @@ public class DockerControllerClassGenerator : BaseGenerator
 
         cm.AddClosure("public static async Task BuildImage()", liner =>
         {
-            liner.Add("RunCommand(\"dotnet\", \"publish\", \"../../../../" + Config.Output.SourceFolder + "\", \"-c\", \"release\");");
+            liner.Add("RunCommand(\"dotnet\", \"publish\", \"../../../../" + Config.Output.SourceFolder + "\", \"-c\", \"Release\");");
             liner.Add("RunCommand(\"docker-compose\", \"up\", \"-d\");");
             liner.AddBlankLine();
             liner.Add("await Client.WaitUntilOnline();");
