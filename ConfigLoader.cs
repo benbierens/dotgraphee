@@ -5,36 +5,17 @@ using Newtonsoft.Json;
 
 public class ConfigLoader
 {
-    public GeneratorConfig Get(string[] args)
+    public GeneratorConfig TryParse(string filename)
     {
-        foreach (var s in args)
+        var lines = File.ReadAllLines(filename);
+        var withoutComments = lines.Where(l => !l.TrimStart().StartsWith("//"));
+        var config = JsonConvert.DeserializeObject<GeneratorConfig>(string.Join(" ", withoutComments));
+        foreach (var m in config.Models)
         {
-            var c = TryParse(s);
-            if (c != null) return c;
+            if (m.Fields == null) m.Fields = new GeneratorConfig.ModelField[0];
+            if (m.HasMany == null) m.HasMany = new string[0];
         }
-
-        return TryParse("generatorConfig.json");
-    }
-
-    private GeneratorConfig TryParse(string filename)
-    {
-        try
-        {
-            if (!File.Exists(filename)) return null;
-            var lines = File.ReadAllLines(filename);
-            var withoutComments = lines.Where(l => !l.TrimStart().StartsWith("//"));
-            var config = JsonConvert.DeserializeObject<GeneratorConfig>(string.Join(" ", withoutComments));
-            foreach (var m in config.Models)
-            {
-                if (m.Fields == null) m.Fields = new GeneratorConfig.ModelField[0];
-                if (m.HasMany == null) m.HasMany = new string[0];
-            }
-            return config;
-        }
-        catch
-        {
-            return null;
-        }
+        return config;
     }
 }
 

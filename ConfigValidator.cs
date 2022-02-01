@@ -13,6 +13,12 @@ public class ConfigValidator
     {
         ValidateConfig(config.Config);
         ValidateModels(config.Models);
+
+        if (!IsValid)
+        {
+            Log.Write("Configuration errors:");
+            foreach (var error in Errors) Log.Write(error);
+        }
     }
 
     private void ValidateConfig(GeneratorConfig.ConfigSection config)
