@@ -44,6 +44,11 @@ public class ConfigValidator
         {
             Errors.Add("Model '" + model.Name + "' contains duplicate field names.");
         }
+
+        if ((!model.Fields.Any()) && (!model.HasMany.Any()))
+        {
+            Errors.Add("Model '" + model.Name + "' has 0 field entries and 0 hasMany entries.");
+        }
     }
 
     private bool AreNamesUnique<T>(IEnumerable<T> elements, Func<T, string> getName)

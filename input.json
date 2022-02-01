@@ -1,14 +1,28 @@
+//// DotGraphEE Generator Configuration ///
 {
   "config": {
-    "generateNamespace": "gqldemo_generated",
-    "HeaderComment": "",
-    "idType": "string",
-    "failedToFindStrategy": "useNullObject",
+    "generateNamespace": "DotGraphEE_Demo",
+    "HeaderComment": "// This file has been generated.",
+
+    // "idType" options are "int", "string".
+    // Determines which scalar type to use for identifiers.
+    // "int" will use auto-incrementing integer values.
+    // "string" will use GUID/UUID string values.
+    "idType": "int",
+
+    // "failedToFindStrategy" options are "useErrorCode", "useNullObject".
+    // Determines how service responses when unable to find an entity by id.
+    // useErrorCode: "Query { user(id: -1 )" Results in error message: "Unable to find 'User' by id '-1'"
+    // useNullObject:"Query { user(id: -1 )" Results in null object: { "user": null }
+    // The strategy affects queries, update mutations, and delete mutations.
+    "failedToFindStrategy": "useErrorCode",
+
+    // Prefix used for any self-referencing property of a model.
     "selfRefNavigationPropertyPrefix": "Parent",
+
     "packages": [
       "Microsoft.EntityFrameworkCore",
       "Microsoft.EntityFrameworkCore.Design",
-      "Microsoft.EntityFrameworkCore.SqlServer",
       "Microsoft.EntityFrameworkCore.Proxies",
       "HotChocolate.AspNetCore",
       "HotChocolate.AspNetCore.Subscriptions",
@@ -17,15 +31,19 @@
       "HotChocolate.Subscriptions.InMemory",
       "Npgsql.EntityFrameworkCore.PostgreSQL"
     ],
+
+    // Output path configuration.
     "output": {
       "projectRoot": "../dotgraphee-demo",
       "sourceFolder": "src",
       "testFolder": "test",
       "generatedFolder": "generated",
-      "dtoSubFolder": "dto",
+      "dataTypeObjectsSubFolder": "dto",
       "databaseSubFolder": "db",
       "graphQlSubFolder": "gql"
     },
+
+    // Database configuration, both for local development and docker-compose.
     "Database": {
       "dbContextClassName": "DatabaseContext",
       "dbContextFileName": "DatabaseContext",
@@ -34,16 +52,18 @@
       "dbContainerName": "db",
       "localDev": {
         "dbHost": "localhost",
-        "dbName": "graphqlee",
+        "dbName": "dotgraphee",
         "dbUsername": "postgres",
         "dbPassword": "admin"
       },
       "docker": {
-        "dbName": "graphqlee",
+        "dbName": "dotgraphee",
         "dbUsername": "postgres",
         "dbPassword": "admin_password_please"
       }
     },
+
+    // GraphQL names.
     "GraphQl": {
       "gqlTypesFileName": "GraphQlTypes",
       "gqlQueriesClassName": "Queries",
@@ -51,21 +71,33 @@
       "gqlMutationsClassName": "Mutations",
       "gqlMutationsFilename": "Mutations",
       "gqlMutationsInputTypePostfix": "Input",
+      "gqlSubscriptionsClassName": "Subscriptions",
+      "gqlSubscriptionsFilename": "Subscriptions",
+
+      // Names for the create, update, and delete graphQL mutations.
       "gqlMutationsCreateMethod": "Create",
       "gqlMutationsUpdateMethod": "Update",
       "gqlMutationsDeleteMethod": "Delete",
-      "gqlSubscriptionsClassName": "Subscriptions",
-      "gqlSubscriptionsFilename": "Subscriptions",
+
+      // Names for the subscriptions published by the create, update, and delete mutations.
       "gqlSubscriptionCreatedMethod": "Created",
       "gqlSubscriptionUpdatedMethod": "Updated",
       "gqlSubscriptionDeletedMethod": "Deleted"
     },
+
+    // Test configuration.
     "Tests": {
       "testCategory": "GraphQlTests",
       "subFolder": "graphQlTests",
       "utilsFolder": "utils"
     }
   },
+
+  // Data model configuration.
+  // Each model requires a 'name', any number of 'fields' entries, any number of 'hasMany' entries.
+  // Each 'fields' entry requires a 'name' and a 'type'.
+  // Supported types are: int, bool, string, float, double, DateTime.
+  // Each 'hasMany' entry must equal the 'name' of a model.
   "models": [
     {
       "name": "User",
@@ -84,9 +116,7 @@
         }
       ],
       "hasMany": [
-        "Post",
-        "Comment",
-        "TeamMember"
+        "Post"
       ]
     },
     {
@@ -101,58 +131,27 @@
           "type": "string"
         },
         {
-          "name": "Description",
-          "type": "string"
-        },
-        {
           "name": "CreatedUtc",
           "type": "DateTime"
         },
         {
           "name": "ViewCount",
           "type": "int"
-        }
-      ],
-      "hasMany": [
-        "Comment"
-      ]
-    },
-    {
-      "name": "Comment",
-      "fields": [
-        {
-          "name": "Content",
-          "type": "string"
         },
         {
-          "name": "CreatedUtc",
-          "type": "string"
-        },
-        {
-          "name": "Rating",
+          "name": "FloatValue",
           "type": "float"
-        }
-      ]
-    },
-    {
-      "name": "Team",
-      "fields": [
-        {
-          "name": "Title",
-          "type": "string"
         },
         {
-          "name": "Score",
+          "name": "DoubleValue",
           "type": "double"
+        },
+        {
+          "name": "IsEnabled",
+          "type": "bool"
         }
-      ],
-      "hasMany": [
-        "TeamMember",
-        "Team"
+
       ]
-    },
-    {
-      "name": "TeamMember"
     }
   ]
 }

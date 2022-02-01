@@ -9,11 +9,11 @@ public class DtoGenerator : BaseGenerator
 
     public void GenerateDtos()
     {
-        MakeSrcDir(Config.Output.GeneratedFolder, Config.Output.DtoSubFolder);
+        MakeSrcDir(Config.Output.GeneratedFolder, Config.Output.DataTypeObjectsSubFolder);
 
         foreach (var model in Models)
         {
-            var fm = StartSrcFile(Config.Output.DtoSubFolder, model.Name);
+            var fm = StartSrcFile(Config.Output.DataTypeObjectsSubFolder, model.Name);
 
             var cm = StartClass(fm, model.Name);
             AddDtoInherritance(cm);

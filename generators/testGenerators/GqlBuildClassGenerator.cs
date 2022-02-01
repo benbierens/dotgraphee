@@ -11,6 +11,7 @@
         var cm = fm.AddClass("GqlBuild");
         cm.AddUsing("System");
         cm.AddUsing("System.Collections.Generic");
+        cm.AddUsing("System.Globalization");
         cm.AddUsing("System.Linq");
         cm.AddUsing("System.Reflection");
 
@@ -129,7 +130,7 @@
 
         cm.AddClosure("private static string ExpressValue(object value)", liner =>
         {
-            liner.Add("var s = value.ToString();");
+            liner.Add("var s = Convert.ToString(value, CultureInfo.InvariantCulture);");
             liner.Add("if (s == null) return \"\";");
             liner.Add("return s;");
         });

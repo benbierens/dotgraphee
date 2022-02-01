@@ -31,6 +31,10 @@ public class TestDataClassGenerator : BaseGenerator
             .IsType("int")
             .Build();
 
+        cm.AddProperty("TestBool")
+            .IsType("bool")
+            .Build();
+
         cm.AddProperty("TestFloat")
             .IsType("float")
             .Build();
@@ -134,6 +138,7 @@ public class TestDataClassGenerator : BaseGenerator
         {
             liner.Add("TestString = \"TestString\";");
             liner.Add("TestInt = 12345;");
+            liner.Add("TestBool = true;");
             liner.Add("TestFloat = 12.34f;");
             liner.Add("TestDouble = 23.45;");
             liner.Add("TestDateTime = new DateTime(2022, 1, 2, 11, 12, 13, DateTimeKind.Utc);");

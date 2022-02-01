@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using Newtonsoft.Json;
 
 public class ConfigLoader
@@ -21,7 +22,8 @@ public class ConfigLoader
         {
             if (!File.Exists(filename)) return null;
             var lines = File.ReadAllLines(filename);
-            var config = JsonConvert.DeserializeObject<GeneratorConfig>(string.Join(" ", lines));
+            var withoutComments = lines.Where(l => !l.TrimStart().StartsWith("//"));
+            var config = JsonConvert.DeserializeObject<GeneratorConfig>(string.Join(" ", withoutComments));
             foreach (var m in config.Models)
             {
                 if (m.Fields == null) m.Fields = new GeneratorConfig.ModelField[0];
@@ -81,7 +83,7 @@ public class GeneratorConfig
         [Check(CheckType.NotEmpty)]
         public string GeneratedFolder { get; set; }
         [Check(CheckType.NotEmpty)]
-        public string DtoSubFolder { get; set; }
+        public string DataTypeObjectsSubFolder { get; set; }
         [Check(CheckType.NotEmpty)]
         public string DatabaseSubFolder { get; set; }
         [Check(CheckType.NotEmpty)]
