@@ -37,3 +37,5 @@ Running this script takes several minutes, but should result in an all-tests-pas
  ### Publish the tool
 
  https://docs.microsoft.com/en-us/nuget/quickstart/create-and-publish-a-package-using-the-dotnet-cli
+
+'dotnet nuget push ".\nupkg\dotgraphee.x.x.x.nupkg" -k <secret api key here> -s https://www.nuget.org'
