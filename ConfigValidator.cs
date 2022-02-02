@@ -38,10 +38,10 @@ public class ConfigValidator
         {
             Errors.Add("Duplicate model names found.");
         }
-        foreach (var model in models) ValidateModel(model);
+        foreach (var model in models) ValidateModel(models, model);
     }
 
-    private void ValidateModel(GeneratorConfig.ModelConfig model)
+    private void ValidateModel(GeneratorConfig.ModelConfig[] models, GeneratorConfig.ModelConfig model)
     {
         ProcessCheckAttributes(model, "Model");
         foreach (var f in model.Fields) ProcessCheckAttributes(f, model.Name);
@@ -51,9 +51,9 @@ public class ConfigValidator
             Errors.Add("Model '" + model.Name + "' contains duplicate field names.");
         }
 
-        if ((!model.Fields.Any()) && (!model.HasMany.Any()))
+        if ((!model.Fields.Any()) && !HasAnyRelation(models, model))
         {
-            Errors.Add("Model '" + model.Name + "' has 0 field entries and 0 hasMany entries.");
+            Errors.Add("Model '" + model.Name + "' has 0 field entries and no relations.");
         }
     }
 
@@ -62,6 +62,11 @@ public class ConfigValidator
         var allNames = elements.Select(getName);
         var distinct = allNames.Distinct();
         return elements.Count() == distinct.Count();
+    }
+
+    private bool HasAnyRelation(GeneratorConfig.ModelConfig[] models, GeneratorConfig.ModelConfig m)
+    {
+        return m.HasMany.Any() || models.Any(m => m.HasMany.Contains(m.Name));
     }
 
     private void ProcessCheckAttributes(object target, string sectionName)

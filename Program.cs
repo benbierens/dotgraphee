@@ -43,8 +43,10 @@ namespace generator
             var gen = new Generator(config);
             gen.Generate();
 
+            Log.Write("");
             Log.Write("Done!");
             Log.Write("See the 'Readme.md' of your new project for build and test instructions.");
+            Log.Write("");
         }
 
         private static GeneratorConfig ReadConfig(string configFile)
