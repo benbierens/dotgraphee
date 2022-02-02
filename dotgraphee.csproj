@@ -11,7 +11,15 @@
     <Version>1.0.0</Version>
     <Authors>Ben Bierens</Authors>
     <Company>ThatBen</Company>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <Language>EN-US</Language>
+    <Title>dotgraphee</Title>
+    <Description>A project generator to kick-start your webservice with GraphQL + EntityFramework.</Description>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="LICENSE.txt" Pack="true" PackagePath=""/>
+  </ItemGroup>
 
   <ItemGroup>
     <None Remove="default-config.json" />
