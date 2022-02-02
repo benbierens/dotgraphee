@@ -8,13 +8,14 @@
     <PackageOutputPath>./nupkg</PackageOutputPath>
 
     <PackageId>dotgraphee</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Ben Bierens</Authors>
     <Company>ThatBen</Company>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <Language>EN-US</Language>
     <Title>dotgraphee</Title>
     <Description>A project generator to kick-start your webservice with GraphQL + EntityFramework.</Description>
+    <RepositoryUrl>https://github.com/benbierens/dotgraphee</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
