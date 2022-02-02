@@ -18,7 +18,22 @@ You get:
 
 ## How to use
 
-To do!
+### Install the tool:
+
+`dotnet tool install --global dotgraphee`
+
+### Create the default configuration:
+
+`dotgraphee`
+
+File 'dotgraphee-config.json' will be created. Modify it to represent your own data model and preferred configuration.
+If you don't know what to put, assume the default is fine.
+
+### Generate your webservice:
+
+`dotgraphee <config-file-here>`
+
+It might take a few minutes to pull all the required packages. Afterwards, see the 'Readme.md' file in the newly created project folder.
 
 ## Development of dotgraphee
 

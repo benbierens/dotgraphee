@@ -13,7 +13,7 @@ public class DefaultConfigGenerator
         WriteToFile(ReadDefaultConfigResource());
 
         Log.Write("Done!");
-        Log.Write("Modify the configuration file, then run 'dotnet dotgraphee " + defaultConfigFilename + "'.");
+        Log.Write("Modify the configuration file, then run 'dotgraphee " + defaultConfigFilename + "'.");
         Log.Write("To make life easy, all default values are valid.");
     }
 
