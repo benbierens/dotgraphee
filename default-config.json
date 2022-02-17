@@ -24,6 +24,22 @@
       ],
       "hasMany": [
         "Post"
+      ],
+      "hasOne": [
+        "Profile"
+      ]
+    },
+    {
+      "name": "Profile",
+      "fields": [
+        {
+          "name": "IconUrl",
+          "type": "string"
+        },
+        {
+          "name": "Description",
+          "type": "string"
+        }
       ]
     },
     {
