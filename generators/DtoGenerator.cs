@@ -42,12 +42,23 @@ public class DtoGenerator : BaseGenerator
                     .WithModifier("virtual")
                     .IsType(m)
                     .Build();
+
+                cm.AddProperty(m + "Id")
+                    .WithModifier("virtual")
+                    .IsType(Config.IdType)
+                    .Build();
             }
             foreach (var m in model.MaybeHasOne)
             {
                 cm.AddProperty(m)
                     .WithModifier("virtual")
                     .IsType(m)
+                    .IsNullable()
+                    .Build();
+
+                cm.AddProperty(m + "Id")
+                    .WithModifier("virtual")
+                    .IsType(Config.IdType)
                     .IsNullable()
                     .Build();
             }

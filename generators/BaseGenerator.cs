@@ -88,13 +88,15 @@ public class BaseGenerator
     public ForeignProperty[] GetForeignProperties(GeneratorConfig.ModelConfig model)
     {
         var manyFp = Models.Where(m => m.HasMany.Contains(model.Name)).Select(m => m.Name).ToArray();
-        var oneFp = Models.Where(m => m.HasOne.Contains(model.Name)).Select(m => m.Name).ToArray();
-        var maybeOneFp = Models.Where(m => m.MaybeHasOne.Contains(model.Name)).Select(m => m.Name).ToArray();
+        check these:
+        // var oneFp = Models.Where(m => m.HasOne.Contains(model.Name)).Select(m => m.Name).ToArray();
+        // var maybeOneFp = Models.Where(m => m.MaybeHasOne.Contains(model.Name)).Select(m => m.Name).ToArray();
 
-        return GetForeignPropertiesForModelNames(model, manyFp, true, false)
-            .Concat(GetForeignPropertiesForModelNames(model, oneFp, false, false)
-            ).Concat(GetForeignPropertiesForModelNames(model,maybeOneFp, false, true)
-            ).ToArray();
+        return GetForeignPropertiesForModelNames(model, manyFp, true, false).ToArray();
+            check these:
+            // .Concat(GetForeignPropertiesForModelNames(model, oneFp, false, false)
+            // ).Concat(GetForeignPropertiesForModelNames(model,maybeOneFp, false, true)
+            
     }
 
     protected bool IsTargetOfRequiredSingularRelation(GeneratorConfig.ModelConfig m)
