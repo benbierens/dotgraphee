@@ -14,6 +14,8 @@ public class ConfigLoader
         {
             if (m.Fields == null) m.Fields = new GeneratorConfig.ModelField[0];
             if (m.HasMany == null) m.HasMany = new string[0];
+            if (m.HasOne == null) m.HasOne = new string[0];
+            if (m.MaybeHasOne == null) m.MaybeHasOne = new string[0];
         }
         return config;
     }
@@ -154,6 +156,8 @@ public class GeneratorConfig
         public string Name { get; set; }
         public ModelField[] Fields { get; set; }
         public string[] HasMany { get; set; }
+        public string[] HasOne { get; set; }
+        public string[] MaybeHasOne { get; set; }
     }
 
     public class ModelField

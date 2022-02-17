@@ -27,6 +27,9 @@
       ],
       "hasOne": [
         "Profile"
+      ],
+      "maybeHasOne": [
+        "ContactInfo"
       ]
     },
     {
@@ -38,6 +41,19 @@
         },
         {
           "name": "Description",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "ContactInfo",
+      "fields": [
+        {
+          "name": "PhoneNumber",
+          "type": "string"
+        },
+        {
+          "name": "StreetAddress",
           "type": "string"
         }
       ]

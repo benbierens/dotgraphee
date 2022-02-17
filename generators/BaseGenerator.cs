@@ -87,15 +87,24 @@ public class BaseGenerator
 
     protected ForeignProperty[] GetForeignProperties(GeneratorConfig.ModelConfig model)
     {
-        var fp = Models.Where(m => m.HasMany != null && m.HasMany.Contains(model.Name)).Select(m => m.Name).ToArray();
+        var manyFp = Models.Where(m => m.HasMany.Contains(model.Name)).Select(m => m.Name).ToArray();
+        var oneFp = Models.Where(m => m.HasOne.Contains(model.Name)).Select(m => m.Name).ToArray();
+        var maybeOneFp = Models.Where(m => m.MaybeHasOne.Contains(model.Name)).Select(m => m.Name).ToArray();
 
-        return fp.Select(f => new ForeignProperty
+        return GetForeignPropertiesForModelNames(model, manyFp)
+            .Concat(GetForeignPropertiesForModelNames(model, oneFp)
+            ).Concat(GetForeignPropertiesForModelNames(model,maybeOneFp)
+            ).ToArray();
+    }
+
+    private ForeignProperty[] GetForeignPropertiesForModelNames(GeneratorConfig.ModelConfig model, string[] names)
+    {
+        return names.Select(f => new ForeignProperty
         {
             Type = f,
             Name = GetForeignPropertyPrefix(model, f) + f,
             WithId = GetForeignPropertyPrefix(model, f) + f + "Id",
-            IsSelfReference = IsSelfReference(model, f)
-
+            IsSelfReference = IsSelfReference(model, f),
         }).ToArray();
     }
 
