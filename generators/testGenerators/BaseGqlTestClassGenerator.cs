@@ -1,8 +1,6 @@
-
-using System;
 using System.Collections.Generic;
 
-public class BaseGqlTestClassGenerator : BaseGenerator
+public class BaseGqlTestClassGenerator : BaseTestGenerator
 {
     public BaseGqlTestClassGenerator(GeneratorConfig config)
         : base(config)
@@ -57,17 +55,25 @@ public class BaseGqlTestClassGenerator : BaseGenerator
 
         IterateModelsInDependencyOrder(m =>
         {
-            var inputTypes = GetInputTypeNames(m);
-
-            cm.AddClosure("public async Task<" + m.Name + "> CreateTest" + m.Name + "()", liner =>
+            if (!IsTargetOfRequiredSingularRelation(m))
             {
-                var args = GetCreateInputArguments(liner, m);
-                liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
-                AddAssertNoErrors(liner);
-                liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsCreateMethod + m.Name + ";");
-                liner.Add("TestData.Test" + m.Name + ".Id = entity.Id;");
-                liner.Add("return entity;");
-            });
+                AddCreateTestModelMethod(cm, m);
+            }
+        });
+    }
+
+    private void AddCreateTestModelMethod(ClassMaker cm, GeneratorConfig.ModelConfig m)
+    {
+        var inputTypes = GetInputTypeNames(m);
+
+        cm.AddClosure("public async Task<" + m.Name + "> CreateTest" + m.Name + "()", liner =>
+        {
+            var args = GetCreateInputArguments(liner, m);
+            liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
+            AddAssert(liner).NoErrors();
+            liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsCreateMethod + m.Name + ";");
+            liner.Add("TestData.Test" + m.Name + ".Id = entity.Id;");
+            liner.Add("return entity;");
         });
     }
 

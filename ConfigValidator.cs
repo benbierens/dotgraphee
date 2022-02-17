@@ -55,6 +55,11 @@ public class ConfigValidator
         {
             Errors.Add("Model '" + model.Name + "' has 0 field entries and no relations.");
         }
+
+        if (model.HasOne.Contains(model.Name) || model.MaybeHasOne.Contains(model.Name))
+        {
+            Errors.Add("Model '" + model.Name + "' has one of itself. Singular self-references are not supported. Use 'hasMany' instead.");
+        }
     }
 
     private bool AreNamesUnique<T>(IEnumerable<T> elements, Func<T, string> getName)

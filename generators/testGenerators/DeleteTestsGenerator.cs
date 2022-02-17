@@ -1,7 +1,5 @@
 ﻿
-using System;
-
-public class DeleteTestsGenerator : BaseGenerator
+public class DeleteTestsGenerator : BaseTestGenerator
 {
     public DeleteTestsGenerator(GeneratorConfig config)
         : base(config)
@@ -19,8 +17,17 @@ public class DeleteTestsGenerator : BaseGenerator
 
         foreach (var m in Models)
         {
-            AddDeleteTest(cm, m);
-            AddDeleteFailedToFindTest(cm, m);
+            if (!IsTargetOfRequiredSingularRelation(m))
+            {
+                AddDeleteTest(cm, m);
+                AddDeleteFailedToFindTest(cm, m);
+            }
+
+            var requiredSingulars = GetRequiredSingularRelationsFromMe(m);
+            foreach (var r in requiredSingulars)
+            {
+                AddDeleteTestForRequiredSingular(cm, m, r);
+            }
         }
 
         fm.Build();
@@ -37,14 +44,36 @@ public class DeleteTestsGenerator : BaseGenerator
             liner.AddBlankLine();
 
             liner.Add("var response = await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
-            AddAssertDeleteResponse(liner, m);
+            AddAssert(liner).DeleteResponse(m);
             liner.AddBlankLine();
             
             liner.Add("var gqlData = await Gql.QueryAll" + m.Name + "s();");
-            AddAssertNoErrors(liner);
+            AddAssert(liner).NoErrors();
             liner.Add("var all = gqlData.Data." + m.Name + "s;");
             liner.AddBlankLine();
-            liner.Add("CollectionAssert.IsEmpty(all, \"Expected " + m.Name + " to have been deleted.\");");
+            AddAssert(liner).CollectionEmpty(m, "all");
+        });
+    }
+
+    private void AddDeleteTestForRequiredSingular(ClassMaker cm, GeneratorConfig.ModelConfig m, GeneratorConfig.ModelConfig r)
+    {
+        var inputTypes = GetInputTypeNames(m);
+
+        cm.AddLine("[Test]");
+        cm.AddClosure("public async Task Delete" + m.Name + "ShouldDelete" + r.Name + "()", liner =>
+        {
+            liner.Add("await CreateTest" + m.Name + "();");
+            liner.AddBlankLine();
+
+            liner.Add("var response = await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            AddAssert(liner).DeleteResponse(m);
+            liner.AddBlankLine();
+            
+            liner.Add("var gqlData = await Gql.QueryAll" + r.Name + "s();");
+            AddAssert(liner).NoErrors();
+            liner.Add("var all = gqlData.Data." + r.Name + "s;");
+            liner.AddBlankLine();
+            AddAssert(liner).CollectionEmpty(r, "all");
         });
     }
 
@@ -59,7 +88,7 @@ public class DeleteTestsGenerator : BaseGenerator
             liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
 
-            AddAssertsForFailedToFindMutationResponse(liner, m, Config.GraphQl.GqlMutationsDeleteMethod);
+            AddAssert(liner).FailedToFindMutationResponse(m, Config.GraphQl.GqlMutationsDeleteMethod);
         });
     }
 

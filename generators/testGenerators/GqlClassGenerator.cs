@@ -101,6 +101,8 @@ public class GqlClassGenerator : BaseGenerator
 
         private void AddCreateMutationMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
         {
+            if (IsTargetOfRequiredSingularRelation(m)) return;
+
             var templateField = Config.GraphQl.GqlMutationsCreateMethod + m.Name;
             var templateType = templateField + "Response";
 
@@ -125,6 +127,8 @@ public class GqlClassGenerator : BaseGenerator
 
         private void AddDeleteMutationMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
         {
+            if (IsTargetOfRequiredSingularRelation(m)) return;
+            
             var templateField = Config.GraphQl.GqlMutationsDeleteMethod + m.Name;
             var templateType = templateField + "Response";
 

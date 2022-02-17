@@ -90,6 +90,9 @@
           "type": "bool"
         }
 
+      ],
+      "hasMany": [
+        "Post"
       ]
     }
   ],
@@ -128,7 +131,7 @@
 
     // Output path configuration.
     "output": {
-      "projectRoot": "dotgraphee-demo",
+      "projectRoot": "../dotgraphee-demo",
       "sourceFolder": "src",
       "testFolder": "test",
       "generatedFolder": "generated",

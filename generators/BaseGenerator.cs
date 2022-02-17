@@ -12,8 +12,8 @@ public class BaseGenerator
         Models = config.Models;
     }
 
-    protected GeneratorConfig.ConfigSection Config { get; private set; }
-    protected GeneratorConfig.ModelConfig[] Models { get; private set; }
+    public GeneratorConfig.ConfigSection Config { get; private set; }
+    public GeneratorConfig.ModelConfig[] Models { get; private set; }
 
     protected FileMaker StartSrcFile(string subfolder, string filename)
     {
@@ -85,27 +85,32 @@ public class BaseGenerator
         File.Delete(Path.Join(arr));
     }
 
-    protected ForeignProperty[] GetForeignProperties(GeneratorConfig.ModelConfig model)
+    public ForeignProperty[] GetForeignProperties(GeneratorConfig.ModelConfig model)
     {
         var manyFp = Models.Where(m => m.HasMany.Contains(model.Name)).Select(m => m.Name).ToArray();
         var oneFp = Models.Where(m => m.HasOne.Contains(model.Name)).Select(m => m.Name).ToArray();
         var maybeOneFp = Models.Where(m => m.MaybeHasOne.Contains(model.Name)).Select(m => m.Name).ToArray();
 
-        return GetForeignPropertiesForModelNames(model, manyFp)
-            .Concat(GetForeignPropertiesForModelNames(model, oneFp)
-            ).Concat(GetForeignPropertiesForModelNames(model,maybeOneFp)
+        return GetForeignPropertiesForModelNames(model, manyFp, true, false)
+            .Concat(GetForeignPropertiesForModelNames(model, oneFp, false, false)
+            ).Concat(GetForeignPropertiesForModelNames(model,maybeOneFp, false, true)
             ).ToArray();
     }
 
-    private ForeignProperty[] GetForeignPropertiesForModelNames(GeneratorConfig.ModelConfig model, string[] names)
+    protected bool IsTargetOfRequiredSingularRelation(GeneratorConfig.ModelConfig m)
     {
-        return names.Select(f => new ForeignProperty
-        {
-            Type = f,
-            Name = GetForeignPropertyPrefix(model, f) + f,
-            WithId = GetForeignPropertyPrefix(model, f) + f + "Id",
-            IsSelfReference = IsSelfReference(model, f),
-        }).ToArray();
+        var fp = GetForeignProperties(m);
+        return fp.Any(f => f.IsRequiredSingular());
+    }
+
+    protected GeneratorConfig.ModelConfig[] GetRequiredSingularRelationsFromMe(GeneratorConfig.ModelConfig me)
+    {
+        return Models.Where(m => me.HasOne.Contains(m.Name)).ToArray();
+    }
+
+    protected GeneratorConfig.ModelConfig[] GetRequiredSingularRelationsToMe(GeneratorConfig.ModelConfig me)
+    {
+        return Models.Where(m => m.HasOne.Contains(me.Name)).ToArray();
     }
 
     protected void RunCommand(string cmd, params string[] args)
@@ -154,12 +159,12 @@ public class BaseGenerator
         throw new Exception("Unknown FailedToFindStrategy: " + strategy);
     }
 
-    protected bool IsFailedToFindStrategyNullObject()
+    public bool IsFailedToFindStrategyNullObject()
     {
         return Config.GetFailedToFindStrategy() == GeneratorConfig.FailedToFindStrategy.useNullObject;
     }
 
-    protected bool IsFailedToFindStrategyErrorCode()
+    public bool IsFailedToFindStrategyErrorCode()
     {
         return Config.GetFailedToFindStrategy() == GeneratorConfig.FailedToFindStrategy.useErrorCode;
     }
@@ -193,135 +198,18 @@ public class BaseGenerator
         }
     }
 
-    protected void AddEntityFieldAsserts(Liner liner, GeneratorConfig.ModelConfig m, string errorMessage)
+
+    private ForeignProperty[] GetForeignPropertiesForModelNames(GeneratorConfig.ModelConfig model, string[] names, bool isPlural, bool isOptional)
     {
-        foreach (var f in m.Fields)
+        return names.Select(f => new ForeignProperty
         {
-            AddAssertEqualsTestEntity(liner, m, f, errorMessage);
-        }
-        var foreignProperties = GetForeignProperties(m);
-        foreach (var f in foreignProperties)
-        {
-            if (!f.IsSelfReference)
-            {
-                AddAssertForeignIdEquals(liner, m, f, errorMessage);
-            }
-        }
-    }
-
-    protected void AddAssertEqualsTestEntity(Liner liner, GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
-    {
-        var target = m.Name + "." + f.Name;
-        AddAssertEquals(liner, m, f, target, errorMessage);
-    }
-
-    protected void AddAssertId(Liner liner, GeneratorConfig.ModelConfig m, string errorMessage)
-    {
-        liner.Add("Assert.That(entity.Id, Is.EqualTo(TestData.Test" + m.Name + ".Id)," + FormatErrorMessage(m, "Id", errorMessage) + ");");
-    }
-
-    protected void AddAssertEqualsTestScalar(Liner liner, GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
-    {
-        var target = f.Type.FirstToUpper();
-        AddAssertEquals(liner, m, f, target, errorMessage);
-    }
-
-    private void AddAssertEquals(Liner liner, GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string testTarget, string errorMessage)
-    {
-        liner.Add("Assert.That(entity." + f.Name + ", Is.EqualTo(TestData.Test" + testTarget + ")" + TypeUtils.GetAssertPostfix(f.Type) + "," + FormatErrorMessage(m, f, errorMessage) + ");");
-    }
-
-    protected void AddAssertForeignIdEquals(Liner liner, GeneratorConfig.ModelConfig m, ForeignProperty f, string errorMessage)
-    {
-        liner.Add("Assert.That(entity." + f.WithId + ", Is.EqualTo(TestData.Test" + f.Type + ".Id)," + FormatErrorMessage(m, f, errorMessage) + ");");
-    }
-
-    protected void AddAssertCollectionOne(Liner liner, GeneratorConfig.ModelConfig m, string collectionName)
-    {
-        liner.Add("Assert.That(" + collectionName + ".Count, Is.EqualTo(1), \"Expected only 1 " + m.Name + "\");");
-    }
-
-    protected void AddAssertErrorMessage(Liner liner, GeneratorConfig.ModelConfig m, string idTag)
-    {
-        var expectedErrorMessage = "Unable to find '" + m.Name + "' by Id: '\" + " + idTag + " + \"'";
-        liner.Add("Assert.That(errors[0].Message, Is.EqualTo(\"" + expectedErrorMessage + "\"), \"Unexpected error message.\");");
-    }
-
-    protected void AddAssertsForFailedToFindMutationResponse(Liner liner, GeneratorConfig.ModelConfig m, string mutation)
-    {
-        if (IsFailedToFindStrategyErrorCode())
-        {
-            AddAssertCollectionOne(liner, m, "errors");
-            AddAssertErrorMessage(liner, m, "TestData.Test" + m.Name + ".Id");
-        }
-        if (IsFailedToFindStrategyNullObject())
-        {
-            AddAssertNoErrors(liner, mutation);
-            AddAssertNullReturned(liner, m, mutation);
-        }
-    }
-
-    protected void AddAssertsForFailedToFindQueryResponse(Liner liner, GeneratorConfig.ModelConfig m)
-    {
-        if (IsFailedToFindStrategyErrorCode())
-        {
-            AddAssertCollectionOne(liner, m, "errors");
-            AddAssertErrorMessage(liner, m, "TestData.Test" + Config.IdType.FirstToUpper());
-        }
-        if (IsFailedToFindStrategyNullObject())
-        {
-            AddAssertNoErrors(liner, "query");
-            AddAssertNullReturned(liner, m, "");
-        }
-    }
-
-    protected void AddAssertNoErrors(Liner liner, string queryOrMutation)
-    {
-        liner.Add("CollectionAssert.IsEmpty(errors, \"Expected " + queryOrMutation + " to not return errors.\");");
-    }
-
-    protected void AddAssertNullReturned(Liner liner, GeneratorConfig.ModelConfig m, string mutation)
-    {
-        var field = mutation + m.Name;
-        liner.Add("Assert.That(gqlData.Data." + field + ", Is.Null, \"Expected null object to be returned.\");");
-    }
-
-    protected void AddAssertNoErrors(Liner liner)
-    {
-        liner.Add("gqlData.AssertNoErrors();");
-    }
-
-    protected void AddAssertDeleteResponse(Liner liner, GeneratorConfig.ModelConfig m)
-    {
-        var field = Config.GraphQl.GqlMutationsDeleteMethod + m.Name;
-        if (IsFailedToFindStrategyNullObject())
-        {
-            liner.Add("if (response.Data." + field + " == null) throw new AssertionException(\"Unexpected null returned by " + Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
-        }
-        liner.Add("Assert.That(response.Data." + field + ".Id, Is.EqualTo(TestData.Test" + m.Name + ".Id), \"Incorrect Id returned by " + Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
-    }
-
-    protected void AddAssertEntityNotNull(Liner liner, string mutation)
-    {
-        if (IsFailedToFindStrategyNullObject())
-        {
-            liner.Add("if (entity == null) throw new AssertionException(\"Unexpected null returned by " + mutation + " mutation.\");");
-        }
-    }
-
-    private string FormatErrorMessage(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
-    {
-        return FormatErrorMessage(m, f.Name, errorMessage);
-    }
-
-    private string FormatErrorMessage(GeneratorConfig.ModelConfig m, ForeignProperty f, string errorMessage)
-    {
-        return FormatErrorMessage(m, f.Name, errorMessage);
-    }
-
-    private string FormatErrorMessage(GeneratorConfig.ModelConfig m, string f, string errorMessage)
-    {
-        return " \"" + errorMessage + " (" + m.Name + "." + f + ")\"";
+            Type = f,
+            Name = GetForeignPropertyPrefix(model, f) + f,
+            WithId = GetForeignPropertyPrefix(model, f) + f + "Id",
+            IsSelfReference = IsSelfReference(model, f),
+            IsPlural = isPlural,
+            IsOptional = isOptional
+        }).ToArray();
     }
 
     private string GetForeignPropertyPrefix(GeneratorConfig.ModelConfig m, string hasManyEntry)
