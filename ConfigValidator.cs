@@ -66,7 +66,10 @@ public class ConfigValidator
 
     private bool HasAnyRelation(GeneratorConfig.ModelConfig[] models, GeneratorConfig.ModelConfig m)
     {
-        return m.HasMany.Any() || models.Any(m => m.HasMany.Contains(m.Name));
+        return 
+            m.HasMany.Any() || models.Any(m => m.HasMany.Contains(m.Name)) ||
+            m.HasOne.Any() || models.Any(m => m.HasOne.Contains(m.Name))||
+            m.MaybeHasOne.Any() || models.Any(m => m.MaybeHasOne.Contains(m.Name));
     }
 
     private void ProcessCheckAttributes(object target, string sectionName)

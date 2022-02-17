@@ -36,6 +36,21 @@ public class DtoGenerator : BaseGenerator
                     .IsListOfType(m)
                     .Build();
             }
+            foreach (var m in model.HasOne)
+            {
+                cm.AddProperty(m)
+                    .WithModifier("virtual")
+                    .IsType(m)
+                    .Build();
+            }
+            foreach (var m in model.MaybeHasOne)
+            {
+                cm.AddProperty(m)
+                    .WithModifier("virtual")
+                    .IsType(m)
+                    .IsNullable()
+                    .Build();
+            }
             AddForeignProperties(cm, model);
 
             fm.Build();

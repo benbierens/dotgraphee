@@ -24,6 +24,38 @@
       ],
       "hasMany": [
         "Post"
+      ],
+      "hasOne": [
+        "Profile"
+      ],
+      "maybeHasOne": [
+        "ContactInfo"
+      ]
+    },
+    {
+      "name": "Profile",
+      "fields": [
+        {
+          "name": "IconUrl",
+          "type": "string"
+        },
+        {
+          "name": "Description",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "ContactInfo",
+      "fields": [
+        {
+          "name": "PhoneNumber",
+          "type": "string"
+        },
+        {
+          "name": "StreetAddress",
+          "type": "string"
+        }
       ]
     },
     {
