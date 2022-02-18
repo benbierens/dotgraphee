@@ -38,7 +38,17 @@ public class ConfigValidator
         {
             Errors.Add("Duplicate model names found.");
         }
+        ValidateHasOnesAreUnique(models);
         foreach (var model in models) ValidateModel(models, model);
+    }
+
+    private void ValidateHasOnesAreUnique(GeneratorConfig.ModelConfig[] models)
+    {
+        var hasOnes = models.SelectMany(m => m.HasOne).ToArray();
+        if (!AreNamesUnique(hasOnes))
+        {
+            Errors.Add("Duplicate found in 'hasOne'. A model can only be the target of 1 'hasOne' relation.");
+        }
     }
 
     private void ValidateModel(GeneratorConfig.ModelConfig[] models, GeneratorConfig.ModelConfig model)
@@ -64,9 +74,14 @@ public class ConfigValidator
 
     private bool AreNamesUnique<T>(IEnumerable<T> elements, Func<T, string> getName)
     {
-        var allNames = elements.Select(getName);
-        var distinct = allNames.Distinct();
-        return elements.Count() == distinct.Count();
+        var allNames = elements.Select(getName).ToArray();
+        return AreNamesUnique(allNames);
+    }
+
+    private bool AreNamesUnique(string[] names)
+    {
+        var distinct = names.Distinct();
+        return names.Length == distinct.Count();
     }
 
     private bool HasAnyRelation(GeneratorConfig.ModelConfig[] models, GeneratorConfig.ModelConfig m)
