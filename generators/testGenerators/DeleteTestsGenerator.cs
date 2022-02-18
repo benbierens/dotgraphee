@@ -17,13 +17,13 @@ public class DeleteTestsGenerator : BaseTestGenerator
 
         foreach (var m in Models)
         {
-            if (!IsTargetOfRequiredSingularRelation(m))
+            if (!IsRequiredSubModel(m))
             {
                 AddDeleteTest(cm, m);
                 AddDeleteFailedToFindTest(cm, m);
             }
 
-            var requiredSingulars = GetRequiredSingularRelationsFromMe(m);
+            var requiredSingulars = GetMyRequiredSubModels(m);
             foreach (var r in requiredSingulars)
             {
                 AddDeleteTestForRequiredSingular(cm, m, r);

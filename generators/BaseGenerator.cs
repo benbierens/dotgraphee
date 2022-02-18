@@ -95,20 +95,29 @@ public class BaseGenerator
              .ToArray();
     }
 
-    protected bool IsTargetOfRequiredSingularRelation(GeneratorConfig.ModelConfig m)
+    protected bool IsRequiredSubModel(GeneratorConfig.ModelConfig me)
     {
-        var fp = GetForeignProperties(m);
-        return fp.Any(f => f.IsRequiredSingular());
+        return Models.Any(m => m.HasOne.Contains(me.Name));
     }
 
-    protected GeneratorConfig.ModelConfig[] GetRequiredSingularRelationsFromMe(GeneratorConfig.ModelConfig me)
+    protected GeneratorConfig.ModelConfig[] GetMyRequiredSubModels(GeneratorConfig.ModelConfig me)
     {
         return Models.Where(m => me.HasOne.Contains(m.Name)).ToArray();
     }
 
-    protected GeneratorConfig.ModelConfig[] GetRequiredSingularRelationsToMe(GeneratorConfig.ModelConfig me)
+    protected GeneratorConfig.ModelConfig[] GetMyRequiredSuperModels(GeneratorConfig.ModelConfig me)
     {
         return Models.Where(m => m.HasOne.Contains(me.Name)).ToArray();
+    }
+
+    protected GeneratorConfig.ModelConfig[] GetMyOptionalSubModels(GeneratorConfig.ModelConfig me)
+    {
+        return Models.Where(m => me.MaybeHasOne.Contains(m.Name)).ToArray();
+    }
+
+    protected GeneratorConfig.ModelConfig[] GetMyOptionalSuperModels(GeneratorConfig.ModelConfig me)
+    {
+        return Models.Where(m => m.MaybeHasOne.Contains(me.Name)).ToArray();
     }
 
     protected void RunCommand(string cmd, params string[] args)

@@ -101,25 +101,73 @@ public class GraphQlGenerator : BaseGenerator
         {
             var inputTypeNames = GetInputTypeNames(model);
 
-            var addClass = StartClass(fm, inputTypeNames.Create);
-            AddModelFields(addClass, model);
-            AddForeignIdProperties(addClass, model);
+            var createClass = StartClass(fm, inputTypeNames.Create);
+            AddModelFields(createClass, model);
+            AddForeignIdProperties(createClass, model);
+            AddSubModelInputProperties(createClass, model);
+            createClass.AddBlankLine();
+            AddToDtoMethod(createClass, model);
 
             var updateClass = StartClass(fm, inputTypeNames.Update);
             updateClass.AddProperty(model.Name + "Id")
                 .IsType(Config.IdType)
                 .Build();
-
             AddModelFieldsAsNullable(updateClass, model);
             AddForeignIdPropertiesAsNullable(updateClass, model);
 
-            var deleteClass = StartClass(fm, inputTypeNames.Delete);
-            deleteClass.AddProperty(model.Name + "Id")
-                .IsType(Config.IdType)
-                .Build();
+            if (!IsRequiredSubModel(model))
+            {
+                var deleteClass = StartClass(fm, inputTypeNames.Delete);
+                deleteClass.AddProperty(model.Name + "Id")
+                    .IsType(Config.IdType)
+                    .Build();
+            }
         }
 
         fm.Build();
+    }
+
+    private void AddToDtoMethod(ClassMaker cm, GeneratorConfig.ModelConfig model)
+    {
+        cm.AddClosure("public " + model.Name + " ToDto()", liner =>
+        {
+            var requiredSubModels = GetMyRequiredSubModels(model);
+            var optionalSubModels = GetMyOptionalSubModels(model);
+
+            liner.StartClosure("return new " + model.Name);
+            AddModelInitializer(liner, model);
+            foreach (var subModel in requiredSubModels)
+            {
+                liner.Add(subModel.Name + " = " + subModel.Name + ".ToDto(),");
+            }
+            foreach (var subModel in optionalSubModels)
+            {
+                liner.Add(subModel.Name + "Id = " + subModel.Name + "Id,");
+            }
+
+            liner.EndClosure(";");
+        });
+    }
+
+    private void AddSubModelInputProperties(ClassMaker cm, GeneratorConfig.ModelConfig model)
+    {
+        var required = GetMyRequiredSubModels(model);
+        foreach (var subModel in required)
+        {
+            cm.AddProperty(subModel.Name)
+                .IsType(Config.GraphQl.GqlMutationsCreateMethod + subModel.Name + Config.GraphQl.GqlMutationsInputTypePostfix)
+                .InitializeAsExplicitNull()
+                .Build();
+        }
+
+        var optional = GetMyOptionalSubModels(model);
+        foreach (var subModel in optional)
+        {
+            cm.AddProperty(subModel.Name + "Id")
+                .IsType(Config.IdType)
+                .IsNullable()
+                .Build();
+        }
     }
 
     private void AddForeignIdProperties(ClassMaker cm, GeneratorConfig.ModelConfig model)
@@ -204,12 +252,11 @@ public class GraphQlGenerator : BaseGenerator
 
     private void AddCreateMutation(ClassMaker cm, GeneratorConfig.ModelConfig model, InputTypeNames inputTypeNames)
     {
+        if (IsRequiredSubModel(model)) return;
         cm.AddClosure("public async Task<" + model.Name + "> " + Config.GraphQl.GqlMutationsCreateMethod + model.Name +
         "(" + inputTypeNames.Create + " input, [Service] ITopicEventSender sender)", liner =>
         {
-            liner.StartClosure("var createEntity = new " + model.Name);
-            AddModelInitializer(liner, model, "input");
-            liner.EndClosure(";");
+            liner.Add("var createEntity = input.ToDto();");
 
             AddDatabaseAddAndSave(liner);
 
@@ -218,17 +265,25 @@ public class GraphQlGenerator : BaseGenerator
         });
     }
 
-    private void AddModelInitializer(Liner liner, GeneratorConfig.ModelConfig model, string inputName)
+    private void AddModelInitializer(Liner liner, GeneratorConfig.ModelConfig model, string inputName = null)
     {
+        var addresser = GetModelInitializerAddresser(inputName);
+
         foreach (var field in model.Fields)
         {
-            liner.Add(field.Name + " = " + inputName + "." + field.Name + ",");
+            liner.Add(field.Name + " = " + addresser + field.Name + ",");
         }
         var foreignProperties = GetForeignProperties(model);
         foreach (var f in foreignProperties)
         {
-            liner.Add(f.WithId + " = " + inputName + "." + f.WithId + ",");
+            liner.Add(f.WithId + " = " + addresser + f.WithId + ",");
         }
+    }
+
+    private string GetModelInitializerAddresser(string inputName)
+    {
+        if (inputName == null) return "";
+        return inputName + ".";
     }
 
     private void AddDatabaseAddAndSave(Liner liner)
@@ -282,6 +337,7 @@ public class GraphQlGenerator : BaseGenerator
 
     private void AddDeleteMutation(ClassMaker cm, GeneratorConfig.ModelConfig model, InputTypeNames inputTypeNames)
     {
+        if (IsRequiredSubModel(model)) return;
         var typePostfix = GetNullabilityTypePostfix();
         var idTag = "input." + model.Name + "Id";
 

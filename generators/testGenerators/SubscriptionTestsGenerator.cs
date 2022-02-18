@@ -48,11 +48,11 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
 
     private void AddCreateSubscriptionTest(ClassMaker cm, GeneratorConfig.ModelConfig m)
     {
-        if (!IsTargetOfRequiredSingularRelation(m))
+        if (!IsRequiredSubModel(m))
         {
             AddCreateRootSubscriptionTest(cm, m);
 
-            var requiredSingulars = GetRequiredSingularRelationsFromMe(m);
+            var requiredSingulars = GetMyRequiredSubModels(m);
             foreach (var r in requiredSingulars)
             {
                 AddCreateRequiredSingularSubscriptionTest(cm, m, r);
@@ -113,11 +113,11 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
 
     private void AddDeleteSubscriptionTest(ClassMaker cm, GeneratorConfig.ModelConfig m)
     {
-        if (!IsTargetOfRequiredSingularRelation(m))
+        if (!IsRequiredSubModel(m))
         {
             AddDeleteRootSubscriptionTest(cm, m);
 
-            var requiredSingulars = GetRequiredSingularRelationsFromMe(m);
+            var requiredSingulars = GetMyRequiredSubModels(m);
             foreach (var r in requiredSingulars)
             {
                 AddDeleteRequiredSingularSubscriptionTest(cm, m, r);

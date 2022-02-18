@@ -16,7 +16,7 @@
 
         foreach (var m in Models)
         {
-            if (!IsTargetOfRequiredSingularRelation(m))
+            if (!IsRequiredSubModel(m))
             {
                 AddCreateTest(cm, m);
             }
@@ -34,7 +34,7 @@
             liner.AddBlankLine();
             AddAssert(liner).EntityField(m, "Incorrect entity returned after creation:");
 
-            var requiredSingulars = GetRequiredSingularRelationsFromMe(m);
+            var requiredSingulars = GetMyRequiredSubModels(m);
             foreach (var r in requiredSingulars)
             {
                 liner.AddBlankLine();

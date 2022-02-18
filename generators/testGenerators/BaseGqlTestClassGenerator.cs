@@ -55,7 +55,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
         IterateModelsInDependencyOrder(m =>
         {
-            if (!IsTargetOfRequiredSingularRelation(m))
+            if (!IsRequiredSubModel(m))
             {
                 AddCreateTestModelMethod(cm, m);
             }

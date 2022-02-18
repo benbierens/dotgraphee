@@ -12,9 +12,9 @@ public abstract class BaseTestGenerator : BaseGenerator
 
     protected void AddCreateLine(Liner liner, GeneratorConfig.ModelConfig m)
     {
-        if (IsTargetOfRequiredSingularRelation(m))
+        if (IsRequiredSubModel(m))
         {
-            var requiringModels = GetRequiredSingularRelationsToMe(m);
+            var requiringModels = GetMyRequiredSuperModels(m);
             liner.Add("await CreateTest" + requiringModels[0].Name + "();");
         }
         else
