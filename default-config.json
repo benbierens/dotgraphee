@@ -12,14 +12,6 @@
         {
           "name": "Name",
           "type": "string"
-        },
-        {
-          "name": "EmailAddress",
-          "type": "string"
-        },
-        {
-          "name": "DisplayName",
-          "type": "string"
         }
       ],
       "hasMany": [
@@ -29,16 +21,12 @@
         "Profile"
       ],
       "maybeHasOne": [
-        "ContactInfo"
+        "Color"
       ]
     },
     {
       "name": "Profile",
       "fields": [
-        {
-          "name": "IconUrl",
-          "type": "string"
-        },
         {
           "name": "Description",
           "type": "string"
@@ -46,14 +34,10 @@
       ]
     },
     {
-      "name": "ContactInfo",
+      "name": "Color",
       "fields": [
         {
-          "name": "PhoneNumber",
-          "type": "string"
-        },
-        {
-          "name": "StreetAddress",
+          "name": "Rgba",
           "type": "string"
         }
       ]
@@ -62,32 +46,8 @@
       "name": "Post",
       "fields": [
         {
-          "name": "AssetUrl",
-          "type": "string"
-        },
-        {
           "name": "Title",
           "type": "string"
-        },
-        {
-          "name": "CreatedUtc",
-          "type": "DateTime"
-        },
-        {
-          "name": "ViewCount",
-          "type": "int"
-        },
-        {
-          "name": "FloatValue",
-          "type": "float"
-        },
-        {
-          "name": "DoubleValue",
-          "type": "double"
-        },
-        {
-          "name": "IsEnabled",
-          "type": "bool"
         }
 
       ],

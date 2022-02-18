@@ -49,8 +49,9 @@
             liner.Add("var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);");
             liner.StartClosure("foreach (var p in properties)");
             liner.Add("if (IsPrimitive(p)) fields.Add(FormatPrimitive(inputObject, p));");
-            liner.Add("if (IsString(p)) fields.Add(FormatString(inputObject, p));");
-            liner.Add("if (IsDateTime(p)) fields.Add(FormatDateTime(inputObject, p));");
+            liner.Add("else if (IsString(p)) fields.Add(FormatString(inputObject, p));");
+            liner.Add("else if (IsDateTime(p)) fields.Add(FormatDateTime(inputObject, p));");
+            liner.Add("else throw new Exception(\"Unknown property type: \" + p.PropertyType);");
             liner.EndClosure();
             liner.Add("var f = string.Join(\" \", fields.Where(f => !string.IsNullOrWhiteSpace(f)));");
             liner.Add("input = \"(input: { \" + f + \" })\";");
@@ -63,7 +64,7 @@
             liner.Add("var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);");
             liner.AddBlankLine();
             liner.StartClosure("foreach (var p in properties)");
-            liner.StartClosure("if (p.PropertyType.IsPrimitive || p.PropertyType == typeof(string) || p.PropertyType == typeof(DateTime))");
+            liner.StartClosure("if (IsPrimitive(p) || IsString(p) || IsDateTime(p))");
             liner.Add("fields.Add(FirstToLower(p.Name));");
             liner.EndClosure();
             liner.EndClosure();
@@ -87,6 +88,7 @@
         cm.AddClosure("private bool IsPrimitive(PropertyInfo p)", liner =>
         {
             liner.Add("if (p.PropertyType.IsPrimitive) return true;");
+            liner.Add("if (p.PropertyType == typeof(decimal)) return true;");
             liner.Add("var underlyingType = Nullable.GetUnderlyingType(p.PropertyType);");
             liner.Add("return underlyingType != null && underlyingType.IsPrimitive;");
         });

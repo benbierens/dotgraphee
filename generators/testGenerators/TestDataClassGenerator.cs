@@ -84,7 +84,16 @@ public class TestDataClassGenerator : BaseGenerator
             }
             foreach (var f in foreignProperties)
             {
-                liner.Add(f.WithId + " = " + f.WithId.FirstToLower() + ",");
+                if (!f.IsRequiredSingular())
+                {
+                    liner.Add(f.WithId + " = " + f.WithId.FirstToLower() + ",");
+                }
+            }
+            var requiredSubModels = GetMyRequiredSubModels(m);
+            foreach (var subModel in requiredSubModels)
+            {
+                var subModelInputNames = GetInputTypeNames(subModel);
+                liner.Add(subModel.Name + " = To" + subModelInputNames.Create + "(),");
             }
             liner.EndClosure(";");
         });
@@ -106,6 +115,7 @@ public class TestDataClassGenerator : BaseGenerator
 
     private void AddToDeleteInputMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
     {
+        if (IsRequiredSubModel(m)) return;
         cm.AddClosure("public " + inputNames.Delete + " To" + inputNames.Delete + "()", liner =>
         {
             liner.StartClosure("return new " + inputNames.Delete);
@@ -119,13 +129,16 @@ public class TestDataClassGenerator : BaseGenerator
         var args = new List<string>();
         foreach (var f in foreignProperties)
         {
-            if (f.IsSelfReference)
+            if (!f.IsRequiredSingular())
             {
-                args.Add(Config.IdType + "? " + f.WithId.FirstToLower());
-            }
-            else
-            {
-                args.Add(Config.IdType + " " + f.WithId.FirstToLower());
+                if (f.IsSelfReference)
+                {
+                    args.Add(Config.IdType + "? " + f.WithId.FirstToLower());
+                }
+                else
+                {
+                    args.Add(Config.IdType + " " + f.WithId.FirstToLower());
+                }
             }
         }
 
