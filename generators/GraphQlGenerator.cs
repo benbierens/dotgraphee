@@ -112,8 +112,9 @@ public class GraphQlGenerator : BaseGenerator
             updateClass.AddProperty(model.Name + "Id")
                 .IsType(Config.IdType)
                 .Build();
-            AddModelFieldsAsNullable(updateClass, model);
-            AddForeignIdPropertiesAsNullable(updateClass, model);
+            AddModelFields(updateClass, model);
+            AddForeignIdProperties(updateClass, model);
+            AddOptionalSubModelIds(updateClass, model);
 
             if (!IsRequiredSubModel(model))
             {
@@ -125,6 +126,18 @@ public class GraphQlGenerator : BaseGenerator
         }
 
         fm.Build();
+    }
+
+    private void AddOptionalSubModelIds(ClassMaker cm, GeneratorConfig.ModelConfig model)
+    {
+        var optionalSubModels = GetMyOptionalSubModels(model);
+        foreach (var subModel in optionalSubModels)
+        {
+            cm.AddProperty(subModel.Name + "Id")
+                .IsType(Config.IdType)
+                .IsNullable()
+                .Build();
+        }
     }
 
     private void AddToDtoMethod(ClassMaker cm, GeneratorConfig.ModelConfig model)
@@ -175,18 +188,21 @@ public class GraphQlGenerator : BaseGenerator
         var foreignProperties = GetForeignProperties(model);
         foreach (var f in foreignProperties)
         {
-            if (f.IsSelfReference)
+            if (!f.IsRequiredSingular())
             {
-                cm.AddProperty(f.WithId)
-                    .IsType(Config.IdType)
-                    .IsNullable()
-                    .Build();
-            }
-            else
-            {
-                cm.AddProperty(f.WithId)
-                    .IsType(Config.IdType)
-                    .Build();
+                if (f.IsSelfReference)
+                {
+                    cm.AddProperty(f.WithId)
+                        .IsType(Config.IdType)
+                        .IsNullable()
+                        .Build();
+                }
+                else
+                {
+                    cm.AddProperty(f.WithId)
+                        .IsType(Config.IdType)
+                        .Build();
+                }
             }
         }
     }
@@ -276,7 +292,10 @@ public class GraphQlGenerator : BaseGenerator
         var foreignProperties = GetForeignProperties(model);
         foreach (var f in foreignProperties)
         {
-            liner.Add(f.WithId + " = " + addresser + f.WithId + ",");
+            if (!f.IsRequiredSingular())
+            {
+                liner.Add(f.WithId + " = " + addresser + f.WithId + ",");
+            }
         }
     }
 
@@ -317,18 +336,21 @@ public class GraphQlGenerator : BaseGenerator
     {
         foreach (var field in model.Fields)
         {
-            AddAssignmentLine(liner, field.Type, field.Name, inputName);
+            AddAssignmentLine(liner, field.Name, inputName);
         }
         var foreignProperties = GetForeignProperties(model);
         foreach (var f in foreignProperties)
         {
-            AddAssignmentLine(liner, Config.IdType, f.WithId, inputName);
+            if (!f.IsRequiredSingular())
+            {
+                AddAssignmentLine(liner, f.WithId, inputName);
+            }
         }
     }
 
-    private void AddAssignmentLine(Liner liner, string type, string fieldName, string inputName)
+    private void AddAssignmentLine(Liner liner, string fieldName, string inputName)
     {
-        liner.Add("if (" + inputName + "." + fieldName + " != null) entity." + fieldName + " = " + inputName + "." + fieldName + TypeUtils.GetValueAccessor(type) + ";");
+        liner.Add("entity." + fieldName + " = " + inputName + "." + fieldName + ";");
     }
 
     #endregion
