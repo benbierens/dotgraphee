@@ -1,4 +1,6 @@
 ﻿
+using System.Linq;
+
 public class QueryTestsGenerator : BaseTestGenerator
 {
     public QueryTestsGenerator(GeneratorConfig config)
@@ -30,7 +32,7 @@ public class QueryTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldQueryAll" + m.Name + "s()", liner =>
         {
-            liner.Add("await CreateTest" + m.Name + "();");
+            AddCreateTestEntityLine(liner, m);
             liner.AddBlankLine();
             liner.Add("var gqlData = await Gql.QueryAll" + m.Name + "s();");
             AddAssert(liner).NoErrors();
@@ -61,7 +63,7 @@ public class QueryTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldQueryOne" + m.Name + "ById()", liner =>
         {
-            liner.Add("await CreateTest" + m.Name + "();");
+            AddCreateTestEntityLine(liner, m);
             liner.AddBlankLine();
             liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData.Test" + m.Name + ".Id);");
             AddAssert(liner).NoErrors();
@@ -93,5 +95,18 @@ public class QueryTestsGenerator : BaseTestGenerator
             liner.AddBlankLine();
             AddAssert(liner).FailedToFindQueryResponse(m);
         });
+    }
+
+    private void AddCreateTestEntityLine(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        if (IsRequiredSubModel(m))
+        {
+            var superModels = GetMyRequiredSuperModels(m);
+            liner.Add("await CreateTest" + superModels.First().Name + "();");
+        }
+        else
+        {
+            liner.Add("await CreateTest" + m.Name + "();");
+        }
     }
 }

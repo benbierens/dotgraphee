@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 public class BaseGqlTestClassGenerator : BaseTestGenerator
 {
@@ -72,9 +73,21 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
             liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
             AddAssert(liner).NoErrors();
             liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsCreateMethod + m.Name + ";");
-            liner.Add("TestData.Test" + m.Name + ".Id = entity.Id;");
+            AddAssignIdToTestData(liner, m, "entity");
             liner.Add("return entity;");
         });
+    }
+
+    private void AddAssignIdToTestData(Liner liner, GeneratorConfig.ModelConfig m, params string[] accessors)
+    {
+        var accessor = string.Join(".", accessors) + ".Id";
+        liner.Add("TestData.Test" + m.Name + ".Id = " + accessor + ";");
+
+        var subModels = GetMyRequiredSubModels(m);
+        foreach (var subModel in subModels)
+        {
+            AddAssignIdToTestData(liner, subModel, accessors.Concat(new[] { subModel.Name }).ToArray());
+        }
     }
 
     private string GetCreateInputArguments(Liner liner, GeneratorConfig.ModelConfig m)
