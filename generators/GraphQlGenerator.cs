@@ -261,6 +261,14 @@ public class GraphQlGenerator : BaseGenerator
             AddDeleteMutation(cm, model, inputTypeNames);
         }
 
+        cm.AddLine("#region Subscriptions");
+        cm.AddBlankLine();
+        foreach (var model in Models)
+        {
+            AddSubscriptionMethods(cm, model);
+        }
+        cm.AddLine("#endregion");
+
         fm.Build();
     }
 
@@ -272,12 +280,12 @@ public class GraphQlGenerator : BaseGenerator
         cm.AddClosure("public async Task<" + model.Name + "> " + Config.GraphQl.GqlMutationsCreateMethod + model.Name +
         "(" + inputTypeNames.Create + " input, [Service] ITopicEventSender sender)", liner =>
         {
-            liner.Add("var createEntity = input.ToDto();");
+            liner.Add("var entity = input.ToDto();");
 
             AddDatabaseAddAndSave(liner);
 
-            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, Config.GraphQl.GqlSubscriptionCreatedMethod) + ", createEntity);");
-            liner.Add("return createEntity;");
+            AddCallToSubscriptionMethod(liner, model, Config.GraphQl.GqlSubscriptionCreatedMethod);
+            liner.Add("return entity;");
         });
     }
 
@@ -307,7 +315,7 @@ public class GraphQlGenerator : BaseGenerator
 
     private void AddDatabaseAddAndSave(Liner liner)
     {
-        liner.Add("dbService.Add(createEntity);");
+        liner.Add("dbService.Add(entity);");
     }
 
     #endregion
@@ -327,7 +335,7 @@ public class GraphQlGenerator : BaseGenerator
             liner.EndClosure(");");
 
             AddFailedToFindStrategyEarlyReturn(liner, m, idTag);
-            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(m, Config.GraphQl.GqlSubscriptionUpdatedMethod) + ", entity);");
+            AddCallToSubscriptionMethod(liner, m, Config.GraphQl.GqlSubscriptionUpdatedMethod);
             liner.Add("return entity;");
         });
     }
@@ -368,18 +376,53 @@ public class GraphQlGenerator : BaseGenerator
         {
             liner.Add("var entity = dbService.Delete<" + model.Name + ">(" + idTag + ");");
             AddFailedToFindStrategyEarlyReturn(liner, model, idTag);
-            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, Config.GraphQl.GqlSubscriptionDeletedMethod) + ", entity);");
+            AddCallToSubscriptionMethod(liner, model, Config.GraphQl.GqlSubscriptionDeletedMethod);
             liner.Add("return entity;");
         });
     }
 
     #endregion
 
+    private void AddSubscriptionMethods(ClassMaker cm, GeneratorConfig.ModelConfig model)
+    {
+        AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionCreatedMethod);
+        AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionUpdatedMethod, false);
+        AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionDeletedMethod);
+    }
+
+    private void AddSubscriptionMethod(ClassMaker cm, GeneratorConfig.ModelConfig model, string method, bool includeRequiredSubModels = true)
+    {
+        var entityName = "entity";
+        cm.AddClosure("private async Task Publish" + GetSubscriptionName(model, method) + "(ITopicEventSender sender, " + model.Name + " " + entityName + ")", liner =>
+        {
+            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, method) + ", " + entityName + ");");
+
+            if (includeRequiredSubModels)
+            {
+                var subModels = GetMyRequiredSubModels(model);
+                foreach (var sub in subModels)
+                {
+                    AddCallToSubscriptionMethod(liner, sub, method, entityName + "." + sub.Name);
+                }
+            }
+        });
+    }
+
+    private void AddCallToSubscriptionMethod(Liner liner, GeneratorConfig.ModelConfig model, string subscriptionMethod, string entityName = "entity")
+    {
+        liner.Add("await Publish" + GetSubscriptionName(model, subscriptionMethod) + "(sender, " + entityName + ");");
+    }
+
     #endregion
+
+    private string GetSubscriptionName(GeneratorConfig.ModelConfig model, string gqlSubscriptionMethod)
+    {
+        return model.Name + gqlSubscriptionMethod;
+    }
 
     private string GetSubscriptionTopicName(GeneratorConfig.ModelConfig model, string gqlSubscriptionMethod)
     {
-        return "nameof(" + Config.GraphQl.GqlSubscriptionsClassName + "." + model.Name + gqlSubscriptionMethod + ")";
+        return "nameof(" + Config.GraphQl.GqlSubscriptionsClassName + "." + GetSubscriptionName(model, gqlSubscriptionMethod) + ")";
     }
 
     private void AddFailedToFindStrategyEarlyReturn(Liner liner, GeneratorConfig.ModelConfig model, string idTag)
