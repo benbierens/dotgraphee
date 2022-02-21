@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-public class GqlClassGenerator : BaseGenerator
+﻿public class GqlClassGenerator : BaseGenerator
 {
     private readonly QueryMethodsSubgenerator queryAllMethodSubgenerator;
     private readonly MutationMethodsSubgenerator mutationMethodsSubgenerator;
