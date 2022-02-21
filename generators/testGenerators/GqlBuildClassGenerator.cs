@@ -19,6 +19,7 @@
         cm.AddLine("private string target = \"_\";");
         cm.AddLine("private string input = \"\";");
         cm.AddLine("private string result = \"{}\";");
+        cm.AddBlankLine();
 
         cm.AddClosure("public static GqlBuild Query(string target)", liner =>
         {

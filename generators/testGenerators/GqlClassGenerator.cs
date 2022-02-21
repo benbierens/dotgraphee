@@ -55,7 +55,7 @@
         fm.Build();
     }
 
-    public class QueryMethodsSubgenerator : BaseGenerator
+    public class QueryMethodsSubgenerator : BaseGqlGenerator
     {
         public QueryMethodsSubgenerator(GeneratorConfig config)
             : base(config)
@@ -66,8 +66,8 @@
         {
             cm.AddClosure("public async Task<GqlData<All" + m.Name + "sQuery>> QueryAll" + m.Name + "s()", liner =>
             {
-                liner.Add("var query = GqlBuild.Query(\"" + m.Name.FirstToLower() + "s\").WithOutput<" + m.Name + ">().Build();");
-                liner.Add("return await Client.PostRequest<All" + m.Name + "sQuery>(query);");
+                AddQueryAll(liner, m);
+                liner.Add("return await Client.PostRequest<All" + m.Name + "sQuery>(request);");
             });
         }
 
@@ -75,13 +75,13 @@
         {
             cm.AddClosure("public async Task<GqlData<One" + m.Name + "Query>> QueryOne" + m.Name + "(" + Config.IdType + " id)", liner =>
             {
-                liner.Add("var query = GqlBuild.Query(\"" + m.Name.FirstToLower() + "\").WithId(id).WithOutput<" + m.Name + ">().Build();");
-                liner.Add("return await Client.PostRequest<One" + m.Name + "Query>(query);");
+                AddQueryOne(liner, m);
+                liner.Add("return await Client.PostRequest<One" + m.Name + "Query>(request);");
             });
         }
     }
 
-    public class MutationMethodsSubgenerator : BaseGenerator
+    public class MutationMethodsSubgenerator : BaseGqlGenerator
     {
         public MutationMethodsSubgenerator(GeneratorConfig config)
             : base(config)
@@ -105,8 +105,8 @@
 
             cm.AddClosure("public async Task<GqlData<" + templateType + ">> Create" + m.Name + "(" + inputNames.Create + " input)", liner =>
             {
-                liner.Add("var mutation = GqlBuild.Mutation(\"" + templateField.FirstToLower() + "\").WithInput(input).WithOutput<" + m.Name + ">().Build();");
-                liner.Add("return await Client.PostRequest<" + templateType + ">(mutation);");
+                AddMutation(liner, m, templateField);
+                liner.Add("return await Client.PostRequest<" + templateType + ">(request);");
             });
         }
 
@@ -117,8 +117,8 @@
 
             cm.AddClosure("public async Task<GqlData<" + templateType + ">> Update" + m.Name + "(" + inputNames.Update + " input)", liner =>
             {
-                liner.Add("var mutation = GqlBuild.Mutation(\"" + templateField.FirstToLower() + "\").WithInput(input).WithOutput<" + m.Name + ">().Build();");
-                liner.Add("return await Client.PostRequest<" + templateType + ">(mutation);");
+                AddMutation(liner, m, templateField);
+                liner.Add("return await Client.PostRequest<" + templateType + ">(request);");
             });
         }
 
@@ -131,13 +131,13 @@
 
             cm.AddClosure("public async Task<GqlData<" + templateType+ ">> Delete" + m.Name + "(" + inputNames.Delete + " input)", liner =>
             {
-                liner.Add("var mutation = GqlBuild.Mutation(\"" + templateField.FirstToLower() + "\").WithInput(input).WithOutput<" + m.Name + ">().Build();");
-                liner.Add("return await Client.PostRequest<" + templateType + ">(mutation);");
+                AddMutation(liner, m, templateField);
+                liner.Add("return await Client.PostRequest<" + templateType + ">(request);");
             });
         }
     }
 
-    public class SubscriptionMethodsSubgenerator : BaseGenerator
+    public class SubscriptionMethodsSubgenerator : BaseGqlGenerator
     {
         public SubscriptionMethodsSubgenerator(GeneratorConfig config)
             : base(config)
@@ -157,6 +157,62 @@
             {
                 liner.Add("return await SubscribeTo<" + m.Name + ">(\"" + m.Name.FirstToLower() + methodName + "\");");
             });
+        }
+    }
+
+    public abstract class BaseGqlGenerator : BaseGenerator
+    {
+        protected BaseGqlGenerator(GeneratorConfig config)
+            : base(config)
+        {
+        }
+
+        public void AddQueryAll(Liner liner, GeneratorConfig.ModelConfig m)
+        {
+            Add(liner, m, "Query", m.Name.FirstToLower() + "s");
+        }
+
+        public void AddQueryOne(Liner liner, GeneratorConfig.ModelConfig m)
+        {
+            Add(liner, m, "Query", m.Name.FirstToLower(), ".WithId(id)");
+        }
+
+        public void AddMutation(Liner liner, GeneratorConfig.ModelConfig m, string templateField)
+        {
+            Add(liner, m, "Mutation", templateField.FirstToLower(), ".WithInput(input)");
+        }
+
+        private void Add(Liner liner, GeneratorConfig.ModelConfig m, string verb, string target, string input = "")
+        {
+            if (!HasRequiredSubModels(m))
+            {
+                liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">().Build();");
+            }
+            else
+            {
+                liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">(i => i");
+                var subs = GetMyRequiredSubModels(m);
+                foreach (var sub in subs) AddInclusion(liner, m, sub);
+                liner.Add(").Build();");
+            }
+        }
+
+        private void AddInclusion(Liner liner, GeneratorConfig.ModelConfig model, GeneratorConfig.ModelConfig subModel)
+        {
+            var l = model.Name.FirstToLower();
+            liner.Indent();
+            if (!HasRequiredSubModels(subModel))
+            {
+                liner.Add(".Include(" + l + " => " + l + "." + subModel.Name + ")");
+            }
+            else
+            {
+                liner.Add(".Include(" + l + " => " + l + "." + subModel.Name + ", i => i");
+                var subSubs = GetMyRequiredSubModels(subModel);
+                foreach (var sub in subSubs) AddInclusion(liner, subModel, sub);
+                liner.Add(")");
+            }
+            liner.Deindent();
         }
     }
 }

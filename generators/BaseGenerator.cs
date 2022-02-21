@@ -100,6 +100,11 @@ public class BaseGenerator
         return Models.Any(m => m.HasOne.Contains(me.Name));
     }
 
+    protected bool HasRequiredSubModels(GeneratorConfig.ModelConfig me)
+    {
+        return me.HasOne.Any();
+    }
+
     protected GeneratorConfig.ModelConfig[] GetMyRequiredSubModels(GeneratorConfig.ModelConfig me)
     {
         return Models.Where(m => me.HasOne.Contains(m.Name)).ToArray();
