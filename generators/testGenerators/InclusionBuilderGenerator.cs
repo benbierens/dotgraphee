@@ -8,7 +8,15 @@
     public void CreateInclusionBuilderClass()
     {
         var fm = StartTestUtilsFile("InclusionBuilder");
-        var cm = fm.AddClass("InclusionBuilder");
+        var cm = fm.AddClass("InclusionBuilder<T>");
+        cm.Modifiers.Clear();
+
+        cm.AddUsing("Microsoft.EntityFrameworkCore.Infrastructure;");
+        cm.AddUsing("System;");
+        cm.AddUsing("System.Collections.Generic;");
+        cm.AddUsing("System.Collections.Immutable;");
+        cm.AddUsing("System.Linq;");
+        cm.AddUsing("System.Linq.Expressions;");
 
         cm.AddLine("private readonly List<string> _inclusionPaths = new();");
         cm.AddBlankLine();

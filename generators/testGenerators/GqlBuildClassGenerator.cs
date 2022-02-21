@@ -45,36 +45,70 @@
 
         cm.AddClosure("public GqlBuild WithInput<T>(T inputObject) where T : class", liner =>
         {
-            liner.Add("var fields = new List<string>();");
-            liner.Add("var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);");
-            liner.StartClosure("foreach (var p in properties)");
-            liner.Add("if (IsPrimitive(p)) fields.Add(FormatPrimitive(inputObject, p));");
-            liner.Add("else if (IsString(p)) fields.Add(FormatString(inputObject, p));");
-            liner.Add("else if (IsDateTime(p)) fields.Add(FormatDateTime(inputObject, p));");
-            liner.Add("else throw new Exception(\"Unknown property type: \" + p.PropertyType);");
-            liner.EndClosure();
-            liner.Add("var f = string.Join(\" \", fields.Where(f => !string.IsNullOrWhiteSpace(f)));");
-            liner.Add("input = \"(input: { \" + f + \" })\";");
+            liner.Add("var body = BuildInputSelections(inputObject);");
+            liner.Add("input = \"(input: \" + body + \")\";");
             liner.Add("return this;");
         });
 
-        cm.AddClosure("public GqlBuild WithOutput<T>()", liner =>
+        cm.AddClosure("public GqlBuild WithOutput<T>(Action<InclusionBuilder<T>>? inclusionBuilder = null)", liner =>
         {
-            liner.Add("var fields = new List<string>();");
-            liner.Add("var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);");
-            liner.AddBlankLine();
-            liner.StartClosure("foreach (var p in properties)");
-            liner.StartClosure("if (IsPrimitive(p) || IsString(p) || IsDateTime(p))");
-            liner.Add("fields.Add(FirstToLower(p.Name));");
-            liner.EndClosure();
-            liner.EndClosure();
-            liner.Add("result = \"{\" + string.Join(\" \", fields) + \"}\";");
+            liner.Add("var builder = new InclusionBuilder<T>();");
+            liner.Add("inclusionBuilder?.Invoke(builder);");
+            liner.Add("var inclusionsResult = builder.Build();");
+            liner.Add("result = BuildOutputSelections(typeof(T), inclusionsResult.IsIncluded);");
             liner.Add("return this;");
         });
 
         cm.AddClosure("public string Build()", liner =>
         {
             liner.Add("return \"{ \\\"query\\\": \\\"\" + verb + \" { \" + target + input + result + \" } \\\" }\";");
+        });
+
+        cm.AddClosure("private string BuildInputSelections(object inputObject)", liner =>
+        {
+            liner.Add("var fields = new List<string>();");
+            liner.Add("var type = inputObject.GetType();");
+            liner.Add("var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);");
+            liner.StartClosure("foreach (var p in properties)");
+            liner.Add("if (IsPrimitive(p)) fields.Add(FormatPrimitive(inputObject, p));");
+            liner.Add("else if (IsString(p)) fields.Add(FormatString(inputObject, p));");
+            liner.Add("else if (IsDateTime(p)) fields.Add(FormatDateTime(inputObject, p));");
+            liner.StartClosure("else");
+            liner.Add("var subValue = p.GetValue(inputObject);");
+            liner.StartClosure("if (subValue != null)");
+            liner.Add("fields.Add(GetFieldHeader(p) + \": \" + BuildInputSelections(subValue));");
+            liner.EndClosure();
+            liner.EndClosure();
+            liner.EndClosure();
+            liner.Add("var f = string.Join(\" \", fields.Where(f => !string.IsNullOrWhiteSpace(f)));");
+            liner.Add("return \"{ \" + f + \" } \";");
+        });
+
+        cm.AddClosure("private string BuildOutputSelections(Type type, Func<string, bool> inclusionPredicate, string path = \"\")", liner =>
+        {
+            liner.Add("var fields = new List<string>();");
+            liner.Add("var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);");
+            liner.StartClosure("foreach (var p in properties)");
+            liner.StartClosure("if (IsPrimitive(p) || IsString(p) || IsDateTime(p))");
+            liner.Add("fields.Add(FirstToLower(p.Name));");
+            liner.EndClosure();
+            liner.StartClosure("else");
+            liner.Add("var propertyType = GetNavigationPropertyType(p.PropertyType);");
+            liner.Add("var currentPath = string.IsNullOrEmpty(path) ? p.Name : path + \".\" + p.Name;");
+            liner.StartClosure("if (inclusionPredicate(currentPath))");
+            liner.Add("fields.Add(FirstToLower(p.Name) + BuildOutputSelections(propertyType, inclusionPredicate, currentPath));");
+            liner.EndClosure();
+            liner.EndClosure();
+            liner.EndClosure();
+            liner.Add("return \"{ \" + string.Join(\" \", fields) + \"} \";");
+        });
+
+        cm.AddClosure("private Type GetNavigationPropertyType(Type propertyType)", liner =>
+        {
+            liner.StartClosure("if (typeof(IEnumerable<object>).IsAssignableFrom(propertyType))");
+            liner.Add("return propertyType.GetGenericArguments()[0];");
+            liner.EndClosure();
+            liner.Add("return propertyType;");
         });
 
         cm.AddClosure("private static GqlBuild Create(string target, string verb)", liner =>
