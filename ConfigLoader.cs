@@ -47,7 +47,8 @@ public class GeneratorConfig
         public string FailedToFindStrategy { get; set; }
         [Check(CheckType.NotEmpty)]
         public string SelfRefNavigationPropertyPrefix { get; set; }
-        public string[] Packages { get; set; }
+        public string[] SourcePackages { get; set; }
+        public string[] TestPackages { get; set; }
 
         public FailedToFindStrategy GetFailedToFindStrategy()
         {

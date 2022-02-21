@@ -77,7 +77,7 @@
     // Prefix used for any self-referencing property of a model.
     "selfRefNavigationPropertyPrefix": "Parent",
 
-    "packages": [
+    "sourcePackages": [
       "Microsoft.EntityFrameworkCore",
       "Microsoft.EntityFrameworkCore.Design",
       "Microsoft.EntityFrameworkCore.Proxies",
@@ -87,6 +87,11 @@
       "HotChocolate.Subscriptions",
       "HotChocolate.Subscriptions.InMemory",
       "Npgsql.EntityFrameworkCore.PostgreSQL"
+    ],
+    "testPackages": [
+      "Microsoft.EntityFrameworkCore",
+      "Microsoft.EntityFrameworkCore.Design",
+      "Microsoft.EntityFrameworkCore.Proxies"
     ],
 
     // Output path configuration.

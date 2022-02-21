@@ -12,17 +12,13 @@ public class ProjectGenerator : BaseGenerator
         RunCommand("dotnet", "new", "graphql", "-o", Config.Output.SourceFolder);
 
         BumpProjectToDotNetSix();
-
-
-        foreach (var p in Config.Packages)
-        {
-            RunCommand("dotnet", "add", Config.Output.SourceFolder, "package", p);
-        }
+        InstallPackages(Config.SourcePackages, Config.Output.SourceFolder);
 
         RunCommand("dotnet", "new", "nunit", "-o", Config.Output.TestFolder);
         RunCommand("dotnet", "sln", "add", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
         RunCommand("dotnet", "sln", "add", Config.Output.TestFolder + "/" + Config.Output.TestFolder + ".csproj");
         RunCommand("dotnet", "add", Config.Output.TestFolder, "reference", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
+        InstallPackages(Config.TestPackages, Config.Output.TestFolder);
 
         RunCommand("dotnet", "tool", "install", "--global", "dotnet-ef");
 
@@ -42,6 +38,14 @@ public class ProjectGenerator : BaseGenerator
             "<TargetFramework>net6.0</TargetFramework>");
 
         mf.Modify();
+    }
+
+    private void InstallPackages(string[] packages, string folder)
+    {
+        foreach (var p in packages)
+        {
+            RunCommand("dotnet", "add", folder, "package", p);
+        }
     }
 
     private void ModifyStartupFile()
