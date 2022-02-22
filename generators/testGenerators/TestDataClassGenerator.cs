@@ -109,6 +109,17 @@ public class TestDataClassGenerator : BaseGenerator
             {
                 liner.Add(f.Name + " = Test" + f.Type.FirstToUpper() + ",");
             }
+            var foreignProperties = GetForeignProperties(m);
+            foreach (var f in foreignProperties)
+            {
+                if (!f.IsRequiredSingular())
+                {
+                    if (!f.IsSelfReference)
+                    {
+                        liner.Add(f.WithId + " = Test" + f.Name + ".Id,");
+                    }
+                }
+            }
             liner.EndClosure(";");
         });
     }
