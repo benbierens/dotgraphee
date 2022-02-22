@@ -93,7 +93,7 @@ public class DatabaseGenerator : BaseGenerator
         AddLineWithClassConstraint(im, "T? Single<T>(" + idType + " id)");
         AddLineWithClassConstraint(im, "void Add<T>(T entity)");
         AddLineWithClassConstraint(im, "T? Update<T>(" + idType + " id, Action<T> onEntity)");
-        AddLineWithClassConstraint(im, "T? Delete<T>(" + idType + " id)");
+        AddLineWithClassConstraint(im, "void Delete<T>(" + idType + " id)");
     }
 
     private void AddAccessClass(FileMaker fm)
@@ -133,7 +133,7 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("return entity;");
         });
 
-        AddClosureWithClassConstraint(cm, "public T? Delete<T>(" + idType + " id)", liner =>
+        AddClosureWithClassConstraint(cm, "public void Delete<T>(" + idType + " id)", liner =>
         {
             liner.Add("var db = GetDb();");
             liner.Add("var entity = db.Find<T>(id);");
@@ -141,7 +141,6 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("db.Set<T>().Remove(entity);");
             liner.Add("db.SaveChanges();");
             liner.EndClosure();
-            liner.Add("return entity;");
         });
 
         cm.AddClosure("public static void EnsureCreated()", liner =>

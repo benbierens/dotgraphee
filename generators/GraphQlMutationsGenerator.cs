@@ -121,9 +121,10 @@ public class GraphQlMutationsGenerator : BaseGenerator
         cm.AddClosure("public async Task<" + model.Name + typePostfix + "> " + Config.GraphQl.GqlMutationsDeleteMethod + model.Name +
         "(" + inputTypeNames.Delete + " input, [Service] ITopicEventSender sender)", liner =>
         {
-            liner.Add("var entity = dbService.Delete<" + model.Name + ">(" + idTag + ");");
+            liner.Add("var entity = dbService.Single<" + model.Name + ">(" + idTag + ");");
             AddFailedToFindStrategyEarlyReturn(liner, model, idTag);
             AddCallToSubscriptionMethod(liner, model, Config.GraphQl.GqlSubscriptionDeletedMethod);
+            liner.Add("dbService.Delete<" + model.Name + ">(" + idTag + ");");
             liner.Add("return entity;");
         });
     }
