@@ -1,16 +1,17 @@
 //// DotGraphEE Generator Configuration ///
 {
   // Data model configuration.
-  // Each model requires a 'name', any number of 'fields' entries, any number of 'hasMany' entries.
+  // Each model requires a 'name', any number of 'fields' entries, any number of 'hasOne', 'hasMany', and 'maybeHasOne' entries.
   // Each 'fields' entry requires a 'name' and a 'type'.
   // Supported types are: int, bool, string, float, double, DateTime.
   // Each 'hasMany' entry must equal the 'name' of a model.
+  // Each 'hasOne' and 'maybeHasOne' entry must equal the 'name' of a different model.
   "models": [
     {
-      "name": "User",
+      "name": "UserAccount",
       "fields": [
         {
-          "name": "Name",
+          "name": "AccountName",
           "type": "string"
         }
       ],
@@ -18,17 +19,25 @@
         "Post"
       ],
       "hasOne": [
-        "Profile"
+        "UserProfile"
       ],
       "maybeHasOne": [
         "Color"
       ]
     },
     {
-      "name": "Profile",
+      "name": "UserProfile",
       "fields": [
         {
-          "name": "Description",
+          "name": "DisplayName",
+          "type": "string"
+        },
+        {
+          "name": "EmailAddress",
+          "type": "string"
+        },
+        {
+          "name": "IconUrl",
           "type": "string"
         }
       ]
@@ -48,8 +57,19 @@
         {
           "name": "Title",
           "type": "string"
+        },
+        {
+          "name": "Content",
+          "type": "string"
+        },
+        {
+          "name": "CreatedUtc",
+          "type": "DateTime"
+        },
+        {
+          "name": "ViewCount",
+          "type": "int"
         }
-
       ],
       "hasMany": [
         "Post"
