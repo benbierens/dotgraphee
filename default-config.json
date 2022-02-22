@@ -1,4 +1,6 @@
-//// DotGraphEE Generator Configuration ///
+//// DotGraphEE Generator Configuration ////
+// Version: 1.0.3-dev 
+
 {
   // Data model configuration.
   // Each model requires a 'name', any number of 'fields' entries, any number of 'hasOne', 'hasMany', and 'maybeHasOne' entries.
