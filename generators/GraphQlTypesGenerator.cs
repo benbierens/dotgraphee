@@ -8,6 +8,10 @@ public class GraphQlTypesGenerator : BaseGenerator
     public void GenerateGraphQlTypes()
     {
         var fm = StartSrcFile(Config.Output.GraphQlSubFolder, Config.GraphQl.GqlTypesFileName);
+        if (Config.IdType == "string")
+        {
+            fm.AddUsing("System");
+        }
 
         foreach (var model in Models)
         {
@@ -60,6 +64,7 @@ public class GraphQlTypesGenerator : BaseGenerator
             var optionalSubModels = GetMyOptionalSubModels(model);
 
             liner.StartClosure("return new " + model.Name);
+            AddEntityIdInitializer(liner);
             AddModelInitializer(liner, model);
             foreach (var subModel in requiredSubModels)
             {
@@ -72,6 +77,12 @@ public class GraphQlTypesGenerator : BaseGenerator
 
             liner.EndClosure(";");
         });
+    }
+
+    private void AddEntityIdInitializer(Liner liner)
+    {
+        if (Config.IdType != "string") return;
+        liner.Add("Id = Guid.NewGuid().ToString(),");
     }
 
     private void AddModelInitializer(Liner liner, GeneratorConfig.ModelConfig model, string inputName = null)

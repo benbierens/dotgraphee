@@ -116,7 +116,6 @@ public class DatabaseGenerator : BaseGenerator
 
         AddClosureWithClassConstraint(cm, "public void Add<T>(T entity)", liner =>
         {
-            AddEntityIdInitializer(liner);
             liner.Add("var db = GetDb();");
             liner.Add("db.Set<T>().Add(entity);");
             liner.Add("db.SaveChanges();");
@@ -153,12 +152,6 @@ public class DatabaseGenerator : BaseGenerator
         {
             liner.Add("return new DatabaseContext();");
         });
-    }
-
-    private void AddEntityIdInitializer(Liner liner)
-    {
-        if (Config.IdType != "string") return;
-        liner.Add("entity.Id = Guid.NewGuid().ToString();");
     }
 
     private void AddLineWithClassConstraint(ClassMaker im, string line)
