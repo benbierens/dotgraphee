@@ -183,46 +183,52 @@
 
         public void AddQueryAll(Liner liner, GeneratorConfig.ModelConfig m)
         {
-            Add(liner, m, "Query", m.Name.FirstToLower() + "s");
+            Add(liner, m, "Query", m.Name.FirstToLower() + "s", GetPagingAndBuildTag(m));
         }
 
         public void AddQueryOne(Liner liner, GeneratorConfig.ModelConfig m)
         {
             if (m.HasFilteringFeature())
             {
-                Add(liner, m, "Query", m.Name.FirstToLower() + "s", ".WithFilterId(id)");
+                Add(liner, m, "Query", m.Name.FirstToLower() + "s", GetPagingAndBuildTag(m), ".WithFilterId(id)");
 
             }
             else
             {
-                Add(liner, m, "Query", m.Name.FirstToLower(), ".WithId(id)");
+                Add(liner, m, "Query", m.Name.FirstToLower(), GetPagingAndBuildTag(m), ".WithId(id)");
             }
         }
 
         public void AddMutation(Liner liner, GeneratorConfig.ModelConfig m, string templateField)
         {
-            Add(liner, m, "Mutation", templateField.FirstToLower(), ".WithInput(input)");
+            Add(liner, m, "Mutation", templateField.FirstToLower(), GetBuildTag(), ".WithInput(input)");
         }
 
-        private void Add(Liner liner, GeneratorConfig.ModelConfig m, string verb, string target, string input = "")
+        private void Add(Liner liner, GeneratorConfig.ModelConfig m, string verb, string target, string closer, string input = "")
         {
             if (!HasRequiredSubModels(m))
             {
-                liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">()" + GetBuildTag(m) + ";");
+                liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">()" + closer);
             }
             else
             {
                 liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">(i => i");
                 var subs = GetMyRequiredSubModels(m);
                 foreach (var sub in subs) AddInclusion(liner, m, sub);
-                liner.Add(")" + GetBuildTag(m) + ";");
+                liner.Add(")" + closer);
             }
+            liner.AddBlankLine();
         }
 
-        private string GetBuildTag(GeneratorConfig.ModelConfig m)
+        private string GetPagingAndBuildTag(GeneratorConfig.ModelConfig m)
         {
-            if (!m.HasPagingFeature()) return ".Build()";
-            return ".WithPaging().Build()";
+            if (m.HasPagingFeature()) return ".WithPaging()" + GetBuildTag();
+            return GetBuildTag();
+        }
+
+        private string GetBuildTag()
+        {
+            return ".Build();";
         }
 
         private void AddInclusion(Liner liner, GeneratorConfig.ModelConfig model, GeneratorConfig.ModelConfig subModel)
