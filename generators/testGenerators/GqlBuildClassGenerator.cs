@@ -128,7 +128,7 @@
         cm.AddClosure("private string GetResult()", liner =>
         {
             liner.Add("if (!withPaging) return result;");
-            liner.Add("return \"nodes { \" + result + \" }\";");
+            liner.Add("return \" { nodes \" + result + \" }\";");
         });
 
         cm.AddClosure("private static GqlBuild Create(string target, string verb)", liner =>
