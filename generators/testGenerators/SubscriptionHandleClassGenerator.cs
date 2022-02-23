@@ -63,10 +63,6 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("Assert.Fail(\"Response contains errors:\" + line);");
             liner.Add("throw new Exception();");
             liner.EndClosure();
-            //liner.Add("var sub = line.Substring(line.IndexOf(subscription));");
-            //liner.Add("sub = sub.Substring(sub.IndexOf('{'));");
-            //liner.Add("sub = sub.Substring(0, sub.IndexOf('}') + 1);");
-            //liner.Add("return JsonConvert.DeserializeObject<T>(sub);");
 
             liner.Add("var response = JsonConvert.DeserializeObject<SubscriptionResponse<T>>(line);");
             liner.Add("return response.Payload.Data;");
@@ -98,6 +94,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
 
         cm.AddClosure("private async Task Send(string query)", liner => 
         {            
+            liner.Add("TestContext.WriteLine(\"Subscription channel send: '\" + query + \"'\");");
             liner.Add("var qbytes = Encoding.UTF8.GetBytes(query);");
             liner.Add("var segment= new ArraySegment<byte>(qbytes);");
             liner.Add("await ws.SendAsync(segment, WebSocketMessageType.Text, true, cts.Token);");
