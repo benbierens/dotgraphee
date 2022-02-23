@@ -121,12 +121,9 @@ public class AssertMaker
             baseGenerator.Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
     }
 
-    public void EntityNotNull(string mutation)
+    public void EntityNotNull(string operation)
     {
-        if (baseGenerator.IsFailedToFindStrategyNullObject())
-        {
-            liner.Add("if (" + target + " == null) throw new AssertionException(\"Unexpected null returned by " + mutation + " mutation.\");");
-        }
+        liner.Add("if (" + target + " == null) throw new AssertionException(\"Unexpected null returned by '" + operation + "'.\");");
     }
 
     private string FormatErrorMessage(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)

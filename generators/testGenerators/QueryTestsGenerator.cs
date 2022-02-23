@@ -68,6 +68,7 @@ public class QueryTestsGenerator : BaseTestGenerator
             liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData.Test" + m.Name + ".Id);");
             AddAssert(liner).NoErrors();
             liner.Add("var entity = gqlData.Data." + m.Name + ";");
+            AddAssert(liner).EntityNotNull("QueryOne" + m.Name);
             liner.AddBlankLine();
 
             foreach (var f in m.Fields)
@@ -93,7 +94,8 @@ public class QueryTestsGenerator : BaseTestGenerator
             liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData.Test" + Config.IdType.FirstToUpper() + ");");
             liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
-            AddAssert(liner).FailedToFindQueryResponse(m);
+            AddAssert(liner).NoErrors("query");
+            AddAssert(liner).NullReturned(m, "");
         });
     }
 

@@ -52,6 +52,7 @@ public class QueryClassGenerator : BaseGenerator
         var cm = AddClass(fm, "One" + m.Name + "Query");
         cm.AddProperty(m.Name)
             .IsType(m.Name)
+            .IsNullable()
             .Build();
     }
 

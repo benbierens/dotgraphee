@@ -42,7 +42,10 @@ public class UpdateTestsGenerator : BaseTestGenerator
             liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
             AddAssert(liner).NoErrors();
             liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsUpdateMethod + m.Name + ";");
-            AddAssert(liner).EntityNotNull(Config.GraphQl.GqlMutationsUpdateMethod);
+            if (IsFailedToFindStrategyNullObject())
+            {
+                AddAssert(liner).EntityNotNull(Config.GraphQl.GqlMutationsUpdateMethod);
+            }
             liner.AddBlankLine();
 
             AddAssert(liner).IdEquals(m, "Update failed.");
