@@ -46,7 +46,7 @@ public class ClassMaker
 
     public void AddUsing(string name)
     {
-        if (!string.IsNullOrWhiteSpace(name))
+        if (!string.IsNullOrWhiteSpace(name) && !usings.Contains(name))
         {
             usings.Add(name);
         }

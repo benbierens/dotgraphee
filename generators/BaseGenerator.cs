@@ -105,6 +105,27 @@ public class BaseGenerator
         return me.HasOne.Any();
     }
 
+    protected bool HasAnyNavigationalPropertiesOrFeatures(GeneratorConfig.ModelConfig m)
+    {
+        return HasAnyNavigationalProperties(m) ||
+            m.HasSortingFeature() ||
+            m.HasFilteringFeature() ||
+            m.HasPagingFeature();
+    }
+
+    protected bool HasAnyNavigationalProperties(GeneratorConfig.ModelConfig model)
+    {
+        if (model.HasMany.Any()) return true;
+        if (model.HasOne.Any()) return true;
+        if (model.MaybeHasOne.Any()) return true;
+        if (Models.Any(m =>
+            m.HasMany.Contains(model.Name) ||
+            m.HasOne.Contains(model.Name)
+        )) return true; 
+
+        return false;
+    }
+
     protected GeneratorConfig.ModelConfig[] GetMyRequiredSubModels(GeneratorConfig.ModelConfig me)
     {
         return Models.Where(m => me.HasOne.Contains(m.Name)).ToArray();

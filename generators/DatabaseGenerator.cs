@@ -59,7 +59,6 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("");
             liner.Add("optionsBuilder");
             liner.Indent();
-            liner.Add(".UseLazyLoadingProxies()");
             liner.Add(".UseNpgsql(connectionString);");
             liner.Deindent();
         });
@@ -94,6 +93,7 @@ public class DatabaseGenerator : BaseGenerator
         AddLineWithClassConstraint(im, "void Add<T>(T entity)");
         AddLineWithClassConstraint(im, "T? Update<T>(" + idType + " id, Action<T> onEntity)");
         AddLineWithClassConstraint(im, "void Delete<T>(" + idType + " id)");
+        AddLineWithClassConstraint(im, "IQueryable<T> AsQueryable<T>()");
     }
 
     private void AddAccessClass(FileMaker fm)
@@ -140,6 +140,11 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("db.Set<T>().Remove(entity);");
             liner.Add("db.SaveChanges();");
             liner.EndClosure();
+        });
+
+        AddClosureWithClassConstraint(cm, "public IQueryable<T> AsQueryable<T>()", liner =>
+        {
+            liner.Add("return GetDb().Set<T>().AsQueryable();");
         });
 
         cm.AddClosure("public static void EnsureCreated()", liner =>

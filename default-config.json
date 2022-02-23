@@ -11,6 +11,7 @@
   "models": [
     {
       "name": "UserAccount",
+      "features": [ "paging", "filtering", "sorting" ],
       "fields": [
         {
           "name": "AccountName",
@@ -29,6 +30,7 @@
     },
     {
       "name": "UserProfile",
+      "features": [ "filtering" ],
       "fields": [
         {
           "name": "DisplayName",
@@ -55,6 +57,7 @@
     },
     {
       "name": "Post",
+      "features": [ "paging", "filtering", "sorting" ],
       "fields": [
         {
           "name": "Title",
@@ -102,7 +105,6 @@
     "sourcePackages": [
       "Microsoft.EntityFrameworkCore",
       "Microsoft.EntityFrameworkCore.Design",
-      "Microsoft.EntityFrameworkCore.Proxies",
       "HotChocolate.AspNetCore",
       "HotChocolate.AspNetCore.Subscriptions",
       "HotChocolate.AspNetCore.Playground",
