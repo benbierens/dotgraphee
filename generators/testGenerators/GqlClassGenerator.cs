@@ -44,10 +44,18 @@
             cm.AddBlankLine();
         }
 
+        cm.AddClosure("private async Task<SubscriptionHandle<TPayload>> SubscribeTo<TPayload>(string modelName)", liner =>
+        {
+            liner.Add("var s = new SubscriptionHandle<TPayload>(modelName);");
+            liner.Add("await s.SubscribeWith(GqlBuild.Subscription(modelName).Build());");
+            liner.Add("handles.Add(s);");
+            liner.Add("return s;");
+        });
+        
         cm.AddClosure("private async Task<SubscriptionHandle<TPayload>> SubscribeTo<TPayload, TOutput>(string modelName)", liner =>
         {
             liner.Add("var s = new SubscriptionHandle<TPayload>(modelName);");
-            liner.Add("await s.Subscribe<TOutput>();");
+            liner.Add("await s.SubscribeWith(GqlBuild.Subscription(modelName).WithOutput<TOutput>().Build());");
             liner.Add("handles.Add(s);");
             liner.Add("return s;");
         });
@@ -148,14 +156,22 @@
         {
             AddSubscribeMethod(cm, m, Config.GraphQl.GqlSubscriptionCreatedMethod);
             AddSubscribeMethod(cm, m, Config.GraphQl.GqlSubscriptionUpdatedMethod);
-            AddSubscribeMethod(cm, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
+            AddSubscribeWithoutOutputMethod(cm, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
         }
 
         private void AddSubscribeMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, string methodName)
         {
-            cm.AddClosure("public async Task<SubscriptionHandle<" + m.Name + methodName + "Payload>> SubscribeTo" + m.Name + methodName + "()", liner =>
-            {
+            cm.AddClosure("public async Task<SubscriptionHandle<" + m.Name + methodName + "Payload>> SubscribeTo" + m.Name + methodName + "()", liner => {
                 liner.Add("return await SubscribeTo<" + m.Name + methodName + "Payload, " + m.Name + ">(\"" + m.Name.FirstToLower() + methodName + "\");");
+                
+            });
+        }
+        
+        private void AddSubscribeWithoutOutputMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, string methodName)
+        {
+            cm.AddClosure("public async Task<SubscriptionHandle<" + m.Name + methodName + "Payload>> SubscribeTo" + m.Name + methodName + "()", liner => {
+                liner.Add("return await SubscribeTo<" + m.Name + methodName + "Payload>(\"" + m.Name.FirstToLower() + methodName + "\");");
+                
             });
         }
     }

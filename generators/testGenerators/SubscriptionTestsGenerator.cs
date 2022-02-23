@@ -139,8 +139,8 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
             liner.Add("await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
             liner.AddBlankLine();
 
-            AddAssertReceiveToEntityVariable(liner, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
-            AddAssert(liner).EntityField(m, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionDeletedMethod + " subscription:");
+            AddAssertReceiveToPayloadVariable(liner, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
+            AddAssert(liner).DeletePayload(m);
         });
     }
 
@@ -158,8 +158,8 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
             liner.Add("await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
             liner.AddBlankLine();
 
-            AddAssertReceiveToEntityVariable(liner, r, Config.GraphQl.GqlSubscriptionDeletedMethod);
-            AddAssert(liner).EntityField(r, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionDeletedMethod + " subscription:");
+            AddAssertReceiveToPayloadVariable(liner, r, Config.GraphQl.GqlSubscriptionDeletedMethod);
+            AddAssert(liner).DeletePayload(r);
         });
     }
 
@@ -167,5 +167,8 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
     {
         liner.Add("var entity = handle.AssertReceived()." + m.Name + methodName + ";");
     }
-
+    private void AddAssertReceiveToPayloadVariable(Liner liner, GeneratorConfig.ModelConfig m, string methodName)
+    {
+        liner.Add("var payload = handle.AssertReceived()." + m.Name + methodName + ";");
+    }
 }

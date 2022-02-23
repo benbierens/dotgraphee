@@ -69,7 +69,7 @@ public class QueryClassGenerator : BaseGenerator
     {
         AddSubscriptionResponseClass(fm, m, m.Name, Config.GraphQl.GqlSubscriptionCreatedMethod);
         AddSubscriptionNullableResponseClass(fm, m, m.Name, Config.GraphQl.GqlSubscriptionUpdatedMethod);
-        AddSubscriptionNullableResponseClass(fm, m, m.Name, Config.GraphQl.GqlSubscriptionDeletedMethod);
+        AddSubscriptionNullableResponseClass(fm, m, Config.IdType, Config.GraphQl.GqlSubscriptionDeletedMethod);
     }
 
     private void AddMutationResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string type, string mutationMethod)
