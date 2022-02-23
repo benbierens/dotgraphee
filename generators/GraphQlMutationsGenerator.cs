@@ -156,7 +156,8 @@ public class GraphQlMutationsGenerator : BaseGenerator
                 var subModels = GetMyRequiredSubModels(model);
                 foreach (var sub in subModels)
                 {
-                    AddCallToSubscriptionMethod(liner, sub, method, entityName + "." + sub.Name);
+                    liner.Add("var " + sub.Name.FirstToLower() + " = dbService.AsQueryableEntity(entity).Select(e => e." + sub.Name + ").SingleOrDefault()!;");
+                    AddCallToSubscriptionMethod(liner, sub, method, sub.Name.FirstToLower());
                 }
             }
         });
