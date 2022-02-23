@@ -117,7 +117,7 @@ public class AssertMaker
             liner.Add("if (response.Data." + field + " == null) throw new AssertionException(\"Unexpected null returned by " + 
                 baseGenerator.Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
         }
-        liner.Add("Assert.That(response.Data." + field + ".Id, Is.EqualTo(TestData.Test" + m.Name + ".Id), \"Incorrect Id returned by " + 
+        liner.Add("Assert.That(response.Data." + field + ", Is.EqualTo(TestData.Test" + m.Name + ".Id), \"Incorrect Id returned by " + 
             baseGenerator.Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
     }
 

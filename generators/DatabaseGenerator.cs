@@ -87,6 +87,7 @@ public class DatabaseGenerator : BaseGenerator
         AddLineWithClassConstraint(im, "T? Update<T>(" + idType + " id, Action<T> onEntity)");
         AddLineWithClassConstraint(im, "void Delete<T>(" + idType + " id)");
         AddLineWithClassConstraint(im, "IQueryable<T> AsQueryable<T>()");
+        AddLineWithClassConstraint(im, "IQueryable<T> AsQueryableEntity<T>(T entity)");
     }
 
     private void AddAccessClass(FileMaker fm)
@@ -138,6 +139,11 @@ public class DatabaseGenerator : BaseGenerator
         AddClosureWithClassConstraint(cm, "public IQueryable<T> AsQueryable<T>()", liner =>
         {
             liner.Add("return GetDb().Set<T>().AsQueryable();");
+        });
+
+        AddClosureWithClassConstraint(cm, "public IQueryable<T> AsQueryableEntity<T>(T entity)", liner =>
+        {
+            liner.Add("return AsQueryable<T>().Where(e => e.Id == entity.Id);");
         });
 
         cm.AddClosure("public static void EnsureCreated()", liner =>

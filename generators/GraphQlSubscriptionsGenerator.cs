@@ -31,11 +31,6 @@ public class GraphQlSubscriptionsGenerator : BaseGenerator
             AddSubscriptionMethod(cm, model.Name, Config.GraphQl.GqlSubscriptionDeletedMethod);
         }
 
-        cm.AddClosure("private IQueryable<T> AsQueryableEntity<T>(T entity) where T : class, IEntity", liner =>
-        {
-            liner.Add("return dbService.AsQueryable<T>().Where(e => e.Id == entity.Id);");
-        });
-
         fm.Build();
     }
 
@@ -47,7 +42,7 @@ public class GraphQlSubscriptionsGenerator : BaseGenerator
         cm.AddLine("[UseProjection]");
         cm.AddClosure("public IQueryable<" + n + "> " + n + method + "([EventMessage] " + n + " " + l + ")", liner =>
         {
-            liner.Add("return AsQueryableEntity(" + l + ");");
+            liner.Add("return dbService.AsQueryableEntity(" + l + ");");
         });
     }
 }

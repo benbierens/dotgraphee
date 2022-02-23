@@ -13,8 +13,10 @@ public class GraphQlMutationsGenerator : BaseGenerator
         var fm = StartSrcFile(Config.Output.GraphQlSubFolder, Config.GraphQl.GqlMutationsFilename);
         var cm = StartClass(fm, className);
         cm.AddUsing("System.Threading.Tasks");
+        cm.AddUsing("System.Linq");
         cm.AddUsing("HotChocolate");
         cm.AddUsing("HotChocolate.Subscriptions");
+        cm.AddUsing("HotChocolate.Data");
 
         cm.AddLine("private readonly IDbService dbService;");
         cm.AddBlankLine();
@@ -48,7 +50,8 @@ public class GraphQlMutationsGenerator : BaseGenerator
     private void AddCreateMutation(ClassMaker cm, GeneratorConfig.ModelConfig model, InputTypeNames inputTypeNames)
     {
         if (IsRequiredSubModel(model)) return;
-        cm.AddClosure("public async Task<" + model.Name + "> " + Config.GraphQl.GqlMutationsCreateMethod + model.Name +
+        cm.AddLine("[UseProjection]");
+        cm.AddClosure("public async Task<IQueryable<" + model.Name + ">> " + Config.GraphQl.GqlMutationsCreateMethod + model.Name +
         "(" + inputTypeNames.Create + " input, [Service] ITopicEventSender sender)", liner =>
         {
             liner.Add("var entity = input.ToDto();");
@@ -56,7 +59,7 @@ public class GraphQlMutationsGenerator : BaseGenerator
             AddDatabaseAddAndSave(liner);
 
             AddCallToSubscriptionMethod(liner, model, Config.GraphQl.GqlSubscriptionCreatedMethod);
-            liner.Add("return entity;");
+            liner.Add("return dbService.AsQueryableEntity(entity);");
         });
     }
 
@@ -74,7 +77,8 @@ public class GraphQlMutationsGenerator : BaseGenerator
         var typePostfix = GetNullabilityTypePostfix();
         var idTag = "input." + m.Name + "Id";
 
-        cm.AddClosure("public async Task<" + m.Name + typePostfix + "> " + Config.GraphQl.GqlMutationsUpdateMethod + m.Name +
+        cm.AddLine("[UseProjection]");
+        cm.AddClosure("public async Task<IQueryable<" + m.Name + ">" + typePostfix + "> " + Config.GraphQl.GqlMutationsUpdateMethod + m.Name +
         "(" + inputTypeNames.Update + " input, [Service] ITopicEventSender sender)", liner =>
         {
             liner.StartClosure("var entity = dbService.Update<" + m.Name + ">(" + idTag + ", entity =>");
@@ -83,7 +87,7 @@ public class GraphQlMutationsGenerator : BaseGenerator
 
             AddFailedToFindStrategyEarlyReturn(liner, m, idTag);
             AddCallToSubscriptionMethod(liner, m, Config.GraphQl.GqlSubscriptionUpdatedMethod);
-            liner.Add("return entity;");
+            liner.Add("return dbService.AsQueryableEntity(entity);");
         });
     }
 
@@ -118,14 +122,14 @@ public class GraphQlMutationsGenerator : BaseGenerator
         var typePostfix = GetNullabilityTypePostfix();
         var idTag = "input." + model.Name + "Id";
 
-        cm.AddClosure("public async Task<" + model.Name + typePostfix + "> " + Config.GraphQl.GqlMutationsDeleteMethod + model.Name +
+        cm.AddClosure("public async Task<" + Config.IdType + typePostfix + "> " + Config.GraphQl.GqlMutationsDeleteMethod + model.Name +
         "(" + inputTypeNames.Delete + " input, [Service] ITopicEventSender sender)", liner =>
         {
             liner.Add("var entity = dbService.Single<" + model.Name + ">(" + idTag + ");");
             AddFailedToFindStrategyEarlyReturn(liner, model, idTag);
             AddCallToSubscriptionMethod(liner, model, Config.GraphQl.GqlSubscriptionDeletedMethod);
             liner.Add("dbService.Delete<" + model.Name + ">(" + idTag + ");");
-            liner.Add("return entity;");
+            liner.Add("return entity.Id;");
         });
     }
 

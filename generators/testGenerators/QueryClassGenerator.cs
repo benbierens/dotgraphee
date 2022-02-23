@@ -58,32 +58,32 @@ public class QueryClassGenerator : BaseGenerator
 
     private void CreateMutationResponseClassesForModel(FileMaker fm, GeneratorConfig.ModelConfig m)
     {
-        AddMutationResponseClass(fm, m, Config.GraphQl.GqlMutationsCreateMethod);
-        AddMutationNullableResponseClass(fm, m, Config.GraphQl.GqlMutationsUpdateMethod);
-        AddMutationNullableResponseClass(fm, m, Config.GraphQl.GqlMutationsDeleteMethod);
+        AddMutationResponseClass(fm, m, m.Name, Config.GraphQl.GqlMutationsCreateMethod);
+        AddMutationNullableResponseClass(fm, m, m.Name, Config.GraphQl.GqlMutationsUpdateMethod);
+        AddMutationNullableResponseClass(fm, m, Config.IdType, Config.GraphQl.GqlMutationsDeleteMethod);
     }
 
-    private void AddMutationResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string mutationMethod)
+    private void AddMutationResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string type, string mutationMethod)
     {
         var cm = AddClass(fm, mutationMethod + m.Name + "Response");
         cm.AddProperty(mutationMethod + m.Name)
-            .IsType(m.Name)
+            .IsType(type)
             .Build();
     }
 
-    private void AddMutationNullableResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string mutationMethod)
+    private void AddMutationNullableResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string type, string mutationMethod)
     {
         if (IsFailedToFindStrategyNullObject())
         {
             var cm = AddClass(fm, mutationMethod + m.Name + "Response");
             cm.AddProperty(mutationMethod + m.Name)
-                .IsType(m.Name)
+                .IsType(type)
                 .IsNullable()
                 .Build();
         }
         else
         {
-            AddMutationResponseClass(fm, m, mutationMethod);
+            AddMutationResponseClass(fm, m, type, mutationMethod);
         }
     }
 
