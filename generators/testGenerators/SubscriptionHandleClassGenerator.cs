@@ -11,7 +11,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
     {
         var fm = StartTestUtilsFile("SubscriptionHandle");
         var im = fm.AddInterface("ISubscriptionHandle");
-        im.AddLine("Task SubscribeWith(string query);");
+        im.AddLine("Task Subscribe<TOutput>();");
         im.AddLine("Task Unsubscribe();");
 
         var cm = fm.AddClass("SubscriptionHandle<T>");
@@ -40,10 +40,11 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("ws.Options.AddSubProtocol(\"graphql-ws\");");
         });
 
-        cm.AddClosure("public async Task SubscribeWith(string query)", liner => 
+        cm.AddClosure("public async Task Subscribe<TOutput>()", liner => 
         {
             liner.Add("await ws.ConnectAsync(new Uri(Client.WsUrl), cts.Token);");
             liner.Add("var _ = Task.Run(ReceivingLoop);");
+            liner.Add("var query = GqlBuild.Subscription(subscription).WithOutput<TOutput>().Build();");
             liner.Add("await Send(\"{type: \\\"connection_init\\\", payload: {}}\");");
             liner.Add("await Send(\"{\\\"id\\\":\\\"1\\\",\\\"type\\\":\\\"start\\\",\\\"payload\\\":\" + query + \"}\");");
         });

@@ -28,7 +28,7 @@ public class GraphQlSubscriptionsGenerator : BaseGenerator
         {
             AddSubscriptionMethod(cm, model.Name, Config.GraphQl.GqlSubscriptionCreatedMethod);
             AddSubscriptionMethod(cm, model.Name, Config.GraphQl.GqlSubscriptionUpdatedMethod);
-            AddDeletedSubscriptionMethod(cm, model.Name);
+            AddSubscriptionMethod(cm, model.Name, Config.GraphQl.GqlSubscriptionDeletedMethod);
         }
 
         fm.Build();
@@ -44,17 +44,6 @@ public class GraphQlSubscriptionsGenerator : BaseGenerator
         cm.AddClosure("public IQueryable<" + n + "> " + n + method + "([EventMessage] " + n + " " + l + ")", liner =>
         {
             liner.Add("return dbService.AsQueryableEntity(" + l + ");");
-        });
-    }
-    
-    private void AddDeletedSubscriptionMethod(ClassMaker cm, string modelName)
-    {
-        var n = modelName;
-        var l = n.FirstToLower();
-        cm.AddLine("[Subscribe]");
-        cm.AddClosure("public " + Config.IdType + " " + n + Config.GraphQl.GqlSubscriptionDeletedMethod + "([EventMessage] " + n + " " + l + ")", liner =>
-        {
-            liner.Add("return " + l + ".Id;");
         });
     }
 }
