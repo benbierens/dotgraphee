@@ -59,7 +59,6 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         {
             liner.Add("var line = GetSubscriptionLine();");
             liner.StartClosure("if (line.Contains(\"errors\"))");
-            AddSubscriptionDebugLine(liner);
             liner.Add("Assert.Fail(\"Response contains errors:\" + line);");
             liner.Add("throw new Exception();");
             liner.EndClosure();
@@ -88,7 +87,9 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("var buffer = new ArraySegment<byte>(bytes);");
             liner.Add("var receive = await ws.ReceiveAsync(buffer, cts.Token);");
             liner.Add("var l = bytes.Take(receive.Count).ToArray();");
-            liner.Add("received.Add(Encoding.UTF8.GetString(l));");
+            liner.Add("var line = Encoding.UTF8.GetString(l);");
+            liner.Add("received.Add(line);");
+            liner.Add("TestContext.WriteLine(\"Subscription channel received: \" + line);");
             liner.EndClosure();
         });
 
