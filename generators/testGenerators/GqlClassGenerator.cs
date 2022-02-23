@@ -44,10 +44,10 @@
             cm.AddBlankLine();
         }
 
-        cm.AddClosure("private async Task<SubscriptionHandle<T>> SubscribeTo<T>(string modelName)", liner =>
+        cm.AddClosure("private async Task<SubscriptionHandle<TPayload>> SubscribeTo<TPayload, TOutput>(string modelName)", liner =>
         {
-            liner.Add("var s = new SubscriptionHandle<T>(modelName);");
-            liner.Add("await s.Subscribe();");
+            liner.Add("var s = new SubscriptionHandle<TPayload>(modelName);");
+            liner.Add("await s.Subscribe<TOutput>();");
             liner.Add("handles.Add(s);");
             liner.Add("return s;");
         });
@@ -155,7 +155,7 @@
         {
             cm.AddClosure("public async Task<SubscriptionHandle<" + m.Name + methodName + "Payload>> SubscribeTo" + m.Name + methodName + "()", liner =>
             {
-                liner.Add("return await SubscribeTo<" + m.Name + methodName + "Payload>(\"" + m.Name.FirstToLower() + methodName + "\");");
+                liner.Add("return await SubscribeTo<" + m.Name + methodName + "Payload, " + m.Name + ">(\"" + m.Name.FirstToLower() + methodName + "\");");
             });
         }
     }
