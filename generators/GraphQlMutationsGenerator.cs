@@ -50,6 +50,7 @@ public class GraphQlMutationsGenerator : BaseGenerator
     private void AddCreateMutation(ClassMaker cm, GeneratorConfig.ModelConfig model, InputTypeNames inputTypeNames)
     {
         if (IsRequiredSubModel(model)) return;
+        cm.AddLine("[UseSingleOrDefault]");
         cm.AddLine("[UseProjection]");
         cm.AddClosure("public async Task<IQueryable<" + model.Name + ">> " + Config.GraphQl.GqlMutationsCreateMethod + model.Name +
         "(" + inputTypeNames.Create + " input, [Service] ITopicEventSender sender)", liner =>
@@ -77,6 +78,7 @@ public class GraphQlMutationsGenerator : BaseGenerator
         var typePostfix = GetNullabilityTypePostfix();
         var idTag = "input." + m.Name + "Id";
 
+        cm.AddLine("[UseSingleOrDefault]");
         cm.AddLine("[UseProjection]");
         cm.AddClosure("public async Task<IQueryable<" + m.Name + ">" + typePostfix + "> " + Config.GraphQl.GqlMutationsUpdateMethod + m.Name +
         "(" + inputTypeNames.Update + " input, [Service] ITopicEventSender sender)", liner =>
