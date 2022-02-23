@@ -18,7 +18,7 @@
         cm.AddLine("private string verb = \"_\";");
         cm.AddLine("private string target = \"_\";");
         cm.AddLine("private string input = \"\";");
-        cm.AddLine("private string result = \"{}\";");
+        cm.AddLine("private string result = \"\";");
         cm.AddLine("private bool withPaging = false;");
         cm.AddBlankLine();
 
