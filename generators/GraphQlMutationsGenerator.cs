@@ -142,6 +142,27 @@ public class GraphQlMutationsGenerator : BaseGenerator
         AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionCreatedMethod);
         AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionUpdatedMethod, false);
         AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionDeletedMethod);
+
+        var subModels = GetMyRequiredSubModels(model);
+        foreach (var sub in subModels)
+        {
+            AddGetSubModelMethod(cm, model, sub);
+        }
+    }
+
+    private void AddGetSubModelMethod(ClassMaker cm, GeneratorConfig.ModelConfig model, GeneratorConfig.ModelConfig sub)
+    {
+        var m = model.Name;
+        var s = sub.Name;
+        cm.AddClosure("private " + s + " " +GetGetSubModelMethodName(model, sub) + "(" + m + " entity)", liner =>
+        {
+            liner.Add("return dbService.All<" + s + ">().Single(e => e." + m + "Id == entity.Id);");
+        });
+    }
+
+    private string GetGetSubModelMethodName(GeneratorConfig.ModelConfig model, GeneratorConfig.ModelConfig sub)
+    {
+        return "Get" + sub.Name + "For" + model.Name;
     }
 
     private void AddSubscriptionMethod(ClassMaker cm, GeneratorConfig.ModelConfig model, string method, bool includeRequiredSubModels = true)
@@ -156,8 +177,8 @@ public class GraphQlMutationsGenerator : BaseGenerator
                 var subModels = GetMyRequiredSubModels(model);
                 foreach (var sub in subModels)
                 {
-                    liner.Add("var " + sub.Name.FirstToLower() + " = dbService.AsQueryableEntity(entity).Select(e => e." + sub.Name + ").SingleOrDefault()!;");
-                    AddCallToSubscriptionMethod(liner, sub, method, sub.Name.FirstToLower());
+                    var methodName = GetGetSubModelMethodName(model, sub);
+                    AddCallToSubscriptionMethod(liner, sub, method, methodName + "(" + entityName + ")");
                 }
             }
         });
