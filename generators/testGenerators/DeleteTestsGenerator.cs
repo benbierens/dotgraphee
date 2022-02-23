@@ -49,7 +49,7 @@ public class DeleteTestsGenerator : BaseTestGenerator
             
             liner.Add("var gqlData = await Gql.QueryAll" + m.Name + "s();");
             AddAssert(liner).NoErrors();
-            liner.Add("var all = gqlData.Data." + m.Name + "s;");
+            AddDereferenceToAllVariable(liner, m);
             liner.AddBlankLine();
             AddAssert(liner).CollectionEmpty(m, "all");
         });
@@ -71,7 +71,7 @@ public class DeleteTestsGenerator : BaseTestGenerator
             
             liner.Add("var gqlData = await Gql.QueryAll" + r.Name + "s();");
             AddAssert(liner).NoErrors();
-            liner.Add("var all = gqlData.Data." + r.Name + "s;");
+            AddDereferenceToAllVariable(liner, r);
             liner.AddBlankLine();
             AddAssert(liner).CollectionEmpty(r, "all");
         });

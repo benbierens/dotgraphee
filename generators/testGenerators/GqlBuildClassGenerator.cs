@@ -37,7 +37,6 @@
             liner.Add("return Create(target, \"subscription\");");
         });
 
-
         cm.AddClosure("public GqlBuild WithId(" + Config.IdType + " id)", liner =>
         {
             if (Config.IdType == "int") liner.Add("input = \"(id: \" + ExpressValue(id) + \")\";");
@@ -45,6 +44,13 @@
             liner.Add("return this;");
         });
 
+        cm.AddClosure("public GqlBuild WithFilterId(" + Config.IdType + " id)", liner =>
+        {
+            if (Config.IdType == "int") liner.Add("input = \"(where: { id: { eq: \" + ExpressValue(id) + \" } })\";");
+            if (Config.IdType == "string") liner.Add("input = \"(where: { id: { eq: \" + ExpressValueWithQuotes(id) + \" } })\";");
+            liner.Add("return this;");
+        });
+        
         cm.AddClosure("public GqlBuild WithInput<T>(T inputObject) where T : class", liner =>
         {
             liner.Add("var body = BuildInputSelections(inputObject);");

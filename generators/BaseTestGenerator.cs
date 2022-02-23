@@ -22,4 +22,18 @@ public abstract class BaseTestGenerator : BaseGenerator
             liner.Add("await CreateTest" + m.Name + "();");
         }
     }
+
+    protected string GetDereferenceForGqlData(GeneratorConfig.ModelConfig m)
+    {
+        if (!m.HasPagingFeature())
+        {
+            return ".Data." + m.Name + "s";
+        }
+        return ".Data." + m.Name + "s.Nodes";
+    }
+
+    protected void AddDereferenceToAllVariable(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        liner.Add("var all = gqlData" + GetDereferenceForGqlData(m) + ";");
+    }
 }

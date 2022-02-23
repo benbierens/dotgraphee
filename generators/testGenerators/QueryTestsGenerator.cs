@@ -58,18 +58,6 @@ public class QueryTestsGenerator : BaseTestGenerator
         });
     }
 
-    private void AddDereferenceToAllVariable(Liner liner, GeneratorConfig.ModelConfig m)
-    {
-        if (!m.HasPagingFeature())
-        {
-            liner.Add("var all = gqlData.Data." + m.Name + "s;");
-        }
-        else
-        {
-            liner.Add("var all = gqlData.Data." + m.Name + "s.Nodes;");
-        }
-    }
-
     private void AddQueryOneTest(ClassMaker cm, GeneratorConfig.ModelConfig m)
     {
         cm.AddLine("[Test]");

@@ -68,7 +68,7 @@ public class UpdateTestsGenerator : BaseTestGenerator
 
             liner.Add("var gqlData = await Gql.QueryAll" + m.Name + "s();");
             AddAssert(liner).NoErrors();
-            liner.Add("var all = gqlData.Data." + m.Name + "s;");
+            AddDereferenceToAllVariable(liner, m);
             liner.AddBlankLine();
 
             AddAssert(liner).CollectionOne(m, "all");

@@ -76,7 +76,21 @@
             cm.AddClosure("public async Task<GqlData<One" + m.Name + "Query>> QueryOne" + m.Name + "(" + Config.IdType + " id)", liner =>
             {
                 AddQueryOne(liner, m);
-                liner.Add("return await Client.PostRequest<One" + m.Name + "Query>(request);");
+
+                if (m.HasFilteringFeature())
+                {
+                    liner.Add("var all = await Client.PostRequest<All" + m.Name + "sQuery>(request);");
+                    liner.StartClosure("return new GqlData<One" + m.Name + "Query>");
+                    liner.Add("Errors = all.Errors,");
+                    liner.StartClosure("Data = new One" + m.Name + "Query");
+                    liner.Add(m.Name + " = all" + GetDereferenceForGqlData(m) + "[0]");
+                    liner.EndClosure();
+                    liner.EndClosure(";");
+                }
+                else
+                {
+                    liner.Add("return await Client.PostRequest<One" + m.Name + "Query>(request);");
+                }
             });
         }
     }
@@ -160,7 +174,7 @@
         }
     }
 
-    public abstract class BaseGqlGenerator : BaseGenerator
+    public abstract class BaseGqlGenerator : BaseTestGenerator
     {
         protected BaseGqlGenerator(GeneratorConfig config)
             : base(config)
@@ -174,7 +188,15 @@
 
         public void AddQueryOne(Liner liner, GeneratorConfig.ModelConfig m)
         {
-            Add(liner, m, "Query", m.Name.FirstToLower(), ".WithId(id)");
+            if (m.HasFilteringFeature())
+            {
+                Add(liner, m, "Query", m.Name.FirstToLower() + "s", ".WithFilterId(id)");
+
+            }
+            else
+            {
+                Add(liner, m, "Query", m.Name.FirstToLower(), ".WithId(id)");
+            }
         }
 
         public void AddMutation(Liner liner, GeneratorConfig.ModelConfig m, string templateField)
