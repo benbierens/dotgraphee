@@ -131,7 +131,7 @@
 
             cm.AddClosure("public async Task<GqlData<" + templateType+ ">> Delete" + m.Name + "(" + inputNames.Delete + " input)", liner =>
             {
-                liner.Add("var request = GqlBuild.Mutation(\"" + templateField + "\").WithInput(input)" + GetBuildTag());
+                liner.Add("var request = GqlBuild.Mutation(\"" + templateField.FirstToLower() + "\").WithInput(input)" + GetBuildTag());
                 liner.Add("return await Client.PostRequest<" + templateType + ">(request);");
             });
         }
