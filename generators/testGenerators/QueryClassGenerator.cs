@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 public class QueryClassGenerator : BaseGenerator
@@ -17,6 +18,7 @@ public class QueryClassGenerator : BaseGenerator
         {
             CreateQueryClassForModel(fm, m);
             CreateMutationResponseClassesForModel(fm, m);
+            CreateSubscriptionPayloadClassesForModel(fm, m);
         }
 
         fm.Build();
@@ -63,6 +65,13 @@ public class QueryClassGenerator : BaseGenerator
         AddMutationNullableResponseClass(fm, m, Config.IdType, Config.GraphQl.GqlMutationsDeleteMethod);
     }
 
+    private void CreateSubscriptionPayloadClassesForModel(FileMaker fm, GeneratorConfig.ModelConfig m)
+    {
+        AddSubscriptionResponseClass(fm, m, m.Name, Config.GraphQl.GqlSubscriptionCreatedMethod);
+        AddSubscriptionNullableResponseClass(fm, m, m.Name, Config.GraphQl.GqlSubscriptionUpdatedMethod);
+        AddSubscriptionNullableResponseClass(fm, m, m.Name, Config.GraphQl.GqlSubscriptionDeletedMethod);
+    }
+
     private void AddMutationResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string type, string mutationMethod)
     {
         var cm = AddClass(fm, mutationMethod + m.Name + "Response");
@@ -84,6 +93,30 @@ public class QueryClassGenerator : BaseGenerator
         else
         {
             AddMutationResponseClass(fm, m, type, mutationMethod);
+        }
+    }
+
+    private void AddSubscriptionResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string type, string mutationMethod)
+    {
+        var cm = AddClass(fm, m.Name + mutationMethod + "Payload");
+        cm.AddProperty(m.Name + mutationMethod)
+            .IsType(type)
+            .Build();
+    }
+
+    private void AddSubscriptionNullableResponseClass(FileMaker fm, GeneratorConfig.ModelConfig m, string type, string mutationMethod)
+    {
+        if (IsFailedToFindStrategyNullObject())
+        {
+            var cm = AddClass(fm, m.Name + mutationMethod + "Payload");
+            cm.AddProperty(m.Name + mutationMethod)
+                .IsType(type)
+                .IsNullable()
+                .Build();
+        }
+        else
+        {
+            AddSubscriptionResponseClass(fm, m, type, mutationMethod);
         }
     }
 

@@ -1,3 +1,5 @@
+using System;
+
 public class SubscriptionHandleClassGenerator : BaseGenerator 
 {
     public SubscriptionHandleClassGenerator(GeneratorConfig config)
@@ -61,10 +63,13 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("Assert.Fail(\"Response contains errors:\" + line);");
             liner.Add("throw new Exception();");
             liner.EndClosure();
-            liner.Add("var sub = line.Substring(line.IndexOf(subscription));");
-            liner.Add("sub = sub.Substring(sub.IndexOf('{'));");
-            liner.Add("sub = sub.Substring(0, sub.IndexOf('}') + 1);");
-            liner.Add("return JsonConvert.DeserializeObject<T>(sub);");
+            //liner.Add("var sub = line.Substring(line.IndexOf(subscription));");
+            //liner.Add("sub = sub.Substring(sub.IndexOf('{'));");
+            //liner.Add("sub = sub.Substring(0, sub.IndexOf('}') + 1);");
+            //liner.Add("return JsonConvert.DeserializeObject<T>(sub);");
+
+            liner.Add("var response = JsonConvert.DeserializeObject<SubscriptionResponse<T>>(line);");
+            liner.Add("return response.Payload.Data;");
         });
 
         cm.AddClosure("private string GetSubscriptionLine()", liner =>
@@ -98,7 +103,28 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("await ws.SendAsync(segment, WebSocketMessageType.Text, true, cts.Token);");
         });
 
+        AddSubscriptionResponseClass(fm);
+        AddPayloadClass(fm);
+
         fm.Build();
+    }
+
+    private void AddPayloadClass(FileMaker fm)
+    {
+        var cm = fm.AddClass("Payload<T>");
+        cm.AddProperty("Data")
+            .IsType("T")
+            .DefaultInitializer()
+            .Build();
+    }
+
+    private void AddSubscriptionResponseClass(FileMaker fm)
+    {
+        var cm = fm.AddClass("SubscriptionResponse<T>");
+        cm.AddProperty("Payload")
+            .IsType("Payload<T>")
+            .InitializeAsExplicitNull()
+            .Build();
     }
 
     private void AddSubscriptionDebugLine(Liner liner)

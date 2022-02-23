@@ -39,6 +39,7 @@ public class GraphQlSubscriptionsGenerator : BaseGenerator
         var n = modelName;
         var l = n.FirstToLower();
         cm.AddLine("[Subscribe]");
+        cm.AddLine("[UseSingleOrDefault]");
         cm.AddLine("[UseProjection]");
         cm.AddClosure("public IQueryable<" + n + "> " + n + method + "([EventMessage] " + n + " " + l + ")", liner =>
         {
