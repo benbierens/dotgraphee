@@ -70,15 +70,8 @@ public class DatabaseGenerator : BaseGenerator
     {
         var fm = StartSrcFile(Config.Output.DatabaseSubFolder, Config.Database.DbAccesserClassName);
         AddAccessInterface(fm);
-        if (Config.IdType == "string") AddHasIdInterface(fm);
         AddAccessClass(fm);
         fm.Build();
-    }
-
-    private void AddHasIdInterface(FileMaker fm)
-    {
-        var im = fm.AddInterface("IHasId");
-        im.AddLine(Config.IdType + " Id { get; set; }");
     }
 
     private void AddAccessInterface(FileMaker fm)
@@ -171,10 +164,6 @@ public class DatabaseGenerator : BaseGenerator
 
     private string GetClassConstraint()
     {
-        if (Config.IdType == "string")
-        {
-            return " where T : class, IHasId";
-        }
-        return " where T : class";
+        return " where T : class, IEntity";
     }
 }
