@@ -36,7 +36,7 @@ public class QueryTestsGenerator : BaseTestGenerator
             liner.AddBlankLine();
             liner.Add("var gqlData = await Gql.QueryAll" + m.Name + "s();");
             AddAssert(liner).NoErrors();
-            liner.Add("var all = gqlData.Data." + m.Name + "s;");
+            AddDereferenceToAllVariable(liner, m);
 
             liner.AddBlankLine();
             AddAssert(liner).CollectionOne(m, "all");
@@ -56,6 +56,18 @@ public class QueryTestsGenerator : BaseTestGenerator
                 }
             }
         });
+    }
+
+    private void AddDereferenceToAllVariable(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        if (!m.HasPagingFeature())
+        {
+            liner.Add("var all = gqlData.Data." + m.Name + "s;");
+        }
+        else
+        {
+            liner.Add("var all = gqlData.Data." + m.Name + "s.Nodes;");
+        }
     }
 
     private void AddQueryOneTest(ClassMaker cm, GeneratorConfig.ModelConfig m)

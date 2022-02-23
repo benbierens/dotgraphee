@@ -1,3 +1,5 @@
+using System.Linq;
+
 public class QueryClassGenerator : BaseGenerator
 {
     public QueryClassGenerator(GeneratorConfig config) : base(config)
@@ -9,6 +11,7 @@ public class QueryClassGenerator : BaseGenerator
         var fm = StartTestUtilsFile("QueryClasses");
         CreateQueryDataClass(fm);
         CreateQueryErrorClass(fm);
+        CreateNodesWrapperClass(fm);
 
         foreach (var m in Models)
         {
@@ -29,9 +32,19 @@ public class QueryClassGenerator : BaseGenerator
     {
         var cm = AddClass(fm, "All" + m.Name + "sQuery");
         cm.AddUsing("System.Collections.Generic");
-        cm.AddProperty(m.Name)
-            .IsListOfType(m.Name)
-            .Build();
+
+        if (m.HasPagingFeature())
+        {
+            cm.AddProperty(m.Name + "s")
+                .IsType("NodesWrapper<" + m.Name + ">")
+                .Build();
+        }
+        else 
+        { 
+            cm.AddProperty(m.Name)
+                .IsListOfType(m.Name)
+                .Build();
+        }
     }
 
     private void CreateOneQueryClass(FileMaker fm, GeneratorConfig.ModelConfig m)
@@ -103,6 +116,16 @@ public class QueryClassGenerator : BaseGenerator
         var cm = AddClass(fm, "GqlError");
         cm.AddProperty("Message")
             .IsType("string")
+            .Build();
+    }
+
+    private void CreateNodesWrapperClass(FileMaker fm)
+    {
+        if (!Models.Any(m => m.HasPagingFeature())) return;
+
+        var cm = AddClass(fm, "NodesWrapper<T>");
+        cm.AddProperty("Node")
+            .IsListOfType("T")
             .Build();
     }
 

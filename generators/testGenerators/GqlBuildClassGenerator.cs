@@ -19,6 +19,7 @@
         cm.AddLine("private string target = \"_\";");
         cm.AddLine("private string input = \"\";");
         cm.AddLine("private string result = \"{}\";");
+        cm.AddLine("private bool withPaging = false;");
         cm.AddBlankLine();
 
         cm.AddClosure("public static GqlBuild Query(string target)", liner =>
@@ -60,9 +61,15 @@
             liner.Add("return this;");
         });
 
+        cm.AddClosure("public GqlBuild WithPaging()", liner =>
+        {
+            liner.Add("withPaging = true;");
+            liner.Add("return this;");
+        });
+
         cm.AddClosure("public string Build()", liner =>
         {
-            liner.Add("return \"{ \\\"query\\\": \\\"\" + verb + \" { \" + target + input + result + \" } \\\" }\";");
+            liner.Add("return \"{ \\\"query\\\": \\\"\" + verb + \" { \" + target + input + GetResult() + \" } \\\" }\";");
         });
 
         cm.AddClosure("private string BuildInputSelections(object inputObject)", liner =>
@@ -110,6 +117,12 @@
             liner.Add("return propertyType.GetGenericArguments()[0];");
             liner.EndClosure();
             liner.Add("return propertyType;");
+        });
+
+        cm.AddClosure("private string GetResult()", liner =>
+        {
+            liner.Add("if (!withPaging) return result;");
+            liner.Add("return \"nodes { \" + result + \" }\";");
         });
 
         cm.AddClosure("private static GqlBuild Create(string target, string verb)", liner =>

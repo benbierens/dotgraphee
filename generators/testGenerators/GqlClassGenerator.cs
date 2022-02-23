@@ -186,15 +186,21 @@
         {
             if (!HasRequiredSubModels(m))
             {
-                liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">().Build();");
+                liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">()" + GetBuildTag(m) + ";");
             }
             else
             {
                 liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">(i => i");
                 var subs = GetMyRequiredSubModels(m);
                 foreach (var sub in subs) AddInclusion(liner, m, sub);
-                liner.Add(").Build();");
+                liner.Add(")" + GetBuildTag(m) + ";");
             }
+        }
+
+        private string GetBuildTag(GeneratorConfig.ModelConfig m)
+        {
+            if (!m.HasPagingFeature()) return ".Build()";
+            return ".WithPaging().Build()";
         }
 
         private void AddInclusion(Liner liner, GeneratorConfig.ModelConfig model, GeneratorConfig.ModelConfig subModel)
