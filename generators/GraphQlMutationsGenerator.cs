@@ -130,8 +130,8 @@ public class GraphQlMutationsGenerator : BaseGenerator
         {
             liner.Add("var entity = dbService.Single<" + model.Name + ">(" + idTag + ");");
             AddFailedToFindStrategyEarlyReturn(liner, model, idTag);
-            liner.Add("dbService.Delete<" + model.Name + ">(" + idTag + ");");
             AddCallToSubscriptionMethod(liner, model, Config.GraphQl.GqlSubscriptionDeletedMethod);
+            liner.Add("dbService.Delete<" + model.Name + ">(" + idTag + ");");
             liner.Add("return entity.Id;");
         });
     }
@@ -181,8 +181,6 @@ public class GraphQlMutationsGenerator : BaseGenerator
         var entityName = "entity";
         cm.AddClosure("private async Task Publish" + GetSubscriptionName(model, method) + "(ITopicEventSender sender, " + model.Name + " " + entityName + ")", liner =>
         {
-            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, method) + ", " + payload + ");");
-
             if (includeRequiredSubModels)
             {
                 var subModels = GetMyRequiredSubModels(model);
@@ -192,6 +190,8 @@ public class GraphQlMutationsGenerator : BaseGenerator
                     AddCallToSubscriptionMethod(liner, sub, method, methodName + "(" + entityName + ")");
                 }
             }
+
+            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, method) + ", " + payload + ");");
         });
     }
 
