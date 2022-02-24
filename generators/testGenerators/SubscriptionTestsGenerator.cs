@@ -140,7 +140,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
             liner.AddBlankLine();
 
             AddAssertReceiveToEntityVariable(liner, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
-            AddAssert(liner).EntityField(m, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionDeletedMethod + " subscription:");
+            AddAssert(liner).IdEquals(m, "Incorrect entity ID published with " + Config.GraphQl.GqlSubscriptionDeletedMethod + " subscription:");
         });
     }
 
@@ -159,7 +159,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
             liner.AddBlankLine();
 
             AddAssertReceiveToEntityVariable(liner, r, Config.GraphQl.GqlSubscriptionDeletedMethod);
-            AddAssert(liner).EntityField(r, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionDeletedMethod + " subscription:");
+            AddAssert(liner).IdEquals(r, "Incorrect entity ID published with " + Config.GraphQl.GqlSubscriptionDeletedMethod + " subscription:");
         });
     }
 

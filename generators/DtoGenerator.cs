@@ -69,7 +69,7 @@ public class DtoGenerator : BaseGenerator
     {
         var fm = StartSrcFile(Config.Output.DataTypeObjectsSubFolder, "Entity");
         var cm = fm.AddInterface("IEntity");
-        cm.AddLine(Config.IdType + " Id { get; }");
+        cm.AddLine(Config.IdType + " Id { get; set; }");
         fm.Build();
     }
 

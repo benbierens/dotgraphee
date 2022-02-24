@@ -40,6 +40,7 @@ public class GraphQlMutationsGenerator : BaseGenerator
         {
             AddSubscriptionMethods(cm, model);
         }
+        AddToDeletedEntityMethod(cm);
         cm.AddLine("#endregion");
 
         fm.Build();
@@ -129,19 +130,29 @@ public class GraphQlMutationsGenerator : BaseGenerator
         {
             liner.Add("var entity = dbService.Single<" + model.Name + ">(" + idTag + ");");
             AddFailedToFindStrategyEarlyReturn(liner, model, idTag);
-            AddCallToSubscriptionMethod(liner, model, Config.GraphQl.GqlSubscriptionDeletedMethod);
             liner.Add("dbService.Delete<" + model.Name + ">(" + idTag + ");");
+            AddCallToSubscriptionMethod(liner, model, Config.GraphQl.GqlSubscriptionDeletedMethod);
             liner.Add("return entity.Id;");
         });
     }
 
     #endregion
 
+    private void AddToDeletedEntityMethod(ClassMaker cm)
+    {
+        cm.AddClosure("private static T ToDeletedEntity<T>(T entity) where T : IEntity, new()", liner =>
+        {
+            liner.StartClosure("return new T()");
+            liner.Add("Id = entity.Id");
+            liner.EndClosure(";");
+        });
+    }
+
     private void AddSubscriptionMethods(ClassMaker cm, GeneratorConfig.ModelConfig model)
     {
         AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionCreatedMethod);
         AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionUpdatedMethod, false);
-        AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionDeletedMethod);
+        AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionDeletedMethod, true, "ToDeletedEntity(entity)");
 
         var subModels = GetMyRequiredSubModels(model);
         foreach (var sub in subModels)
@@ -165,12 +176,12 @@ public class GraphQlMutationsGenerator : BaseGenerator
         return "Get" + sub.Name + "For" + model.Name;
     }
 
-    private void AddSubscriptionMethod(ClassMaker cm, GeneratorConfig.ModelConfig model, string method, bool includeRequiredSubModels = true)
+    private void AddSubscriptionMethod(ClassMaker cm, GeneratorConfig.ModelConfig model, string method, bool includeRequiredSubModels = true, string payload = "entity")
     {
         var entityName = "entity";
         cm.AddClosure("private async Task Publish" + GetSubscriptionName(model, method) + "(ITopicEventSender sender, " + model.Name + " " + entityName + ")", liner =>
         {
-            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, method) + ", " + entityName + ");");
+            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, method) + ", " + payload + ");");
 
             if (includeRequiredSubModels)
             {

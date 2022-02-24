@@ -28,22 +28,33 @@ public class GraphQlSubscriptionsGenerator : BaseGenerator
         {
             AddSubscriptionMethod(cm, model.Name, Config.GraphQl.GqlSubscriptionCreatedMethod);
             AddSubscriptionMethod(cm, model.Name, Config.GraphQl.GqlSubscriptionUpdatedMethod);
-            AddSubscriptionMethod(cm, model.Name, Config.GraphQl.GqlSubscriptionDeletedMethod);
+            AddSubscriptionMethod(cm, model.Name, Config.GraphQl.GqlSubscriptionDeletedMethod, false);
         }
 
         fm.Build();
     }
 
-    private void AddSubscriptionMethod(ClassMaker cm, string modelName, string method)
+    private void AddSubscriptionMethod(ClassMaker cm, string modelName, string method, bool useProjection = true)
     {
         var n = modelName;
         var l = n.FirstToLower();
         cm.AddLine("[Subscribe]");
-        cm.AddLine("[UseSingleOrDefault]");
-        cm.AddLine("[UseProjection]");
-        cm.AddClosure("public IQueryable<" + n + "> " + n + method + "([EventMessage] " + n + " " + l + ")", liner =>
+
+        if (useProjection)
         {
-            liner.Add("return dbService.AsQueryableEntity(" + l + ");");
-        });
+            cm.AddLine("[UseSingleOrDefault]");
+            cm.AddLine("[UseProjection]");
+            cm.AddClosure("public IQueryable<" + n + "> " + n + method + "([EventMessage] " + n + " " + l + ")", liner =>
+            {
+                liner.Add("return dbService.AsQueryableEntity(" + l + ");");
+            });
+        }
+        else
+        {
+            cm.AddClosure("public " + n + " " + n + method + "([EventMessage] " + n + " " + l + ")", liner =>
+            {
+                liner.Add("return " + l +";");
+            });
+        }
     }
 }
