@@ -21,7 +21,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
 
-        cm.AddAttribute("Category(\"" + Config.Tests.TestCategory + "\")");
+        cm.AddAttribute("Category(\"" + Config.IntegrationTests.TestCategory + "\")");
 
         cm.AddLine("[SetUp]");
         cm.AddClosure("public async Task GqlSetUp()", liner =>
@@ -113,7 +113,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
     private void AddDockerInitializer(ClassMaker cm)
     {
-        cm.AddAttribute("Category(\"" + Config.Tests.TestCategory + "\")");
+        cm.AddAttribute("Category(\"" + Config.IntegrationTests.TestCategory + "\")");
         cm.AddAttribute("SetUpFixture");
 
         cm.AddLine("[OneTimeSetUp]");

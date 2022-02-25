@@ -39,7 +39,7 @@ public class GeneratorConfig
         public ConfigOutputSection Output { get; set; }
         public ConfigDatabaseSection Database { get; set; }
         public ConfigGraphQlSection GraphQl { get; set; }
-        public ConfigTestSection Tests { get; set; }
+        public ConfigIntegrationTestSection IntegrationTests { get; set; }
 
         [Check(CheckType.OneOf, "int", "string")]
         public string IdType { get; set; }
@@ -142,12 +142,10 @@ public class GeneratorConfig
         public string GqlSubscriptionDeletedMethod { get; set; }
     }
 
-    public class ConfigTestSection
+    public class ConfigIntegrationTestSection
     {
         [Check(CheckType.NotEmpty)]
         public string TestCategory { get; set; }
-        [Check(CheckType.NotEmpty)]
-        public string SubFolder { get; set; }
         [Check(CheckType.NotEmpty)]
         public string UtilsFolder { get; set; }
     }

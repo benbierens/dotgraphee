@@ -38,8 +38,7 @@ public class TestGenerator : BaseGenerator
 
     public void GenerateTests()
     {
-        MakeIntegrationTestDir(Config.Tests.SubFolder);
-        MakeIntegrationTestDir(Config.Tests.SubFolder, Config.Tests.UtilsFolder);
+        MakeIntegrationTestDir(Config.IntegrationTests.UtilsFolder);
         
         baseGqlTestClassGenerator.CreateBaseGqlTestClass();
         subscriptionHandleClassGenerator.CreateSubscriptionHandleClass();

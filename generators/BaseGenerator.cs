@@ -23,13 +23,13 @@ public class BaseGenerator
 
     protected FileMaker StartIntegrationTestUtilsFile(string filename)
     {
-        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.IntegrationTestFolder, Config.Tests.SubFolder, Config.Tests.UtilsFolder, filename + ".cs");
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.IntegrationTestFolder, Config.IntegrationTests.UtilsFolder, filename + ".cs");
         return new FileMaker(Config, f, Config.Output.IntegrationTestFolder);
     }
 
     protected FileMaker StartIntegrationTestFile(string filename)
     {
-        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.IntegrationTestFolder, Config.Tests.SubFolder, filename + ".cs");
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.IntegrationTestFolder, filename + ".cs");
         return new FileMaker(Config, f, Config.Output.IntegrationTestFolder);
     }
 

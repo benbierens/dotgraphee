@@ -84,7 +84,7 @@
 
   "config": {
     "generateNamespace": "DotGraphEE_Demo",
-    "HeaderComment": "// This file has been generated.",
+    "headerComment": "// This file has been generated.",
 
     // "idType" options are "int", "string".
     // Determines which scalar type to use for identifiers.
@@ -129,7 +129,7 @@
     },
 
     // Database configuration, both for local development and docker-compose.
-    "Database": {
+    "database": {
       "dbContextClassName": "DatabaseContext",
       "dbContextFileName": "DatabaseContext",
       "dbAccesserClassName": "DbService",
@@ -149,7 +149,7 @@
     },
 
     // GraphQL names.
-    "GraphQl": {
+    "graphQl": {
       "gqlTypesFileName": "GraphQlTypes",
       "gqlQueriesClassName": "Queries",
       "gqlQueriesFileName": "Queries",
@@ -170,10 +170,9 @@
       "gqlSubscriptionDeletedMethod": "Deleted"
     },
 
-    // Test configuration.
-    "Tests": {
+    // Integration test configuration.
+    "integrationTests": {
       "testCategory": "GraphQlTests",
-      "subFolder": "graphQlTests",
       "utilsFolder": "utils"
     }
   }

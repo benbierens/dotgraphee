@@ -29,7 +29,7 @@ public class ConfigValidator
         ProcessCheckAttributes(config.Database.LocalDev, "Database.LocalDev");
         ProcessCheckAttributes(config.Database.Docker, "Database.Docker");
         ProcessCheckAttributes(config.GraphQl, "GraphQl");
-        ProcessCheckAttributes(config.Tests, "Tests");
+        ProcessCheckAttributes(config.IntegrationTests, "IntegrationTests");
     }
 
     private void ValidateModels(GeneratorConfig.ModelConfig[] models)
