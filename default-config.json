@@ -114,8 +114,7 @@
     ],
     "testPackages": [
       "Microsoft.EntityFrameworkCore",
-      "Microsoft.EntityFrameworkCore.Design",
-      "Microsoft.EntityFrameworkCore.Proxies"
+      "Microsoft.EntityFrameworkCore.Design"
     ],
 
     // Output path configuration.
