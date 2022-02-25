@@ -15,6 +15,7 @@ public class ProjectGenerator : BaseGenerator
 
         AddSourceAssembly();
         AddIntegrationTestAssembly();
+        AddUnitTestAssembly();
     }
 
     private void AddSourceAssembly()
@@ -29,11 +30,21 @@ public class ProjectGenerator : BaseGenerator
 
     private void AddIntegrationTestAssembly()
     {
-        RunCommand("dotnet", "new", "nunit", "-o", Config.Output.IntegrationTestFolder);
-        RunCommand("dotnet", "sln", "add", Config.Output.IntegrationTestFolder + "/" + Config.Output.IntegrationTestFolder + ".csproj");
-        RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
-        InstallPackages(Config.IntegrationTestPackages, Config.Output.IntegrationTestFolder);
-        DeleteFile(Config.Output.IntegrationTestFolder, "UnitTest1.cs");
+        AddTestAssembly(Config.Output.IntegrationTestFolder, Config.TestPackages);
+    }
+
+    private void AddUnitTestAssembly()
+    {
+        AddTestAssembly(Config.Output.UnitTestFolder, Config.TestPackages);
+    }
+
+    private void AddTestAssembly(string folder, string[] packages)
+    {
+        RunCommand("dotnet", "new", "nunit", "-o", folder);
+        RunCommand("dotnet", "sln", "add", folder + "/" + folder + ".csproj");
+        RunCommand("dotnet", "add", folder, "reference", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
+        InstallPackages(packages, folder);
+        DeleteFile(folder, "UnitTest1.cs");
     }
 
     public void ModifyDefaultFiles()

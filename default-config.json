@@ -112,7 +112,7 @@
       "HotChocolate.Subscriptions.InMemory",
       "Npgsql.EntityFrameworkCore.PostgreSQL"
     ],
-    "integrationTestPackages": [
+    "testPackages": [
       "Microsoft.EntityFrameworkCore",
       "Microsoft.EntityFrameworkCore.Design"
     ],
@@ -122,6 +122,7 @@
       "projectRoot": "../dotgraphee-demo",
       "sourceFolder": "src",
       "integrationTestFolder": "integrationTests",
+      "unitTestFolder":  "unitTests",
       "generatedFolder": "generated",
       "dataTypeObjectsSubFolder": "dto",
       "databaseSubFolder": "db",

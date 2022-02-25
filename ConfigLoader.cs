@@ -49,7 +49,7 @@ public class GeneratorConfig
         [Check(CheckType.NotEmpty)]
         public string SelfRefNavigationPropertyPrefix { get; set; }
         public string[] SourcePackages { get; set; }
-        public string[] IntegrationTestPackages { get; set; }
+        public string[] TestPackages { get; set; }
 
         public FailedToFindStrategy GetFailedToFindStrategy()
         {
@@ -65,6 +65,8 @@ public class GeneratorConfig
         public string SourceFolder { get; set; }
         [Check(CheckType.NotEmpty)]
         public string IntegrationTestFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
+        public string UnitTestFolder { get; set; }
         [Check(CheckType.NotEmpty)]
         public string GeneratedFolder { get; set; }
         [Check(CheckType.NotEmpty)]
