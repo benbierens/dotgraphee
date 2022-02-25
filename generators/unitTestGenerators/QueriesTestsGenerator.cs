@@ -7,6 +7,79 @@ public class QueriesUnitTestsGenerator : BaseTestGenerator
     {
     }
 
+
+    //private Queries queries = null!;
+
+    //[SetUp]
+    //public void SetUp()
+    //{
+    //    queries = new Queries(dbService.Object);
+    //}
+
+    //[Test]
+    //public void UserAccountsShouldReturnAllUserAccounts()
+    //{
+    //    MockDbServiceQueryable(TestData.UserAccount1, TestData.UserAccount2);
+
+    //    var result = queries.UserAccounts();
+
+    //    AssertCollectionEquivalent(result, TestData.UserAccount1, TestData.UserAccount2);
+    //}
+
+    //[Test]
+    //public void UserAccountShouldReturnOneUserAccount()
+    //{
+    //    MockDbServiceQueryable(TestData.UserAccount1, TestData.UserAccount2);
+
+    //    var result = queries.UserAccount(TestData.UserAccount2.Id);
+
+    //    AssertCollectionEquivalent(result, TestData.UserAccount2);
+    //}
+
+
+    // base unit test:
+//using DotGraphEE_Demo;
+//using Moq;
+//using NUnit.Framework;
+//using System.Linq;
+
+//[TestFixture]
+//public abstract class BaseUnitTest
+//{
+//public UnitTestData TestData { get; set; } = null!;
+//public Mock<IDbService> dbService = null!;
+
+//[SetUp]
+//public void BaseSetUp()
+//{
+//    TestData = new UnitTestData();
+//    dbService = new Mock<IDbService>();
+//}
+
+//public Mock<IQueryable<T>> MockDbServiceQueryable<T>(params T[] list) where T : class, IEntity
+//{
+//    var mock = new Mock<IQueryable<T>>();
+//    var data = list.AsQueryable();
+
+//    mock.Setup(r => r.GetEnumerator()).Returns(data.GetEnumerator());
+//    mock.Setup(r => r.Provider).Returns(data.Provider);
+//    mock.Setup(r => r.ElementType).Returns(data.ElementType);
+//    mock.Setup(r => r.Expression).Returns(data.Expression);
+
+//    dbService.Setup(s => s.AsQueryable<T>()).Returns(mock.Object);
+
+//    return mock;
+//}
+
+//public static void AssertCollectionEquivalent<T>(IQueryable<T> queryable, params T[] list) where T : class
+//{
+//    var data = queryable.ToArray();
+//    CollectionAssert.AreEquivalent(list, data);
+//}
+
+//}
+
+
     public void GenerateQueriesUnitTests()
     {
         var fm = StartUnitTestFile("Queries", Config.Output.GraphQlSubFolder);
@@ -16,6 +89,7 @@ public class QueriesUnitTestsGenerator : BaseTestGenerator
         fm.AddUsing(Config.GenerateNamespace);
 
         var cm = fm.AddClass("QueriesTests");
+        cm.Modifiers.Clear();
         cm.AddAttribute("TestFixture");
 
         var dbAccessName = Config.Database.DbAccesserClassName.FirstToLower();
