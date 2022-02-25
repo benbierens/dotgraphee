@@ -39,6 +39,12 @@ public class BaseGenerator
         return new FileMaker(Config, f, Config.Output.UnitTestFolder);
     }
 
+    protected FileMaker StartUnitTestUtilsFile(string filename)
+    {
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.UnitTestFolder, Config.Output.GeneratedFolder, filename + ".cs");
+        return new FileMaker(Config, f, Config.Output.UnitTestFolder);
+    }
+
     protected CodeFileModifier ModifyFile(string filename)
     {
         return ModifyFile("", filename);
