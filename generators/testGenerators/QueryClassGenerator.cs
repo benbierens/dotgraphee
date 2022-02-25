@@ -9,7 +9,7 @@ public class QueryClassGenerator : BaseGenerator
     
     public void CreateQueryClasses()
     {
-        var fm = StartTestUtilsFile("QueryClasses");
+        var fm = StartIntegrationTestUtilsFile("QueryClasses");
         CreateQueryDataClass(fm);
         CreateQueryErrorClass(fm);
         CreateNodesWrapperClass(fm);

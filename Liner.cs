@@ -40,7 +40,7 @@ public class Liner
 
     public void AddBlankLine()
     {
-        Add("");
+        lines.Add("");
     }
 
     public string[] GetLines()

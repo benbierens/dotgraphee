@@ -7,7 +7,7 @@ public class DockerControllerClassGenerator : BaseGenerator
     
     public void CreateDockerControllerClass()
     {
-        var fm = StartTestUtilsFile("DockerController");
+        var fm = StartIntegrationTestUtilsFile("DockerController");
         var cm = fm.AddClass("DockerController");
         cm.AddUsing("System");
         cm.AddUsing("System.Diagnostics");

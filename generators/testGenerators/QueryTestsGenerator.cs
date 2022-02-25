@@ -10,7 +10,7 @@ public class QueryTestsGenerator : BaseTestGenerator
 
     public void CreateQueryTests()
     {
-        var fm = StartTestFile("QueryTests");
+        var fm = StartIntegrationTestFile("QueryTests");
         var cm = fm.AddClass("QueryTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");

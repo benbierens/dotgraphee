@@ -8,7 +8,7 @@ public class DeleteTestsGenerator : BaseTestGenerator
 
     public void CreateDeleteTests()
     {
-        var fm = StartTestFile("DeleteTests");
+        var fm = StartIntegrationTestFile("DeleteTests");
         var cm = fm.AddClass("DeleteTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");

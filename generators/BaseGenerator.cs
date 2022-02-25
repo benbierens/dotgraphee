@@ -21,16 +21,16 @@ public class BaseGenerator
         return new FileMaker(Config, f, Config.GenerateNamespace);
     }
 
-    protected FileMaker StartTestUtilsFile(string filename)
+    protected FileMaker StartIntegrationTestUtilsFile(string filename)
     {
-        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.TestFolder, Config.Tests.SubFolder, Config.Tests.UtilsFolder, filename + ".cs");
-        return new FileMaker(Config, f, Config.Output.TestFolder);
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.IntegrationTestFolder, Config.Tests.SubFolder, Config.Tests.UtilsFolder, filename + ".cs");
+        return new FileMaker(Config, f, Config.Output.IntegrationTestFolder);
     }
 
-    protected FileMaker StartTestFile(string filename)
+    protected FileMaker StartIntegrationTestFile(string filename)
     {
-        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.TestFolder, Config.Tests.SubFolder, filename + ".cs");
-        return new FileMaker(Config, f, Config.Output.TestFolder);
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.IntegrationTestFolder, Config.Tests.SubFolder, filename + ".cs");
+        return new FileMaker(Config, f, Config.Output.IntegrationTestFolder);
     }
 
     protected CodeFileModifier ModifyFile(string filename)
@@ -65,9 +65,9 @@ public class BaseGenerator
         MakeDir(arr);
     }
 
-    protected void MakeTestDir(params string[] path)
+    protected void MakeIntegrationTestDir(params string[] path)
     {
-        var arr = new[] { Config.Output.TestFolder }.Concat(path).ToArray();
+        var arr = new[] { Config.Output.IntegrationTestFolder }.Concat(path).ToArray();
         MakeDir(arr);
     }
 

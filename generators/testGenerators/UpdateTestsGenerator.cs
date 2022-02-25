@@ -9,7 +9,7 @@ public class UpdateTestsGenerator : BaseTestGenerator
 
     public void CreateUpdateTests()
     {
-        var fm = StartTestFile("UpdateTests");
+        var fm = StartIntegrationTestFile("UpdateTests");
         var cm = fm.AddClass("UpdateTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");

@@ -9,7 +9,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
 
     public void CreateSubscriptionTests()
     {
-        var fm = StartTestFile("SubscriptionTests");
+        var fm = StartIntegrationTestFile("SubscriptionTests");
         var cm = fm.AddClass("SubscriptionTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");

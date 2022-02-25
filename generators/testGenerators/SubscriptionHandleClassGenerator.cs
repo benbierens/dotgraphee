@@ -9,7 +9,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
 
     public void CreateSubscriptionHandleClass()
     {
-        var fm = StartTestUtilsFile("SubscriptionHandle");
+        var fm = StartIntegrationTestUtilsFile("SubscriptionHandle");
         var im = fm.AddInterface("ISubscriptionHandle");
         im.AddLine("Task Subscribe<TOutput>();");
         im.AddLine("Task Unsubscribe();");

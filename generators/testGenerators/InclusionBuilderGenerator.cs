@@ -7,7 +7,7 @@
 
     public void CreateInclusionBuilderClass()
     {
-        var fm = StartTestUtilsFile("InclusionBuilder");
+        var fm = StartIntegrationTestUtilsFile("InclusionBuilder");
         var cm = fm.AddClass("InclusionBuilder<T>");
         cm.Modifiers.Clear();
 

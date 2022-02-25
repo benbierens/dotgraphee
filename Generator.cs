@@ -25,7 +25,7 @@ public class Generator : BaseGenerator
     {
         MakeDir();
         MakeDir(Config.Output.SourceFolder);
-        MakeDir(Config.Output.TestFolder);
+        MakeDir(Config.Output.IntegrationTestFolder);
 
         projectGenerator.CreateDotNetProject();
 
@@ -41,5 +41,7 @@ public class Generator : BaseGenerator
         readmeGenerator.GenerateReadme();
 
         databaseGenerator.CreateInitialMigration();
+
+        projectGenerator.FormatCode();
     }
 }

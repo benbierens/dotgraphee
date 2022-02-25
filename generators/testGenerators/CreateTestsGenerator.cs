@@ -7,7 +7,7 @@
 
     public void CreateCreateTests()
     {
-        var fm = StartTestFile("CreateTests");
+        var fm = StartIntegrationTestFile("CreateTests");
         var cm = fm.AddClass("CreateTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");

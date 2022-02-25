@@ -12,26 +12,39 @@ public class ProjectGenerator : BaseGenerator
     {
         RunCommand("dotnet", "new", "-i", "HotChocolate.Templates.Server");
         RunCommand("dotnet", "new", "sln");
-        RunCommand("dotnet", "new", "graphql", "-o", Config.Output.SourceFolder);
 
+        AddSourceAssembly();
+        AddIntegrationTestAssembly();
+    }
+
+    private void AddSourceAssembly()
+    {
+        RunCommand("dotnet", "new", "graphql", "-o", Config.Output.SourceFolder);
         BumpProjectToDotNetSix();
         InstallPackages(Config.SourcePackages, Config.Output.SourceFolder);
-
-        RunCommand("dotnet", "new", "nunit", "-o", Config.Output.TestFolder);
         RunCommand("dotnet", "sln", "add", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
-        RunCommand("dotnet", "sln", "add", Config.Output.TestFolder + "/" + Config.Output.TestFolder + ".csproj");
-        RunCommand("dotnet", "add", Config.Output.TestFolder, "reference", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
-        InstallPackages(Config.TestPackages, Config.Output.TestFolder);
-
-        RunCommand("dotnet", "tool", "install", "--global", "dotnet-ef");
-
         DeleteFile(Config.Output.SourceFolder, "Query.cs");
+        RunCommand("dotnet", "tool", "install", "--global", "dotnet-ef");
+    }
+
+    private void AddIntegrationTestAssembly()
+    {
+        RunCommand("dotnet", "new", "nunit", "-o", Config.Output.IntegrationTestFolder);
+        RunCommand("dotnet", "sln", "add", Config.Output.IntegrationTestFolder + "/" + Config.Output.IntegrationTestFolder + ".csproj");
+        RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
+        InstallPackages(Config.IntegrationTestPackages, Config.Output.IntegrationTestFolder);
+        DeleteFile(Config.Output.IntegrationTestFolder, "UnitTest1.cs");
     }
 
     public void ModifyDefaultFiles()
     {
         ModifyStartupFile();
-        ModifyTestProjectFile();
+        ModifyIntegrationTestProjectFile();
+    }
+
+    public void FormatCode()
+    {
+        RunCommand("dotnet", "format");
     }
 
     private void BumpProjectToDotNetSix()
@@ -79,9 +92,9 @@ public class ProjectGenerator : BaseGenerator
         GeneratorPager();
     }
 
-    private void ModifyTestProjectFile()
+    private void ModifyIntegrationTestProjectFile()
     {
-        var mf = ModifyFile(Config.Output.TestFolder, "test.csproj");
+        var mf = ModifyFile(Config.Output.IntegrationTestFolder, Config.Output.IntegrationTestFolder + ".csproj");
         mf.ReplaceLine("<IsPackable>false</IsPackable>",
             "<IsPackable>false</IsPackable>",
             "<Nullable>enable</Nullable>");

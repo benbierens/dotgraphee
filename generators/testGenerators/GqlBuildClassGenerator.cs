@@ -7,7 +7,7 @@
 
     public void CreateGqlBuildClass()
     {
-        var fm = StartTestUtilsFile("GqlBuild");
+        var fm = StartIntegrationTestUtilsFile("GqlBuild");
         var cm = fm.AddClass("GqlBuild");
         cm.AddUsing("System");
         cm.AddUsing("System.Collections.Generic");

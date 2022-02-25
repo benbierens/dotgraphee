@@ -10,7 +10,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
     public void CreateBaseGqlTestClass()
     {
-        var fm = StartTestUtilsFile("BaseGqlTest");
+        var fm = StartIntegrationTestUtilsFile("BaseGqlTest");
         AddBaseGqlTestClass(fm.AddClass("BaseGqlTest"));
         AddDockerInitializer(fm.AddClass("DockerInitializer"));
         fm.Build();
