@@ -1,4 +1,4 @@
-public class TestGenerator : BaseGenerator
+public class IntegrationTestGenerator : BaseGenerator
 {
     private readonly BaseGqlTestClassGenerator baseGqlTestClassGenerator;
     private readonly SubscriptionHandleClassGenerator subscriptionHandleClassGenerator;
@@ -16,7 +16,7 @@ public class TestGenerator : BaseGenerator
     private readonly DeleteTestsGenerator deleteTestsGenerator;
     private readonly SubscriptionTestsGenerator subscriptionTestsGenerator;
 
-    public TestGenerator(GeneratorConfig config)
+    public IntegrationTestGenerator(GeneratorConfig config)
         : base(config)
     {
         baseGqlTestClassGenerator = new BaseGqlTestClassGenerator(config);
@@ -36,7 +36,7 @@ public class TestGenerator : BaseGenerator
         subscriptionTestsGenerator = new SubscriptionTestsGenerator(config);
     }
 
-    public void GenerateTests()
+    public void GenerateIntegrationTests()
     {
         MakeIntegrationTestDir(Config.IntegrationTests.UtilsFolder);
         

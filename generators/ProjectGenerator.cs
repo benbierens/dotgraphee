@@ -30,12 +30,12 @@ public class ProjectGenerator : BaseGenerator
 
     private void AddIntegrationTestAssembly()
     {
-        AddTestAssembly(Config.Output.IntegrationTestFolder, Config.TestPackages);
+        AddTestAssembly(Config.Output.IntegrationTestFolder, Config.IntegrationTestPackages);
     }
 
     private void AddUnitTestAssembly()
     {
-        AddTestAssembly(Config.Output.UnitTestFolder, Config.TestPackages);
+        AddTestAssembly(Config.Output.UnitTestFolder, Config.UnitTestPackages);
     }
 
     private void AddTestAssembly(string folder, string[] packages)

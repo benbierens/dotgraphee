@@ -33,6 +33,12 @@ public class BaseGenerator
         return new FileMaker(Config, f, Config.Output.IntegrationTestFolder);
     }
 
+    protected FileMaker StartUnitTestFile(string filename, string subFolder)
+    {
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.UnitTestFolder, Config.Output.GeneratedFolder, subFolder, filename + ".Tests.cs");
+        return new FileMaker(Config, f, Config.Output.UnitTestFolder);
+    }
+
     protected CodeFileModifier ModifyFile(string filename)
     {
         return ModifyFile("", filename);
@@ -68,6 +74,12 @@ public class BaseGenerator
     protected void MakeIntegrationTestDir(params string[] path)
     {
         var arr = new[] { Config.Output.IntegrationTestFolder }.Concat(path).ToArray();
+        MakeDir(arr);
+    }
+
+    protected void MakeUnitTestDir(params string[] path)
+    {
+        var arr = new[] { Config.Output.UnitTestFolder }.Concat(path).ToArray();
         MakeDir(arr);
     }
 
