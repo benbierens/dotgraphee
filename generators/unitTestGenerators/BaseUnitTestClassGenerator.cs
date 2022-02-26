@@ -24,15 +24,17 @@
             .Build();
 
         cm.AddProperty(GetDbAccessorName())
-            .IsType(GetDbAccessorName())
+            .IsType("Mock<I" + GetDbAccessorName() + ">")
             .InitializeAsExplicitNull()
             .Build();
+
+        cm.AddBlankLine();
 
         cm.AddLine("[SetUp]");
         cm.AddClosure("public void BaseSetUp()", liner =>
         {
             liner.Add("TestData = new UnitTestData();");
-            liner.Add("dbService = new Mock<IDbService>();");
+            liner.Add(GetDbAccessorName() + " = new Mock<I" + GetDbAccessorName() + ">();");
         });
 
         cm.AddClosure("public Mock<IQueryable<T>> " + GetMockDbServiceQueryableFunctionName() + "<T>(params T[] list) where T : class, IEntity", liner =>

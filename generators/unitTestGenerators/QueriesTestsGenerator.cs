@@ -12,8 +12,6 @@ public class QueriesUnitTestsGenerator : BaseUnitTestGenerator
     public void GenerateQueriesUnitTests()
     {
         var fm = StartUnitTestFile("Queries", Config.Output.GraphQlSubFolder);
-        fm.AddUsing("Moq");
-        fm.AddUsing("System.Linq");
         fm.AddUsing("NUnit.Framework");
         fm.AddUsing(Config.GenerateNamespace);
 

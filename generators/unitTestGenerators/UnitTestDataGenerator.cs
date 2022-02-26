@@ -19,12 +19,12 @@ public class UnitTestDataGenerator : BaseGenerator
         {
             cm.AddProperty(m.Name + "1")
                 .IsType(m.Name)
-                .WithCustomInitializer(" = new " + m.Name + "() { Id = " + GetUniqueId() + " }")
+                .WithCustomInitializer(" = new " + m.Name + "() { Id = " + GetUniqueId() + " };")
                 .Build();
 
             cm.AddProperty(m.Name + "2")
                 .IsType(m.Name)
-                .WithCustomInitializer(" = new " + m.Name + "() { Id = " + GetUniqueId() + " }")
+                .WithCustomInitializer(" = new " + m.Name + "() { Id = " + GetUniqueId() + " };")
                 .Build();
         }
 
