@@ -22,4 +22,9 @@ public abstract class BaseUnitTestGenerator : BaseGenerator
     {
         return "Mock" + GetDbAccessorName() + "Queryable";
     }
+
+    protected string GetMockDbServiceQueryableEntityFunctionName()
+    {
+        return GetMockDbServiceQueryableFunctionName() + "Entity";
+    }
 }
