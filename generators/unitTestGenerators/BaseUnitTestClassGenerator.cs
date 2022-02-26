@@ -54,7 +54,7 @@
         {
             liner.Add("var data = new List<T>().AsQueryable();");
             liner.Add("var mock = CreateMockQueryable(data);");
-            liner.Add(GetDbAccessorName() + ".Setup(s => s.AsQueryableEntity<T>(argumentEntity)).Returns(mock.Object);");
+            liner.Add(GetDbAccessorName() + ".Setup(s => s.AsQueryableEntity(argumentEntity)).Returns(mock.Object);");
             liner.Add("return mock;");
         });
 

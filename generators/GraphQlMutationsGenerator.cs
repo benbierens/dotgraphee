@@ -14,15 +14,17 @@ public class GraphQlMutationsGenerator : BaseGenerator
         var cm = StartClass(fm, className);
         cm.AddUsing("System.Threading.Tasks");
         cm.AddUsing("System.Linq");
-        cm.AddUsing("HotChocolate");
         cm.AddUsing("HotChocolate.Subscriptions");
         cm.AddUsing("HotChocolate.Data");
+        cm.AddUsing("HotChocolate");
 
         cm.AddLine("private readonly IDbService dbService;");
+        cm.AddLine("private readonly IPublisher publisher;");
         cm.AddBlankLine();
-        cm.AddClosure("public " + className + "(" + dbInterface + " dbService)", liner =>
+        cm.AddClosure("public " + className + "(" + dbInterface + " dbService, IPublisher publisher)", liner =>
         {
             liner.Add("this.dbService = dbService;");
+            liner.Add("this.publisher = publisher;");
         });
 
         foreach (var model in Models)
@@ -33,15 +35,6 @@ public class GraphQlMutationsGenerator : BaseGenerator
             AddUpdateMutation(cm, model, inputTypeNames);
             AddDeleteMutation(cm, model, inputTypeNames);
         }
-
-        cm.AddLine("#region Subscriptions");
-        cm.AddBlankLine();
-        foreach (var model in Models)
-        {
-            AddSubscriptionMethods(cm, model);
-        }
-        AddToDeletedEntityMethod(cm);
-        cm.AddLine("#endregion");
 
         fm.Build();
     }
@@ -138,81 +131,19 @@ public class GraphQlMutationsGenerator : BaseGenerator
 
     #endregion
 
-    private void AddToDeletedEntityMethod(ClassMaker cm)
-    {
-        cm.AddClosure("private static T ToDeletedEntity<T>(T entity) where T : IEntity, new()", liner =>
-        {
-            liner.StartClosure("return new T()");
-            liner.Add("Id = entity.Id");
-            liner.EndClosure(";");
-        });
-    }
-
-    private void AddSubscriptionMethods(ClassMaker cm, GeneratorConfig.ModelConfig model)
-    {
-        AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionCreatedMethod);
-        AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionUpdatedMethod, false);
-        AddSubscriptionMethod(cm, model, Config.GraphQl.GqlSubscriptionDeletedMethod, true, "ToDeletedEntity(entity)");
-
-        var subModels = GetMyRequiredSubModels(model);
-        foreach (var sub in subModels)
-        {
-            AddGetSubModelMethod(cm, model, sub);
-        }
-    }
-
-    private void AddGetSubModelMethod(ClassMaker cm, GeneratorConfig.ModelConfig model, GeneratorConfig.ModelConfig sub)
-    {
-        var m = model.Name;
-        var s = sub.Name;
-        cm.AddClosure("private " + s + " " +GetGetSubModelMethodName(model, sub) + "(" + m + " entity)", liner =>
-        {
-            liner.Add("return dbService.All<" + s + ">().Single(e => e." + m + "Id == entity.Id);");
-        });
-    }
-
-    private string GetGetSubModelMethodName(GeneratorConfig.ModelConfig model, GeneratorConfig.ModelConfig sub)
-    {
-        return "Get" + sub.Name + "For" + model.Name;
-    }
-
-    private void AddSubscriptionMethod(ClassMaker cm, GeneratorConfig.ModelConfig model, string method, bool includeRequiredSubModels = true, string payload = "entity")
-    {
-        var entityName = "entity";
-        cm.AddClosure("private async Task Publish" + GetSubscriptionName(model, method) + "(ITopicEventSender sender, " + model.Name + " " + entityName + ")", liner =>
-        {
-            if (includeRequiredSubModels)
-            {
-                var subModels = GetMyRequiredSubModels(model);
-                foreach (var sub in subModels)
-                {
-                    var methodName = GetGetSubModelMethodName(model, sub);
-                    AddCallToSubscriptionMethod(liner, sub, method, methodName + "(" + entityName + ")");
-                }
-            }
-
-            liner.Add("await sender.SendAsync(" + GetSubscriptionTopicName(model, method) + ", " + payload + ");");
-        });
-    }
-
     private void AddCallToSubscriptionMethod(Liner liner, GeneratorConfig.ModelConfig model, string subscriptionMethod, string entityName = "entity")
     {
-        liner.Add("await Publish" + GetSubscriptionName(model, subscriptionMethod) + "(sender, " + entityName + ");");
-    }
-
-    private string GetSubscriptionName(GeneratorConfig.ModelConfig model, string gqlSubscriptionMethod)
-    {
-        return model.Name + gqlSubscriptionMethod;
-    }
-
-    private string GetSubscriptionTopicName(GeneratorConfig.ModelConfig model, string gqlSubscriptionMethod)
-    {
-        return "nameof(" + Config.GraphQl.GqlSubscriptionsClassName + "." + GetSubscriptionName(model, gqlSubscriptionMethod) + ")";
+        liner.Add("await publisher.Publish" + GetSubscriptionName(model, subscriptionMethod) + "(sender, " + entityName + ");");
     }
 
     private void AddFailedToFindStrategyEarlyReturn(Liner liner, GeneratorConfig.ModelConfig model, string idTag)
     {
         if (IsFailedToFindStrategyNullObject()) liner.Add("if (entity == null) return null;");
         if (IsFailedToFindStrategyErrorCode()) liner.Add("if (entity == null) throw new GraphQLException(\"Unable to find '" + model.Name + "' by Id: '\" + " + idTag + " + \"'\");");
+    }
+
+    private string GetSubscriptionName(GeneratorConfig.ModelConfig model, string gqlSubscriptionMethod)
+    {
+        return model.Name + gqlSubscriptionMethod;
     }
 }

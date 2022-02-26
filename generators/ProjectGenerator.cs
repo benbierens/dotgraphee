@@ -80,14 +80,15 @@ public class ProjectGenerator : BaseGenerator
         var mf = ModifyFile(Config.Output.SourceFolder, "Startup.cs");
         mf.AddUsing(Config.GenerateNamespace);
         mf.AddUsing("HotChocolate.AspNetCore");
-        
 
-        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Transient<I" + Config.Database.DbAccesserClassName + ", " + Config.Database.DbAccesserClassName + ">());");
+
+        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<IPublisher, Publisher>());");
+        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<I" + Config.Database.DbAccesserClassName + ", " + Config.Database.DbAccesserClassName + ">());");
         //mf.Insert(23, 3, "services.AddPooledDbContextFactory<" + Config.Database.DbContextClassName + ">(options => { });");
 
         mf.ReplaceLine(".AddQueryType<Query>();", GetServiceDecorators().ToArray());
                 
-        mf.Insert(25 + GetVariableServiceDecoratorLines(), 3, "services.AddInMemorySubscriptions();");
+        mf.Insert(26 + GetVariableServiceDecoratorLines(), 3, "services.AddInMemorySubscriptions();");
 
         mf.ReplaceLine("app.UseDeveloperExceptionPage();",
             "app.UsePlayground();",
