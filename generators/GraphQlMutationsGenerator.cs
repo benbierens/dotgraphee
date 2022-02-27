@@ -101,6 +101,11 @@ public class GraphQlMutationsGenerator : BaseGenerator
                 AddAssignmentLine(liner, f.WithId, inputName);
             }
         }
+        var optionalSubModels = GetMyOptionalSubModels(model);
+        foreach (var subModel in optionalSubModels)
+        {
+            AddAssignmentLine(liner, subModel.Name + "Id", inputName);            
+        }
     }
 
     private void AddAssignmentLine(Liner liner, string fieldName, string inputName)
