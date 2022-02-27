@@ -34,14 +34,12 @@
 
         foreach (var m in Models)
         {
-            cm.AddLine("#region " + m.Name);
-            cm.AddBlankLine();
+            cm.BeginRegion(m.Name);
             queryAllMethodSubgenerator.AddQueryAllMethod(cm, m);
             queryAllMethodSubgenerator.AddQueryOneMethod(cm, m);
             mutationMethodsSubgenerator.AddMutationMethods(cm, m);
             subscriptionMethodsSubgenerator.AddSubscribeMethods(cm, m);
-            cm.AddLine("#endregion");
-            cm.AddBlankLine();
+            cm.EndRegion();
         }
 
         cm.AddClosure("private async Task<SubscriptionHandle<TPayload>> SubscribeTo<TPayload, TOutput>(string modelName)", liner =>

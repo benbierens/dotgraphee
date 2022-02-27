@@ -13,6 +13,12 @@ public abstract class BaseUnitTestGenerator : BaseGenerator
         cm.AddClosure("public void " + name + "()", liner);
     }
 
+    protected void AddAsyncTest(ClassMaker cm, string name, Action<Liner> liner)
+    {
+        cm.AddLine("[Test]");
+        cm.AddClosure("public async Task " + name + "()", liner);
+    }
+
     protected string GetDbAccessorName()
     {
         return Config.Database.DbAccesserClassName;

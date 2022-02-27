@@ -1,6 +1,4 @@
-﻿using System;
-
-public class SubscriptionsUnitTestsGenerator : BaseUnitTestGenerator
+﻿public class SubscriptionsUnitTestsGenerator : BaseUnitTestGenerator
 {
     private string subsName;
 

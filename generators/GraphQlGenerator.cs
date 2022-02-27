@@ -5,6 +5,7 @@ public class GraphQlGenerator : BaseGenerator
     private readonly GraphQlTypesGenerator typesGenerator;
     private readonly GraphQlMutationsGenerator mutationsGenerator;
     private readonly PublisherClassGenerator publisherClassGenerator;
+    private readonly InputConverterClassGenerator inputConverterClassGenerator;
 
     public GraphQlGenerator(GeneratorConfig config)
         : base(config)
@@ -14,6 +15,7 @@ public class GraphQlGenerator : BaseGenerator
         typesGenerator = new GraphQlTypesGenerator(config);
         mutationsGenerator = new GraphQlMutationsGenerator(config);
         publisherClassGenerator = new PublisherClassGenerator(config);
+        inputConverterClassGenerator = new InputConverterClassGenerator(config);
     }
 
     public void GenerateGraphQl()
@@ -24,5 +26,6 @@ public class GraphQlGenerator : BaseGenerator
         typesGenerator.GenerateGraphQlTypes();  
         mutationsGenerator.GenerateGraphQlMutations();
         publisherClassGenerator.GeneratePublisher();
+        inputConverterClassGenerator.GenerateInputConverter();
     }
 }

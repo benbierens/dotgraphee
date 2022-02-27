@@ -20,11 +20,13 @@ public class GraphQlMutationsGenerator : BaseGenerator
 
         cm.AddLine("private readonly IDbService dbService;");
         cm.AddLine("private readonly IPublisher publisher;");
+        cm.AddLine("private readonly IInputConverter inputConverter;");
         cm.AddBlankLine();
-        cm.AddClosure("public " + className + "(" + dbInterface + " dbService, IPublisher publisher)", liner =>
+        cm.AddClosure("public " + className + "(" + dbInterface + " dbService, IPublisher publisher, IInputConverter inputConverter)", liner =>
         {
             liner.Add("this.dbService = dbService;");
             liner.Add("this.publisher = publisher;");
+            liner.Add("this.inputConverter = inputConverter;");
         });
 
         foreach (var model in Models)
@@ -49,10 +51,8 @@ public class GraphQlMutationsGenerator : BaseGenerator
         cm.AddClosure("public async Task<IQueryable<" + model.Name + ">> " + Config.GraphQl.GqlMutationsCreateMethod + model.Name +
         "(" + inputTypeNames.Create + " input, [Service] ITopicEventSender sender)", liner =>
         {
-            liner.Add("var entity = input.ToDto();");
-
+            liner.Add("var entity = inputConverter.ToDto(input);");
             AddDatabaseAddAndSave(liner);
-
             AddCallToSubscriptionMethod(liner, model, Config.GraphQl.GqlSubscriptionCreatedMethod);
             liner.Add("return dbService.AsQueryableEntity(entity);");
         });

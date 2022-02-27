@@ -34,6 +34,18 @@ public class ClassMaker
         AddLine("");
     }
 
+    public void BeginRegion(string name)
+    {
+        AddLine("#region " + name);
+        AddBlankLine();
+    }
+
+    public void EndRegion()
+    {
+        AddLine("#endregion");
+        AddBlankLine();
+    }
+
     public PropertyMaker AddProperty(string name)
     {
         return new PropertyMaker(this, name);

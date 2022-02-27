@@ -26,6 +26,21 @@ public class UnitTestDataGenerator : BaseGenerator
                 .IsType(m.Name)
                 .WithCustomInitializer(" = new " + m.Name + "() { Id = " + GetUniqueId() + " };")
                 .Build();
+
+            var inputTypes = GetInputTypeNames(m);
+            cm.AddProperty(inputTypes.Create)
+                .IsType(inputTypes.Create)
+                .Build();
+            cm.AddProperty(inputTypes.Update)
+                .IsType(inputTypes.Update)
+                .Build();
+
+            if (!IsRequiredSubModel(m))
+            {
+                cm.AddProperty(inputTypes.Delete)
+                .IsType(inputTypes.Delete)
+                .Build();
+            }
         }
 
         fm.Build();

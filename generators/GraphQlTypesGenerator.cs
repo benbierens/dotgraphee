@@ -22,7 +22,6 @@ public class GraphQlTypesGenerator : BaseGenerator
             AddForeignIdProperties(createClass, model);
             AddSubModelInputProperties(createClass, model);
             createClass.AddBlankLine();
-            AddToDtoMethod(createClass, model);
 
             var updateClass = StartClass(fm, inputTypeNames.Update);
             updateClass.AddProperty(model.Name + "Id")
@@ -54,59 +53,6 @@ public class GraphQlTypesGenerator : BaseGenerator
                 .IsNullable()
                 .Build();
         }
-    }
-
-    private void AddToDtoMethod(ClassMaker cm, GeneratorConfig.ModelConfig model)
-    {
-        cm.AddClosure("public " + model.Name + " ToDto()", liner =>
-        {
-            var requiredSubModels = GetMyRequiredSubModels(model);
-            var optionalSubModels = GetMyOptionalSubModels(model);
-
-            liner.StartClosure("return new " + model.Name);
-            AddEntityIdInitializer(liner);
-            AddModelInitializer(liner, model);
-            foreach (var subModel in requiredSubModels)
-            {
-                liner.Add(subModel.Name + " = " + subModel.Name + ".ToDto(),");
-            }
-            foreach (var subModel in optionalSubModels)
-            {
-                liner.Add(subModel.Name + "Id = " + subModel.Name + "Id,");
-            }
-
-            liner.EndClosure(";");
-        });
-    }
-
-    private void AddEntityIdInitializer(Liner liner)
-    {
-        if (Config.IdType != "string") return;
-        liner.Add("Id = Guid.NewGuid().ToString(),");
-    }
-
-    private void AddModelInitializer(Liner liner, GeneratorConfig.ModelConfig model, string inputName = null)
-    {
-        var addresser = GetModelInitializerAddresser(inputName);
-
-        foreach (var field in model.Fields)
-        {
-            liner.Add(field.Name + " = " + addresser + field.Name + ",");
-        }
-        var foreignProperties = GetForeignProperties(model);
-        foreach (var f in foreignProperties)
-        {
-            if (!f.IsRequiredSingular())
-            {
-                liner.Add(f.WithId + " = " + addresser + f.WithId + ",");
-            }
-        }
-    }
-
-    private string GetModelInitializerAddresser(string inputName)
-    {
-        if (inputName == null) return "";
-        return inputName + ".";
     }
 
     private void AddSubModelInputProperties(ClassMaker cm, GeneratorConfig.ModelConfig model)
