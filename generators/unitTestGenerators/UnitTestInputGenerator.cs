@@ -42,7 +42,7 @@ public class UnitTestInputGenerator : BaseGenerator
 
     private void AddConstructor(ClassMaker cm)
     {
-        cm.AddClosure("public UnitTestInput(UnitTestData data)", liner =>
+        cm.AddClosure("public UnitTestInput(TestData data)", liner =>
         {
             foreach (var m in Models)
             {

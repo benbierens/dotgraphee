@@ -20,7 +20,7 @@
         cm.Modifiers.Add("abstract");
 
         cm.AddProperty("TestData")
-            .IsType("UnitTestData")
+            .IsType("TestData")
             .InitializeAsExplicitNull()
             .Build();
 
@@ -39,7 +39,7 @@
         cm.AddLine("[SetUp]");
         cm.AddClosure("public void BaseSetUp()", liner =>
         {
-            liner.Add("TestData = new UnitTestData();");
+            liner.Add("TestData = new TestData();");
             liner.Add("TestInput = new UnitTestInput(TestData);");
             liner.Add(GetDbAccessorName() + " = new Mock<I" + GetDbAccessorName() + ">();");
         });

@@ -11,6 +11,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     public void CreateBaseGqlTestClass()
     {
         var fm = StartIntegrationTestUtilsFile("BaseGqlTest");
+        fm.AddUsing(Config.Output.UnitTestFolder.FirstToUpper());
         AddBaseGqlTestClass(fm.AddClass("BaseGqlTest"));
         AddDockerInitializer(fm.AddClass("DockerInitializer"));
         fm.Build();
@@ -81,7 +82,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     private void AddAssignIdToTestData(Liner liner, GeneratorConfig.ModelConfig m, params string[] accessors)
     {
         var accessor = string.Join(".", accessors) + ".Id";
-        liner.Add("TestData.Test" + m.Name + ".Id = " + accessor + ";");
+        liner.Add("TestData." + m.Name + "1.Id = " + accessor + ";");
 
         var subModels = GetMyRequiredSubModels(m);
         foreach (var subModel in subModels)
@@ -100,7 +101,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
             if (!f.IsSelfReference)
             {
                 liner.Add("await CreateTest" + f.Type + "();");
-                arguments.Add("TestData.Test" + f.Type + ".Id");
+                arguments.Add("TestData." + f.Type + "1.Id");
             }
             else
             {

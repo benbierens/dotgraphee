@@ -16,6 +16,9 @@ public class ProjectGenerator : BaseGenerator
         AddSourceAssembly();
         AddIntegrationTestAssembly();
         AddUnitTestAssembly();
+
+        // Reference from IntegrationTestAssembly to UnitTestAssembly, to share test data.
+        RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.UnitTestFolder + "/" + Config.Output.UnitTestFolder + ".csproj");
     }
 
     private void AddSourceAssembly()

@@ -65,7 +65,7 @@ public class QueryTestsGenerator : BaseTestGenerator
         {
             AddCreateTestEntityLine(liner, m);
             liner.AddBlankLine();
-            liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData.Test" + m.Name + ".Id);");
+            liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData." + m.Name + "1.Id);");
             AddAssert(liner).NoErrors();
             liner.Add("var entity = gqlData.Data." + m.Name + ";");
             AddAssert(liner).EntityNotNull("QueryOne" + m.Name);
@@ -91,7 +91,7 @@ public class QueryTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldReturn" + GetErrorOrNull() + "WhenQueryOne" + m.Name + "ByIncorrectId()", liner =>
         {
-            liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData.Test" + Config.IdType.FirstToUpper() + ");");
+            liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData." + Config.IdType.FirstToUpper() + ");");
             liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
             AddAssert(liner).NoErrors("query");

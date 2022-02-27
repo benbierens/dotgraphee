@@ -4,7 +4,6 @@ public class IntegrationTestGenerator : BaseGenerator
     private readonly SubscriptionHandleClassGenerator subscriptionHandleClassGenerator;
     private readonly DockerControllerClassGenerator dockerControllerClassGenerator;
     private readonly QueryClassGenerator queryClassGenerator;
-    private readonly TestDataClassGenerator testDataClassGenerator;
     private readonly GqlClassGenerator gqlClassGenerator;
     private readonly InclusionBuilderGenerator inclusionBuilderGenerator;
     private readonly GqlBuildClassGenerator gqlBuildClassGenerator;
@@ -23,7 +22,6 @@ public class IntegrationTestGenerator : BaseGenerator
         subscriptionHandleClassGenerator = new SubscriptionHandleClassGenerator(config);
         dockerControllerClassGenerator = new DockerControllerClassGenerator(config);
         queryClassGenerator = new QueryClassGenerator(config);
-        testDataClassGenerator = new TestDataClassGenerator(config);
         gqlClassGenerator = new GqlClassGenerator(config);
         inclusionBuilderGenerator = new InclusionBuilderGenerator(config);
         gqlBuildClassGenerator = new GqlBuildClassGenerator(config);
@@ -44,7 +42,6 @@ public class IntegrationTestGenerator : BaseGenerator
         subscriptionHandleClassGenerator.CreateSubscriptionHandleClass();
         dockerControllerClassGenerator.CreateDockerControllerClass();
         queryClassGenerator.CreateQueryClasses();
-        testDataClassGenerator.CreateTestDataClass();
         gqlClassGenerator.CreateGqlClass();
         inclusionBuilderGenerator.CreateInclusionBuilderClass();
         gqlBuildClassGenerator.CreateGqlBuildClass();

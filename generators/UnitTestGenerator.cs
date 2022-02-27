@@ -1,6 +1,6 @@
 ﻿public class UnitTestGenerator : BaseGenerator
 {
-    private readonly UnitTestDataGenerator unitTestDataGenerator;
+    private readonly TestDataClassGenerator testDataClassGenerator;
     private readonly UnitTestInputGenerator unitTestInputGenerator;
     private readonly BaseUnitTestClassGenerator baseUnitTestGenerator;
     private readonly QueriesUnitTestsGenerator queriesUnitTestsGenerator;
@@ -10,7 +10,7 @@
     public UnitTestGenerator(GeneratorConfig config)
         : base(config)
     {
-        unitTestDataGenerator = new UnitTestDataGenerator(config);
+        testDataClassGenerator = new TestDataClassGenerator(config);
         unitTestInputGenerator = new UnitTestInputGenerator(config);
         baseUnitTestGenerator = new BaseUnitTestClassGenerator(config);
         queriesUnitTestsGenerator = new QueriesUnitTestsGenerator(config);
@@ -21,7 +21,7 @@
     public void GenerateUnitTests()
     {
         MakeUnitTestDir(Config.Output.GeneratedFolder);
-        unitTestDataGenerator.GenerateUnitTestData();
+        testDataClassGenerator.GenerateTestData();
         unitTestInputGenerator.GenerateUnitTestInput();
         baseUnitTestGenerator.GenerateBaseUnitTestClass();
 

@@ -29,13 +29,13 @@ public class AssertMaker
 
     public void EqualsTestEntity(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
     {
-        var target = m.Name + "." + f.Name;
+        var target = m.Name + "1." + f.Name;
         AddAssertEquals(m, f, target, errorMessage);
     }
 
     public void IdEquals(GeneratorConfig.ModelConfig m, string errorMessage)
     {
-        liner.Add("Assert.That(" + target + ".Id, Is.EqualTo(TestData.Test" + m.Name + ".Id)," + FormatErrorMessage(m, "Id", errorMessage) + ");");
+        liner.Add("Assert.That(" + target + ".Id, Is.EqualTo(TestData." + m.Name + "1.Id)," + FormatErrorMessage(m, "Id", errorMessage) + ");");
     }
 
     public void EqualsTestScalar(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string errorMessage)
@@ -46,7 +46,7 @@ public class AssertMaker
 
     public void ForeignIdEquals(GeneratorConfig.ModelConfig m, ForeignProperty f, string errorMessage)
     {
-        liner.Add("Assert.That(" + target + "." + f.WithId + ", Is.EqualTo(TestData.Test" + f.Type + ".Id)," + FormatErrorMessage(m, f, errorMessage) + ");");
+        liner.Add("Assert.That(" + target + "." + f.WithId + ", Is.EqualTo(TestData." + f.Type + "1.Id)," + FormatErrorMessage(m, f, errorMessage) + ");");
     }
 
     public void CollectionOne(GeneratorConfig.ModelConfig m, string collectionName)
@@ -70,7 +70,7 @@ public class AssertMaker
         if (baseGenerator.IsFailedToFindStrategyErrorCode())
         {
             CollectionOne(m, "errors");
-            ErrorMessage(m, "TestData.Test" + m.Name + ".Id");
+            ErrorMessage(m, "TestData." + m.Name + "1.Id");
         }
         if (baseGenerator.IsFailedToFindStrategyNullObject())
         {
@@ -117,7 +117,7 @@ public class AssertMaker
             liner.Add("if (response.Data." + field + " == null) throw new AssertionException(\"Unexpected null returned by " + 
                 baseGenerator.Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
         }
-        liner.Add("Assert.That(response.Data." + field + ", Is.EqualTo(TestData.Test" + m.Name + ".Id), \"Incorrect Id returned by " + 
+        liner.Add("Assert.That(response.Data." + field + ", Is.EqualTo(TestData." + m.Name + "1.Id), \"Incorrect Id returned by " + 
             baseGenerator.Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
     }
 
@@ -143,6 +143,6 @@ public class AssertMaker
 
     private void AddAssertEquals(GeneratorConfig.ModelConfig m, GeneratorConfig.ModelField f, string testTarget, string errorMessage)
     {
-        liner.Add("Assert.That(" + target + "." + f.Name + ", Is.EqualTo(TestData.Test" + testTarget + ")" + TypeUtils.GetAssertPostfix(f.Type) + "," + FormatErrorMessage(m, f, errorMessage) + ");");
+        liner.Add("Assert.That(" + target + "." + f.Name + ", Is.EqualTo(TestData." + testTarget + ")" + TypeUtils.GetAssertPostfix(f.Type) + "," + FormatErrorMessage(m, f, errorMessage) + ");");
     }
 }

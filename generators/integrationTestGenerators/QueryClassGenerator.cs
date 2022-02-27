@@ -136,7 +136,7 @@ public class QueryClassGenerator : BaseGenerator
             .IsListOfType("GqlError")
             .Build();
 
-
+        cm.AddBlankLine();
         cm.AddClosure("public void AssertNoErrors()", liner =>
         {
             liner.StartClosure("if (Errors.Any())");
