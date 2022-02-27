@@ -1,6 +1,7 @@
 ﻿public class UnitTestGenerator : BaseGenerator
 {
     private readonly UnitTestDataGenerator unitTestDataGenerator;
+    private readonly UnitTestInputGenerator unitTestInputGenerator;
     private readonly BaseUnitTestClassGenerator baseUnitTestGenerator;
     private readonly QueriesUnitTestsGenerator queriesUnitTestsGenerator;
     private readonly SubscriptionsUnitTestsGenerator subscriptionsUnitTestsGenerator;
@@ -10,6 +11,7 @@
         : base(config)
     {
         unitTestDataGenerator = new UnitTestDataGenerator(config);
+        unitTestInputGenerator = new UnitTestInputGenerator(config);
         baseUnitTestGenerator = new BaseUnitTestClassGenerator(config);
         queriesUnitTestsGenerator = new QueriesUnitTestsGenerator(config);
         subscriptionsUnitTestsGenerator = new SubscriptionsUnitTestsGenerator(config);
@@ -20,6 +22,7 @@
     {
         MakeUnitTestDir(Config.Output.GeneratedFolder);
         unitTestDataGenerator.GenerateUnitTestData();
+        unitTestInputGenerator.GenerateUnitTestInput();
         baseUnitTestGenerator.GenerateBaseUnitTestClass();
 
         MakeUnitTestDir(Config.Output.GeneratedFolder, Config.Output.GraphQlSubFolder);

@@ -45,7 +45,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
             foreach (var m in Models)
             {
                 var inputTypes = GetInputTypeNames(m);
-                liner.Add("inputConverter.Setup(i => i.ToDto(TestData." + inputTypes.Create + ")).Returns(TestData." + m.Name + "1);");
+                liner.Add("inputConverter.Setup(i => i.ToDto(TestInput." + inputTypes.Create + ")).Returns(TestData." + m.Name + "1);");
             }
         });
 
@@ -72,14 +72,14 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
 
         AddAsyncTest(cm, methodName + "ShouldConvertInput", liner =>
         {
-            liner.Add("await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Create + ", sender.Object);");
+            liner.Add("await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Create + ", sender.Object);");
             liner.AddBlankLine();
-            liner.Add("inputConverter.Verify(i => i.ToDto(TestData." + inputTypes.Create + "));");
+            liner.Add("inputConverter.Verify(i => i.ToDto(TestInput." + inputTypes.Create + "));");
         });
 
         AddAsyncTest(cm, methodName + "ShouldAdd" + m.Name, liner =>
         {
-            liner.Add("await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Create + ", sender.Object);");
+            liner.Add("await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Create + ", sender.Object);");
             liner.AddBlankLine();
             liner.Add("DbService.Verify(db => db.Add(TestData." + m.Name + "1));");
         });
@@ -87,7 +87,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
         var pub = "Publish" + m.Name + Config.GraphQl.GqlSubscriptionCreatedMethod;
         AddAsyncTest(cm, methodName + "Should" + pub, liner =>
         {
-            liner.Add("await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Create + ", sender.Object);");
+            liner.Add("await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Create + ", sender.Object);");
             liner.AddBlankLine();
             liner.Add("publisher.Verify(p => p." + pub + "(sender.Object, TestData." + m.Name + "1));");
         });
@@ -96,7 +96,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
         {
             liner.Add("var expectedResult = MockDbServiceQueryableEntity(TestData." + m.Name + "1);");
             liner.AddBlankLine();
-            liner.Add("var result = await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Create + ", sender.Object);");
+            liner.Add("var result = await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Create + ", sender.Object);");
             liner.AddBlankLine();
             liner.Add("AssertQueryableAreEqual(expectedResult.Object, result);");
         });
@@ -110,9 +110,9 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
         AddAsyncTest(cm, methodName + "ShouldCallUpdate", liner =>
         {
             AddMockDatabaseUpdateReturnValue(liner, m);
-            liner.Add("await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Update + ", sender.Object);");
+            liner.Add("await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Update + ", sender.Object);");
             liner.AddBlankLine();
-            liner.Add("DbService.Verify(db => db.Update(TestData." + inputTypes.Update + "." + m.Name + "Id, It.IsAny<Action<" + m.Name + ">>()));");
+            liner.Add("DbService.Verify(db => db.Update(TestInput." + inputTypes.Update + "." + m.Name + "Id, It.IsAny<Action<" + m.Name + ">>()));");
         });
 
         AddAsyncTest(cm, methodName + "Should" + methodName, liner =>
@@ -123,7 +123,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
             liner.Add("updateAction(TestData." + m.Name + "1);");
             liner.EndClosure(")).Returns(TestData." + m.Name + "1);");
             liner.Deindent();
-            liner.Add("await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Update + ", sender.Object);");
+            liner.Add("await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Update + ", sender.Object);");
             liner.AddBlankLine();
             AddAssertUpdateFields(liner, m, inputTypes);
         });
@@ -134,7 +134,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
         AddAsyncTest(cm, methodName + "Should" + pub, liner =>
         {
             AddMockDatabaseUpdateReturnValue(liner, m);
-            liner.Add("await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Update + ", sender.Object);");
+            liner.Add("await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Update + ", sender.Object);");
             liner.AddBlankLine();
             liner.Add("publisher.Verify(p => p." + pub + "(sender.Object, TestData." + m.Name + "1));");
         });
@@ -143,7 +143,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
         {
             liner.Add("var expectedResult = MockDbServiceQueryableEntity(TestData." + m.Name + "1);");
             AddMockDatabaseUpdateReturnValue(liner, m);
-            liner.Add("var result = await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Update + ", sender.Object);");
+            liner.Add("var result = await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Update + ", sender.Object);");
             liner.AddBlankLine();
             liner.Add("AssertQueryableAreEqual(expectedResult.Object, result);");
         });
@@ -172,7 +172,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
 
     private void AddAssertUpdateEqualsLine(Liner liner, GeneratorConfig.ModelConfig m, string fieldName, InputTypeNames inputTypes)
     {
-        liner.Add("Assert.That(TestData." + m.Name + "1." + fieldName + ", Is.EqualTo(TestData." + inputTypes.Update + "." + fieldName + "));");
+        liner.Add("Assert.That(TestData." + m.Name + "1." + fieldName + ", Is.EqualTo(TestInput." + inputTypes.Update + "." + fieldName + "));");
     }
 
     private void AddMockDatabaseUpdateReturnValue(Liner liner, GeneratorConfig.ModelConfig m)
@@ -187,7 +187,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
         {
             AddTest(cm, methodName + "ShouldThrowIfNotFound", liner =>
             {
-                liner.Add("Assert.That(async () => await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Update + ", sender.Object),");
+                liner.Add("Assert.That(async () => await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Update + ", sender.Object),");
                 liner.Indent();
                 liner.Add("Throws.TypeOf<GraphQLException>());");
                 liner.Deindent();
@@ -197,7 +197,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
         {
             AddAsyncTest(cm, methodName + "ShouldReturnNullIfNotFound", liner =>
             {
-                liner.Add("var result = await " + mutationsName + "." + methodName + "(TestData." + inputTypes.Update + ", sender.Object);");
+                liner.Add("var result = await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Update + ", sender.Object);");
                 liner.Add("Assert.That(result, Is.Null);");
             });
         }

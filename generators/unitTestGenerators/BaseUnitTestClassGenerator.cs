@@ -24,6 +24,11 @@
             .InitializeAsExplicitNull()
             .Build();
 
+        cm.AddProperty("TestInput")
+            .IsType("UnitTestInput")
+            .InitializeAsExplicitNull()
+            .Build();
+
         cm.AddProperty(GetDbAccessorName())
             .IsType("Mock<I" + GetDbAccessorName() + ">")
             .InitializeAsExplicitNull()
@@ -35,6 +40,7 @@
         cm.AddClosure("public void BaseSetUp()", liner =>
         {
             liner.Add("TestData = new UnitTestData();");
+            liner.Add("TestInput = new UnitTestInput(TestData);");
             liner.Add(GetDbAccessorName() + " = new Mock<I" + GetDbAccessorName() + ">();");
         });
 
