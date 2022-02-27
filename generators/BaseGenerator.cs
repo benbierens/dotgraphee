@@ -24,25 +24,25 @@ public class BaseGenerator
     protected FileMaker StartIntegrationTestUtilsFile(string filename)
     {
         var f = Path.Join(Config.Output.ProjectRoot, Config.Output.IntegrationTestFolder, Config.IntegrationTests.UtilsFolder, filename + ".cs");
-        return new FileMaker(Config, f, Config.Output.IntegrationTestFolder);
+        return new FileMaker(Config, f, Config.Output.IntegrationTestFolder.FirstToUpper());
     }
 
     protected FileMaker StartIntegrationTestFile(string filename)
     {
         var f = Path.Join(Config.Output.ProjectRoot, Config.Output.IntegrationTestFolder, filename + ".cs");
-        return new FileMaker(Config, f, Config.Output.IntegrationTestFolder);
+        return new FileMaker(Config, f, Config.Output.IntegrationTestFolder.FirstToUpper());
     }
 
     protected FileMaker StartUnitTestFile(string filename, string subFolder)
     {
         var f = Path.Join(Config.Output.ProjectRoot, Config.Output.UnitTestFolder, Config.Output.GeneratedFolder, subFolder, filename + ".Tests.cs");
-        return new FileMaker(Config, f, Config.Output.UnitTestFolder);
+        return new FileMaker(Config, f, Config.Output.UnitTestFolder.FirstToUpper());
     }
 
     protected FileMaker StartUnitTestUtilsFile(string filename)
     {
         var f = Path.Join(Config.Output.ProjectRoot, Config.Output.UnitTestFolder, Config.Output.GeneratedFolder, filename + ".cs");
-        return new FileMaker(Config, f, Config.Output.UnitTestFolder);
+        return new FileMaker(Config, f, Config.Output.UnitTestFolder.FirstToUpper());
     }
 
     protected CodeFileModifier ModifyFile(string filename)
