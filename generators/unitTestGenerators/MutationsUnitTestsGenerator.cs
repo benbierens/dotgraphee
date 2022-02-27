@@ -128,7 +128,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
             AddAssertUpdateFields(liner, m, inputTypes);
         });
 
-        AddUpdateFailedToFindTest(cm, m, method, methodName, inputTypes);
+        AddUpdateFailedToFindTest(cm, methodName, inputTypes);
 
         var pub = "Publish" + m.Name + Config.GraphQl.GqlSubscriptionUpdatedMethod;
         AddAsyncTest(cm, methodName + "Should" + pub, liner =>
@@ -181,7 +181,7 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
         liner.AddBlankLine();
     }
 
-    private void AddUpdateFailedToFindTest(ClassMaker cm, GeneratorConfig.ModelConfig m, string method, string methodName, InputTypeNames inputTypes)
+    private void AddUpdateFailedToFindTest(ClassMaker cm, string methodName, InputTypeNames inputTypes)
     {
         if (IsFailedToFindStrategyErrorCode())
         {
@@ -209,5 +209,77 @@ public class MutationsUnitTestsGenerator : BaseUnitTestGenerator
 
     private void AddDeleteTests(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputTypes)
     {
+        if (IsRequiredSubModel(m)) return;
+        var method = Config.GraphQl.GqlMutationsDeleteMethod;
+        var methodName = method + m.Name;
+
+        AddAsyncTest(cm, methodName + "ShouldCallSingle", liner =>
+        {
+            AddMockDatabaseDeleteReturnValue(liner, m);
+            liner.Add("await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Delete + ", sender.Object);");
+            liner.AddBlankLine();
+            liner.Add("DbService.Verify(db => db.Single<" + m.Name + ">(TestInput." + inputTypes.Delete + "." + m.Name + "Id));");
+        });
+
+        AddAsyncTest(cm, methodName + "Should" + methodName, liner =>
+        {
+            AddMockDatabaseDeleteReturnValue(liner, m);
+            liner.Add("await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Delete + ", sender.Object);");
+            liner.AddBlankLine();
+            liner.Add("DbService.Verify(db => db.Delete<" + m.Name + ">(TestInput." + inputTypes.Delete + "." + m.Name + "Id));");
+        });
+
+        AddDeleteFailedToFindTest(cm, methodName, inputTypes);
+
+        var pub = "Publish" + m.Name + Config.GraphQl.GqlSubscriptionDeletedMethod;
+        AddAsyncTest(cm, methodName + "Should" + pub, liner =>
+        {
+            AddMockDatabaseDeleteReturnValue(liner, m);
+            liner.Add("await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Delete + ", sender.Object);");
+            liner.AddBlankLine();
+            liner.Add("publisher.Verify(p => p." + pub + "(sender.Object, TestData." + m.Name + "1));");
+        });
+
+        AddAsyncTest(cm, methodName + "ShouldReturn" + m.Name + "Id", liner =>
+        {
+            liner.Add("var expectedResult = MockDbServiceQueryableEntity(TestData." + m.Name + "1);");
+            AddMockDatabaseDeleteReturnValue(liner, m);
+            liner.Add("var result = await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Delete + ", sender.Object);");
+            liner.AddBlankLine();
+            liner.Add("Assert.That(result, Is.EqualTo(TestData." + m.Name + "1.Id));");
+        });
     }
+
+    private void AddMockDatabaseDeleteReturnValue(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        liner.Add("DbService.Setup(db => db.Single<" + m.Name + ">(It.IsAny<int>())).Returns(TestData." + m.Name + "1);");
+        liner.AddBlankLine();
+    }
+
+    private void AddDeleteFailedToFindTest(ClassMaker cm, string methodName, InputTypeNames inputTypes)
+    {
+        if (IsFailedToFindStrategyErrorCode())
+        {
+            AddTest(cm, methodName + "ShouldThrowIfNotFound", liner =>
+            {
+                liner.Add("Assert.That(async () => await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Delete + ", sender.Object),");
+                liner.Indent();
+                liner.Add("Throws.TypeOf<GraphQLException>());");
+                liner.Deindent();
+            });
+        }
+        else if (IsFailedToFindStrategyNullObject())
+        {
+            AddAsyncTest(cm, methodName + "ShouldReturnNullIfNotFound", liner =>
+            {
+                liner.Add("var result = await " + mutationsName + "." + methodName + "(TestInput." + inputTypes.Delete + ", sender.Object);");
+                liner.Add("Assert.That(result, Is.Null);");
+            });
+        }
+        else
+        {
+            throw new Exception("Unknown FailedToFind strategy");
+        }
+    }
+
 }
