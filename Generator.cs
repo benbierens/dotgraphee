@@ -30,15 +30,15 @@ public class Generator : BaseGenerator
         MakeDir(Config.Output.IntegrationTestFolder);
         MakeDir(Config.Output.UnitTestFolder);
 
-        //projectGenerator.CreateDotNetProject();
+        projectGenerator.CreateDotNetProject();
 
         MakeSrcDir(Config.Output.GeneratedFolder);
         dtoGenerator.GenerateDtos();
         databaseGenerator.GenerateDbContext();
         graphQlGenerator.GenerateGraphQl();
 
-        //projectGenerator.ModifyDefaultFiles();
-        
+        projectGenerator.ModifyDefaultFiles();
+
         dockerGenerator.GenerateDockerFiles();
         integrationTestGenerator.GenerateIntegrationTests();
         unitTestGenerator.GenerateUnitTests();
