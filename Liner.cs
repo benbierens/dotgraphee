@@ -23,6 +23,12 @@ public class Liner
         Indent();
     }
 
+    public void StartClosureInLine(string name)
+    {
+        Add(name + " {");
+        Indent();
+    }
+
     public void EndClosure(string additionalPostfix = "")
     {
         Deindent();

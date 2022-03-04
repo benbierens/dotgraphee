@@ -7,6 +7,7 @@ public class Generator : BaseGenerator
     private readonly GraphQlGenerator graphQlGenerator;
     private readonly DockerGenerator dockerGenerator;
     private readonly ReadmeGenerator readmeGenerator;
+    private readonly GraphQlClientGenerator graphQlClientGenerator;
     private readonly IntegrationTestGenerator integrationTestGenerator;
     private readonly UnitTestGenerator unitTestGenerator;
 
@@ -19,6 +20,7 @@ public class Generator : BaseGenerator
         graphQlGenerator = new GraphQlGenerator(config);
         dockerGenerator = new DockerGenerator(config);
         readmeGenerator = new ReadmeGenerator(config);
+        graphQlClientGenerator = new GraphQlClientGenerator(config);
         integrationTestGenerator = new IntegrationTestGenerator(config);
         unitTestGenerator = new UnitTestGenerator(config);
     }
@@ -40,6 +42,7 @@ public class Generator : BaseGenerator
         projectGenerator.ModifyDefaultFiles();
 
         dockerGenerator.GenerateDockerFiles();
+        graphQlClientGenerator.GenerateGraphQlClient();
         integrationTestGenerator.GenerateIntegrationTests();
         unitTestGenerator.GenerateUnitTests();
         readmeGenerator.GenerateReadme();

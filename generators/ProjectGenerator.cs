@@ -14,11 +14,13 @@ public class ProjectGenerator : BaseGenerator
         RunCommand("dotnet", "new", "sln");
 
         AddSourceAssembly();
+        AddGraphClientAssembly();
         AddIntegrationTestAssembly();
         AddUnitTestAssembly();
 
         // Reference from IntegrationTestAssembly to UnitTestAssembly, to share test data.
         RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.UnitTestFolder + "/" + Config.Output.UnitTestFolder + ".csproj");
+        RunCommand("dotnet", "new", "gitignore");
     }
 
     private void AddSourceAssembly()
@@ -29,6 +31,17 @@ public class ProjectGenerator : BaseGenerator
         RunCommand("dotnet", "sln", "add", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
         DeleteFile(Config.Output.SourceFolder, "Query.cs");
         RunCommand("dotnet", "tool", "install", "--global", "dotnet-ef");
+    }
+
+    private void AddGraphClientAssembly()
+    {
+        RunCommand("dotnet", "new", "tool-manifest");
+        RunCommand("dotnet", "tool", "install", "StrawberryShake.Tools", "--local");
+
+        var folder = Config.Output.GraphQlClientFolder;
+        RunCommand("dotnet", "new", "classlib", "-o", folder);
+        RunCommand("dotnet", "sln", "add", folder + "/" + folder + ".csproj");
+        InstallPackages(Config.GraphQlClientPackages, folder);
     }
 
     private void AddIntegrationTestAssembly()

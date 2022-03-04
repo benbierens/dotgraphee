@@ -112,6 +112,12 @@
       "HotChocolate.Subscriptions.InMemory",
       "Npgsql.EntityFrameworkCore.PostgreSQL"
     ],
+    "graphQlClientPackages": [
+      "StrawberryShake.Transport.Http",
+      "StrawberryShake.CodeGeneration.CSharp.Analyzers",
+      "Microsoft.Extensions.DependencyInjection",
+      "Microsoft.Extensions.Http"
+    ],
     "integrationTestPackages": [
       "Microsoft.EntityFrameworkCore",
       "Microsoft.EntityFrameworkCore.Design"
@@ -126,6 +132,7 @@
     "output": {
       "projectRoot": "../dotgraphee-demo",
       "sourceFolder": "src",
+      "graphQlClientFolder": "graphQlClientLib",
       "integrationTestFolder": "integrationTests",
       "unitTestFolder": "unitTests",
       "generatedFolder": "generated",
