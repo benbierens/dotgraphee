@@ -114,6 +114,7 @@
     ],
     "graphQlClientPackages": [
       "StrawberryShake.Transport.Http",
+      "StrawberryShake.Transport.WebSockets",
       "StrawberryShake.CodeGeneration.CSharp.Analyzers",
       "Microsoft.Extensions.DependencyInjection",
       "Microsoft.Extensions.Http"

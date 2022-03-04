@@ -92,9 +92,15 @@ public class GraphQlClientGenerator : BaseGenerator
         var inputTypeNames = GetInputTypeNames(m);
         WriteRawFile(liner =>
         {
-            GenerateMutation(liner, m, Config.GraphQl.GqlMutationsCreateMethod, inputTypeNames.Create);
+            if (!IsRequiredSubModel(m))
+            {
+                GenerateMutation(liner, m, Config.GraphQl.GqlMutationsCreateMethod, inputTypeNames.Create);
+            }
             GenerateMutation(liner, m, Config.GraphQl.GqlMutationsUpdateMethod, inputTypeNames.Update);
-            GenerateDeleteMutation(liner, m, Config.GraphQl.GqlMutationsDeleteMethod);
+            if (!IsRequiredSubModel(m))
+            {
+                GenerateDeleteMutation(liner, m, Config.GraphQl.GqlMutationsDeleteMethod);
+            }
         }, Config.Output.GraphQlClientFolder, MutationsFolder, m.Name + MutationsFilePostfix);
     }
 

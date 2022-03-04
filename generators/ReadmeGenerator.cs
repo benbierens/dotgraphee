@@ -15,6 +15,9 @@ public class ReadmeGenerator : BaseGenerator
         WriteRawFile(liner =>
         {
             Add2(liner, "# dotnet-GraphQl webservice");
+            Add2(liner, "## Initialize Client:");
+            Add1(liner, "Run the webservice: `dotnet run --project " + src + "`");
+            Add2(liner, "Then run `dotnet graphql init http://localhost:5000/graphql/ -p ./" + Config.Output.GraphQlClientFolder + "/Client` to initialize the client used to the integration tests.");
             Add2(liner, "## Build Development:");
             Add2(liner, "`dotnet build " + src + "`");
             Add2(liner, "## Run:");
