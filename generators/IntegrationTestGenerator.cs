@@ -1,11 +1,11 @@
-public class TestGenerator : BaseGenerator
+public class IntegrationTestGenerator : BaseGenerator
 {
     private readonly BaseGqlTestClassGenerator baseGqlTestClassGenerator;
     private readonly SubscriptionHandleClassGenerator subscriptionHandleClassGenerator;
     private readonly DockerControllerClassGenerator dockerControllerClassGenerator;
     private readonly QueryClassGenerator queryClassGenerator;
-    private readonly TestDataClassGenerator testDataClassGenerator;
     private readonly GqlClassGenerator gqlClassGenerator;
+    private readonly InclusionBuilderGenerator inclusionBuilderGenerator;
     private readonly GqlBuildClassGenerator gqlBuildClassGenerator;
     private readonly ClientClassGenerator clientClassGenerator;
 
@@ -15,15 +15,15 @@ public class TestGenerator : BaseGenerator
     private readonly DeleteTestsGenerator deleteTestsGenerator;
     private readonly SubscriptionTestsGenerator subscriptionTestsGenerator;
 
-    public TestGenerator(GeneratorConfig config)
+    public IntegrationTestGenerator(GeneratorConfig config)
         : base(config)
     {
         baseGqlTestClassGenerator = new BaseGqlTestClassGenerator(config);
         subscriptionHandleClassGenerator = new SubscriptionHandleClassGenerator(config);
         dockerControllerClassGenerator = new DockerControllerClassGenerator(config);
         queryClassGenerator = new QueryClassGenerator(config);
-        testDataClassGenerator = new TestDataClassGenerator(config);
         gqlClassGenerator = new GqlClassGenerator(config);
+        inclusionBuilderGenerator = new InclusionBuilderGenerator(config);
         gqlBuildClassGenerator = new GqlBuildClassGenerator(config);
         clientClassGenerator = new ClientClassGenerator(config);
 
@@ -34,17 +34,16 @@ public class TestGenerator : BaseGenerator
         subscriptionTestsGenerator = new SubscriptionTestsGenerator(config);
     }
 
-    public void GenerateTests()
+    public void GenerateIntegrationTests()
     {
-        MakeTestDir(Config.Tests.SubFolder);
-        MakeTestDir(Config.Tests.SubFolder, Config.Tests.UtilsFolder);
+        MakeIntegrationTestDir(Config.IntegrationTests.UtilsFolder);
         
         baseGqlTestClassGenerator.CreateBaseGqlTestClass();
         subscriptionHandleClassGenerator.CreateSubscriptionHandleClass();
         dockerControllerClassGenerator.CreateDockerControllerClass();
         queryClassGenerator.CreateQueryClasses();
-        testDataClassGenerator.CreateTestDataClass();
         gqlClassGenerator.CreateGqlClass();
+        inclusionBuilderGenerator.CreateInclusionBuilderClass();
         gqlBuildClassGenerator.CreateGqlBuildClass();
         clientClassGenerator.CreateClientClass();
 

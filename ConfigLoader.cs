@@ -13,6 +13,7 @@ public class ConfigLoader
         foreach (var m in config.Models)
         {
             if (m.Fields == null) m.Fields = new GeneratorConfig.ModelField[0];
+            if (m.Features == null) m.Features = new string[0];
             if (m.HasMany == null) m.HasMany = new string[0];
             if (m.HasOne == null) m.HasOne = new string[0];
             if (m.MaybeHasOne == null) m.MaybeHasOne = new string[0];
@@ -38,7 +39,7 @@ public class GeneratorConfig
         public ConfigOutputSection Output { get; set; }
         public ConfigDatabaseSection Database { get; set; }
         public ConfigGraphQlSection GraphQl { get; set; }
-        public ConfigTestSection Tests { get; set; }
+        public ConfigIntegrationTestSection IntegrationTests { get; set; }
 
         [Check(CheckType.OneOf, "int", "string")]
         public string IdType { get; set; }
@@ -47,7 +48,9 @@ public class GeneratorConfig
         public string FailedToFindStrategy { get; set; }
         [Check(CheckType.NotEmpty)]
         public string SelfRefNavigationPropertyPrefix { get; set; }
-        public string[] Packages { get; set; }
+        public string[] SourcePackages { get; set; }
+        public string[] IntegrationTestPackages { get; set; }
+        public string[] UnitTestPackages { get; set; }
 
         public FailedToFindStrategy GetFailedToFindStrategy()
         {
@@ -62,7 +65,9 @@ public class GeneratorConfig
         [Check(CheckType.NotEmpty)]
         public string SourceFolder { get; set; }
         [Check(CheckType.NotEmpty)]
-        public string TestFolder { get; set; }
+        public string IntegrationTestFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
+        public string UnitTestFolder { get; set; }
         [Check(CheckType.NotEmpty)]
         public string GeneratedFolder { get; set; }
         [Check(CheckType.NotEmpty)]
@@ -140,12 +145,10 @@ public class GeneratorConfig
         public string GqlSubscriptionDeletedMethod { get; set; }
     }
 
-    public class ConfigTestSection
+    public class ConfigIntegrationTestSection
     {
         [Check(CheckType.NotEmpty)]
         public string TestCategory { get; set; }
-        [Check(CheckType.NotEmpty)]
-        public string SubFolder { get; set; }
         [Check(CheckType.NotEmpty)]
         public string UtilsFolder { get; set; }
     }
@@ -154,10 +157,26 @@ public class GeneratorConfig
     {
         [Check(CheckType.NotEmpty)]
         public string Name { get; set; }
+        public string[] Features { get; set; }
         public ModelField[] Fields { get; set; }
         public string[] HasMany { get; set; }
         public string[] HasOne { get; set; }
         public string[] MaybeHasOne { get; set; }
+
+        public bool HasPagingFeature()
+        {
+            return Features.Any(f => f.ToLowerInvariant() == "paging");
+        }
+
+        public bool HasSortingFeature()
+        {
+            return Features.Any(f => f.ToLowerInvariant() == "sorting");
+        }
+
+        public bool HasFilteringFeature()
+        {
+            return Features.Any(f => f.ToLowerInvariant() == "filtering");
+        }
     }
 
     public class ModelField

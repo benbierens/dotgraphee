@@ -59,7 +59,6 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("");
             liner.Add("optionsBuilder");
             liner.Indent();
-            liner.Add(".UseLazyLoadingProxies()");
             liner.Add(".UseNpgsql(connectionString);");
             liner.Deindent();
         });
@@ -71,15 +70,8 @@ public class DatabaseGenerator : BaseGenerator
     {
         var fm = StartSrcFile(Config.Output.DatabaseSubFolder, Config.Database.DbAccesserClassName);
         AddAccessInterface(fm);
-        if (Config.IdType == "string") AddHasIdInterface(fm);
         AddAccessClass(fm);
         fm.Build();
-    }
-
-    private void AddHasIdInterface(FileMaker fm)
-    {
-        var im = fm.AddInterface("IHasId");
-        im.AddLine(Config.IdType + " Id { get; set; }");
     }
 
     private void AddAccessInterface(FileMaker fm)
@@ -93,7 +85,9 @@ public class DatabaseGenerator : BaseGenerator
         AddLineWithClassConstraint(im, "T? Single<T>(" + idType + " id)");
         AddLineWithClassConstraint(im, "void Add<T>(T entity)");
         AddLineWithClassConstraint(im, "T? Update<T>(" + idType + " id, Action<T> onEntity)");
-        AddLineWithClassConstraint(im, "T? Delete<T>(" + idType + " id)");
+        AddLineWithClassConstraint(im, "void Delete<T>(" + idType + " id)");
+        AddLineWithClassConstraint(im, "IQueryable<T> AsQueryable<T>()");
+        AddLineWithClassConstraint(im, "IQueryable<T> AsQueryableEntity<T>(T entity)");
     }
 
     private void AddAccessClass(FileMaker fm)
@@ -116,7 +110,6 @@ public class DatabaseGenerator : BaseGenerator
 
         AddClosureWithClassConstraint(cm, "public void Add<T>(T entity)", liner =>
         {
-            AddEntityIdInitializer(liner);
             liner.Add("var db = GetDb();");
             liner.Add("db.Set<T>().Add(entity);");
             liner.Add("db.SaveChanges();");
@@ -133,7 +126,7 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("return entity;");
         });
 
-        AddClosureWithClassConstraint(cm, "public T? Delete<T>(" + idType + " id)", liner =>
+        AddClosureWithClassConstraint(cm, "public void Delete<T>(" + idType + " id)", liner =>
         {
             liner.Add("var db = GetDb();");
             liner.Add("var entity = db.Find<T>(id);");
@@ -141,7 +134,16 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("db.Set<T>().Remove(entity);");
             liner.Add("db.SaveChanges();");
             liner.EndClosure();
-            liner.Add("return entity;");
+        });
+
+        AddClosureWithClassConstraint(cm, "public IQueryable<T> AsQueryable<T>()", liner =>
+        {
+            liner.Add("return GetDb().Set<T>().AsQueryable();");
+        });
+
+        AddClosureWithClassConstraint(cm, "public IQueryable<T> AsQueryableEntity<T>(T entity)", liner =>
+        {
+            liner.Add("return AsQueryable<T>().Where(e => e.Id == entity.Id);");
         });
 
         cm.AddClosure("public static void EnsureCreated()", liner =>
@@ -156,12 +158,6 @@ public class DatabaseGenerator : BaseGenerator
         });
     }
 
-    private void AddEntityIdInitializer(Liner liner)
-    {
-        if (Config.IdType != "string") return;
-        liner.Add("entity.Id = Guid.NewGuid().ToString();");
-    }
-
     private void AddLineWithClassConstraint(ClassMaker im, string line)
     {
         im.AddLine(line + GetClassConstraint() + ";");
@@ -174,10 +170,6 @@ public class DatabaseGenerator : BaseGenerator
 
     private string GetClassConstraint()
     {
-        if (Config.IdType == "string")
-        {
-            return " where T : class, IHasId";
-        }
-        return " where T : class";
+        return " where T : class, IEntity";
     }
 }

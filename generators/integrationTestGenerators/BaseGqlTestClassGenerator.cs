@@ -1,8 +1,7 @@
-
-using System;
 using System.Collections.Generic;
+using System.Linq;
 
-public class BaseGqlTestClassGenerator : BaseGenerator
+public class BaseGqlTestClassGenerator : BaseTestGenerator
 {
     public BaseGqlTestClassGenerator(GeneratorConfig config)
         : base(config)
@@ -11,7 +10,8 @@ public class BaseGqlTestClassGenerator : BaseGenerator
 
     public void CreateBaseGqlTestClass()
     {
-        var fm = StartTestUtilsFile("BaseGqlTest");
+        var fm = StartIntegrationTestUtilsFile("BaseGqlTest");
+        fm.AddUsing(Config.Output.UnitTestFolder.FirstToUpper());
         AddBaseGqlTestClass(fm.AddClass("BaseGqlTest"));
         AddDockerInitializer(fm.AddClass("DockerInitializer"));
         fm.Build();
@@ -22,7 +22,7 @@ public class BaseGqlTestClassGenerator : BaseGenerator
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
 
-        cm.AddAttribute("Category(\"" + Config.Tests.TestCategory + "\")");
+        cm.AddAttribute("Category(\"" + Config.IntegrationTests.TestCategory + "\")");
 
         cm.AddLine("[SetUp]");
         cm.AddClosure("public async Task GqlSetUp()", liner =>
@@ -57,18 +57,38 @@ public class BaseGqlTestClassGenerator : BaseGenerator
 
         IterateModelsInDependencyOrder(m =>
         {
-            var inputTypes = GetInputTypeNames(m);
-
-            cm.AddClosure("public async Task<" + m.Name + "> CreateTest" + m.Name + "()", liner =>
+            if (!IsRequiredSubModel(m))
             {
-                var args = GetCreateInputArguments(liner, m);
-                liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
-                AddAssertNoErrors(liner);
-                liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsCreateMethod + m.Name + ";");
-                liner.Add("TestData.Test" + m.Name + ".Id = entity.Id;");
-                liner.Add("return entity;");
-            });
+                AddCreateTestModelMethod(cm, m);
+            }
         });
+    }
+
+    private void AddCreateTestModelMethod(ClassMaker cm, GeneratorConfig.ModelConfig m)
+    {
+        var inputTypes = GetInputTypeNames(m);
+
+        cm.AddClosure("public async Task<" + m.Name + "> CreateTest" + m.Name + "()", liner =>
+        {
+            var args = GetCreateInputArguments(liner, m);
+            liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
+            AddAssert(liner).NoErrors();
+            liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsCreateMethod + m.Name + ";");
+            AddAssignIdToTestData(liner, m, "entity");
+            liner.Add("return entity;");
+        });
+    }
+
+    private void AddAssignIdToTestData(Liner liner, GeneratorConfig.ModelConfig m, params string[] accessors)
+    {
+        var accessor = string.Join(".", accessors) + ".Id";
+        liner.Add("TestData." + m.Name + "1.Id = " + accessor + ";");
+
+        var subModels = GetMyRequiredSubModels(m);
+        foreach (var subModel in subModels)
+        {
+            AddAssignIdToTestData(liner, subModel, accessors.Concat(new[] { subModel.Name }).ToArray());
+        }
     }
 
     private string GetCreateInputArguments(Liner liner, GeneratorConfig.ModelConfig m)
@@ -81,7 +101,7 @@ public class BaseGqlTestClassGenerator : BaseGenerator
             if (!f.IsSelfReference)
             {
                 liner.Add("await CreateTest" + f.Type + "();");
-                arguments.Add("TestData.Test" + f.Type + ".Id");
+                arguments.Add("TestData." + f.Type + "1.Id");
             }
             else
             {
@@ -94,7 +114,7 @@ public class BaseGqlTestClassGenerator : BaseGenerator
 
     private void AddDockerInitializer(ClassMaker cm)
     {
-        cm.AddAttribute("Category(\"" + Config.Tests.TestCategory + "\")");
+        cm.AddAttribute("Category(\"" + Config.IntegrationTests.TestCategory + "\")");
         cm.AddAttribute("SetUpFixture");
 
         cm.AddLine("[OneTimeSetUp]");

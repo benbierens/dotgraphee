@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -11,45 +11,51 @@ public class TestDataClassGenerator : BaseGenerator
     public TestDataClassGenerator(GeneratorConfig config)
         : base(config)
     {
-        dummyInt = 10000;
-        dummyFloat = 10000.0f;
-        dummyDouble = 10000.0;
+        dummyInt = 100;
+        dummyFloat = 100.0f;
+        dummyDouble = 100.0;
     }
 
-    public void CreateTestDataClass()
+    public void GenerateTestData()
     {
-        var fm = StartTestUtilsFile("TestData");
+        var fm = StartUnitTestUtilsFile("TestData");
+        fm.AddUsing(Config.GenerateNamespace);
+        fm.AddUsing("System");
         var cm = fm.AddClass("TestData");
-        cm.AddUsing("System");
-        cm.AddUsing(Config.GenerateNamespace);
+        cm.Modifiers.Clear();
 
-        cm.AddProperty("TestString")
+        cm.AddProperty("String")
             .IsType("string")
             .Build();
 
-        cm.AddProperty("TestInt")
+        cm.AddProperty("Int")
             .IsType("int")
             .Build();
 
-        cm.AddProperty("TestBool")
+        cm.AddProperty("Bool")
             .IsType("bool")
             .Build();
 
-        cm.AddProperty("TestFloat")
+        cm.AddProperty("Float")
             .IsType("float")
             .Build();
 
-        cm.AddProperty("TestDouble")
+        cm.AddProperty("Double")
             .IsType("double")
             .Build();
 
-        cm.AddProperty("TestDateTime")
+        cm.AddProperty("DateTime")
             .IsType("DateTime")
             .Build();
 
         foreach (var m in Models)
         {
-            cm.AddProperty("Test" + m.Name)
+            cm.AddProperty(m.Name + "1")
+                .IsType(m.Name)
+                .NoInitializer()
+                .Build();
+
+            cm.AddProperty(m.Name + "2")
                 .IsType(m.Name)
                 .NoInitializer()
                 .Build();
@@ -80,11 +86,20 @@ public class TestDataClassGenerator : BaseGenerator
             liner.StartClosure("return new " + inputNames.Create);
             foreach (var f in m.Fields)
             {
-                liner.Add(f.Name + " = Test" + m.Name + "." + f.Name + ",");
+                liner.Add(f.Name + " = " + m.Name + "1." + f.Name + ",");
             }
             foreach (var f in foreignProperties)
             {
-                liner.Add(f.WithId + " = " + f.WithId.FirstToLower() + ",");
+                if (!f.IsRequiredSingular())
+                {
+                    liner.Add(f.WithId + " = " + f.WithId.FirstToLower() + ",");
+                }
+            }
+            var requiredSubModels = GetMyRequiredSubModels(m);
+            foreach (var subModel in requiredSubModels)
+            {
+                var subModelInputNames = GetInputTypeNames(subModel);
+                liner.Add(subModel.Name + " = To" + subModelInputNames.Create + "(),");
             }
             liner.EndClosure(";");
         });
@@ -95,10 +110,21 @@ public class TestDataClassGenerator : BaseGenerator
         cm.AddClosure("public " + inputNames.Update + " To" + inputNames.Update + "()", liner =>
         {
             liner.StartClosure("return new " + inputNames.Update);
-            liner.Add(m.Name + "Id = Test" + m.Name + ".Id,");
+            liner.Add(m.Name + "Id = " + m.Name + "1.Id,");
             foreach (var f in m.Fields)
             {
-                liner.Add(f.Name + " = Test" + f.Type.FirstToUpper() + ",");
+                liner.Add(f.Name + " = " + f.Type.FirstToUpper() + ",");
+            }
+            var foreignProperties = GetForeignProperties(m);
+            foreach (var f in foreignProperties)
+            {
+                if (!f.IsRequiredSingular())
+                {
+                    if (!f.IsSelfReference)
+                    {
+                        liner.Add(f.WithId + " = " + f.Name + "1.Id,");
+                    }
+                }
             }
             liner.EndClosure(";");
         });
@@ -106,10 +132,11 @@ public class TestDataClassGenerator : BaseGenerator
 
     private void AddToDeleteInputMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
     {
+        if (IsRequiredSubModel(m)) return;
         cm.AddClosure("public " + inputNames.Delete + " To" + inputNames.Delete + "()", liner =>
         {
             liner.StartClosure("return new " + inputNames.Delete);
-            liner.Add(m.Name + "Id = Test" + m.Name + ".Id,");
+            liner.Add(m.Name + "Id = " + m.Name + "1.Id,");
             liner.EndClosure(";");
         });
     }
@@ -119,13 +146,16 @@ public class TestDataClassGenerator : BaseGenerator
         var args = new List<string>();
         foreach (var f in foreignProperties)
         {
-            if (f.IsSelfReference)
+            if (!f.IsRequiredSingular())
             {
-                args.Add(Config.IdType + "? " + f.WithId.FirstToLower());
-            }
-            else
-            {
-                args.Add(Config.IdType + " " + f.WithId.FirstToLower());
+                if (f.IsSelfReference)
+                {
+                    args.Add(Config.IdType + "? " + f.WithId.FirstToLower());
+                }
+                else
+                {
+                    args.Add(Config.IdType + " " + f.WithId.FirstToLower());
+                }
             }
         }
 
@@ -136,36 +166,36 @@ public class TestDataClassGenerator : BaseGenerator
     {
         cm.AddClosure("public TestData()", liner =>
         {
-            liner.Add("TestString = \"TestString\";");
-            liner.Add("TestInt = 12345;");
-            liner.Add("TestBool = true;");
-            liner.Add("TestFloat = 12.34f;");
-            liner.Add("TestDouble = 23.45;");
-            liner.Add("TestDateTime = new DateTime(2022, 1, 2, 11, 12, 13, DateTimeKind.Utc);");
+            liner.Add("String = \"TestString\";");
+            liner.Add("Int = 12345;");
+            liner.Add("Bool = true;");
+            liner.Add("Float = 12.34f;");
+            liner.Add("Double = 23.45;");
+            liner.Add("DateTime = new DateTime(2022, 1, 2, 11, 12, 13, DateTimeKind.Utc);");
             liner.AddBlankLine();
-
             IterateModelsInDependencyOrder(m =>
             {
-                InitializeModel(liner, m);
+                InitializeModel(liner, m, "1");
+                InitializeModel(liner, m, "2");
             });
         });
     }
 
-    private void InitializeModel(Liner liner, GeneratorConfig.ModelConfig m)
+    private void InitializeModel(Liner liner, GeneratorConfig.ModelConfig m, string propertyPostfix)
     {
         var foreign = GetForeignProperties(m);
-        liner.StartClosure("Test" + m.Name + " = new " + m.Name);
+        liner.StartClosure(m.Name + propertyPostfix + " = new " + m.Name);
         liner.Add("Id = " + DummyId() + ",");
         foreach (var f in m.Fields)
         {
-            liner.Add(f.Name + " = " + DummyForType(m, f.Type, f.Name) + ",");
+            liner.Add(f.Name + " = " + DummyForType(m, f.Type, f.Name, propertyPostfix) + ",");
         }
         foreach (var f in foreign)
         {
             if (!f.IsSelfReference)
             {
-                liner.Add(f.Name + " = Test" + f.Name + ",");
-                liner.Add(f.WithId + " = Test" + f.Name + ".Id,");
+                liner.Add(f.Name + " = " + f.Name + propertyPostfix + ",");
+                liner.Add(f.WithId + " = " + f.Name + propertyPostfix + ".Id,"); 
             }
         }
         liner.EndClosure(";");
@@ -178,20 +208,20 @@ public class TestDataClassGenerator : BaseGenerator
         throw new Exception("Unknown ID type: " + Config.IdType);
     }
 
-    private string DummyForType(GeneratorConfig.ModelConfig m, string type, string name)
+    private string DummyForType(GeneratorConfig.ModelConfig m, string type, string name, string propertyPostfix)
     {
         if (type == "int") return DummyInt();
         if (type == "float") return DummyFloat();
-        if (type == "string") return DummyString(m, name);
+        if (type == "string") return DummyString(m, name, propertyPostfix);
         if (type == "double") return DummyDouble();
         if (type == "bool") return "true";
         if (type == "DateTime") return DummyDateTime();
         throw new Exception("Unknown type: " + type);
     }
 
-    private string DummyString(GeneratorConfig.ModelConfig m, string fieldName)
+    private string DummyString(GeneratorConfig.ModelConfig m, string fieldName, string propertyPostfix)
     {
-        return "\"Test" + m.Name + "_" + fieldName + "\"";
+        return "\"Test" + m.Name + propertyPostfix + "_" + fieldName + "\"";
     }
 
     private string DummyInt()
@@ -215,5 +245,4 @@ public class TestDataClassGenerator : BaseGenerator
     {
         return "DateTime.UtcNow";
     }
-
 }

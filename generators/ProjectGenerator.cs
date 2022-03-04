@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 public class ProjectGenerator : BaseGenerator
 {
     public ProjectGenerator(GeneratorConfig config)
@@ -9,30 +12,53 @@ public class ProjectGenerator : BaseGenerator
     {
         RunCommand("dotnet", "new", "-i", "HotChocolate.Templates.Server");
         RunCommand("dotnet", "new", "sln");
+
+        AddSourceAssembly();
+        AddIntegrationTestAssembly();
+        AddUnitTestAssembly();
+
+        // Reference from IntegrationTestAssembly to UnitTestAssembly, to share test data.
+        RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.UnitTestFolder + "/" + Config.Output.UnitTestFolder + ".csproj");
+    }
+
+    private void AddSourceAssembly()
+    {
         RunCommand("dotnet", "new", "graphql", "-o", Config.Output.SourceFolder);
-
         BumpProjectToDotNetSix();
-
-
-        foreach (var p in Config.Packages)
-        {
-            RunCommand("dotnet", "add", Config.Output.SourceFolder, "package", p);
-        }
-
-        RunCommand("dotnet", "new", "nunit", "-o", Config.Output.TestFolder);
+        InstallPackages(Config.SourcePackages, Config.Output.SourceFolder);
         RunCommand("dotnet", "sln", "add", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
-        RunCommand("dotnet", "sln", "add", Config.Output.TestFolder + "/" + Config.Output.TestFolder + ".csproj");
-        RunCommand("dotnet", "add", Config.Output.TestFolder, "reference", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
-
-        RunCommand("dotnet", "tool", "install", "--global", "dotnet-ef");
-
         DeleteFile(Config.Output.SourceFolder, "Query.cs");
+        RunCommand("dotnet", "tool", "install", "--global", "dotnet-ef");
+    }
+
+    private void AddIntegrationTestAssembly()
+    {
+        AddTestAssembly(Config.Output.IntegrationTestFolder, Config.IntegrationTestPackages);
+    }
+
+    private void AddUnitTestAssembly()
+    {
+        AddTestAssembly(Config.Output.UnitTestFolder, Config.UnitTestPackages);
+    }
+
+    private void AddTestAssembly(string folder, string[] packages)
+    {
+        RunCommand("dotnet", "new", "nunit", "-o", folder);
+        RunCommand("dotnet", "sln", "add", folder + "/" + folder + ".csproj");
+        RunCommand("dotnet", "add", folder, "reference", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
+        InstallPackages(packages, folder);
+        DeleteFile(folder, "UnitTest1.cs");
     }
 
     public void ModifyDefaultFiles()
     {
         ModifyStartupFile();
-        ModifyTestProjectFile();
+        ModifyIntegrationTestProjectFile();
+    }
+
+    public void FormatCode()
+    {
+        RunCommand("dotnet", "format");
     }
 
     private void BumpProjectToDotNetSix()
@@ -44,20 +70,29 @@ public class ProjectGenerator : BaseGenerator
         mf.Modify();
     }
 
+    private void InstallPackages(string[] packages, string folder)
+    {
+        foreach (var p in packages)
+        {
+            RunCommand("dotnet", "add", folder, "package", p);
+        }
+    }
+
     private void ModifyStartupFile()
     {
         var mf = ModifyFile(Config.Output.SourceFolder, "Startup.cs");
         mf.AddUsing(Config.GenerateNamespace);
         mf.AddUsing("HotChocolate.AspNetCore");
 
-        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Transient<I" + Config.Database.DbAccesserClassName + ", " + Config.Database.DbAccesserClassName + ">());");
 
-        mf.ReplaceLine(".AddQueryType<Query>();",
-                ".AddQueryType<" + Config.GraphQl.GqlQueriesClassName + ">()",
-                ".AddMutationType<" + Config.GraphQl.GqlMutationsClassName + ">()",
-                ".AddSubscriptionType<" + Config.GraphQl.GqlSubscriptionsClassName + ">();");
+        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<IInputConverter, InputConverter>());");
+        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<IPublisher, Publisher>());");
+        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<I" + Config.Database.DbAccesserClassName + ", " + Config.Database.DbAccesserClassName + ">());");
+        //mf.Insert(23, 3, "services.AddPooledDbContextFactory<" + Config.Database.DbContextClassName + ">(options => { });");
 
-        mf.Insert(28, 3, "services.AddInMemorySubscriptions();");
+        mf.ReplaceLine(".AddQueryType<Query>();", GetServiceDecorators().ToArray());
+                
+        mf.Insert(27 + GetVariableServiceDecoratorLines(), 3, "services.AddInMemorySubscriptions();");
 
         mf.ReplaceLine("app.UseDeveloperExceptionPage();",
             "app.UsePlayground();",
@@ -69,15 +104,71 @@ public class ProjectGenerator : BaseGenerator
             "DbService.EnsureCreated();");
 
         mf.Modify();
+
+        GeneratorPager();
     }
 
-    private void ModifyTestProjectFile()
+    private void ModifyIntegrationTestProjectFile()
     {
-        var mf = ModifyFile(Config.Output.TestFolder, "test.csproj");
+        var mf = ModifyFile(Config.Output.IntegrationTestFolder, Config.Output.IntegrationTestFolder + ".csproj");
         mf.ReplaceLine("<IsPackable>false</IsPackable>",
             "<IsPackable>false</IsPackable>",
             "<Nullable>enable</Nullable>");
 
         mf.Modify();
+    }
+
+    private IEnumerable<string> GetServiceDecorators()
+    {
+        if (Models.Any(m => m.HasPagingFeature())) yield return ".AddOffsetPagingProvider<OffsetPager>()";
+        if (Models.Any(m => HasAnyNavigationalProperties(m))) yield return ".AddProjections()";
+        if (Models.Any(m => m.HasFilteringFeature())) yield return ".AddFiltering()";
+        if (Models.Any(m => m.HasSortingFeature())) yield return ".AddSorting()";
+
+        yield return ".AddQueryType<" + Config.GraphQl.GqlQueriesClassName + ">()";
+        yield return ".AddMutationType<" + Config.GraphQl.GqlMutationsClassName + ">()";
+        yield return ".AddSubscriptionType<" + Config.GraphQl.GqlSubscriptionsClassName + ">();";
+    }
+
+    private int GetVariableServiceDecoratorLines()
+    {
+        var result = 3;
+
+        //if (model.HasPagingFeature()) cm.AddLine("[UsePaging]");
+        //if (HasAnyNavigationalProperties(model)) cm.AddLine("[UseProjection]");
+        //if (model.HasFilteringFeature()) cm.AddLine("[UseFiltering]");
+        //if (model.HasSortingFeature()) cm.AddLine("[UseSorting]");
+
+        if (Models.Any(m => m.HasPagingFeature())) result++;
+        if (Models.Any(m => HasAnyNavigationalProperties(m))) result++;
+        if (Models.Any(m => m.HasFilteringFeature())) result++;
+        if (Models.Any(m => m.HasSortingFeature())) result++;
+
+        return result;
+    }
+
+    private void GeneratorPager()
+    {
+        if (!Models.Any(m => m.HasPagingFeature())) return;
+
+        var name = "OffsetPager";
+        var fm = StartSrcFile("", name);
+        fm.AddUsing("HotChocolate.Internal");
+        fm.AddUsing("HotChocolate.Types.Pagination");
+
+        var cm = fm.AddClass(name);
+        cm.AddInherrit("OffsetPagingProvider");
+
+        cm.AddClosure("public override bool CanHandle(IExtendedType source)", liner =>
+        {
+            liner.Add("throw new System.NotImplementedException();");
+        });
+
+        cm.AddClosure("protected override OffsetPagingHandler CreateHandler(IExtendedType source, PagingOptions options)", liner =>
+        {
+            liner.Add("throw new System.NotImplementedException();");
+        });
+
+        fm.Build();
     }
 }

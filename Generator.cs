@@ -7,7 +7,8 @@ public class Generator : BaseGenerator
     private readonly GraphQlGenerator graphQlGenerator;
     private readonly DockerGenerator dockerGenerator;
     private readonly ReadmeGenerator readmeGenerator;
-    private readonly TestGenerator testGenerator;
+    private readonly IntegrationTestGenerator integrationTestGenerator;
+    private readonly UnitTestGenerator unitTestGenerator;
 
     public Generator(GeneratorConfig config)
         : base(config)
@@ -18,14 +19,16 @@ public class Generator : BaseGenerator
         graphQlGenerator = new GraphQlGenerator(config);
         dockerGenerator = new DockerGenerator(config);
         readmeGenerator = new ReadmeGenerator(config);
-        testGenerator = new TestGenerator(config);
+        integrationTestGenerator = new IntegrationTestGenerator(config);
+        unitTestGenerator = new UnitTestGenerator(config);
     }
 
     public void Generate()
     {
         MakeDir();
         MakeDir(Config.Output.SourceFolder);
-        MakeDir(Config.Output.TestFolder);
+        MakeDir(Config.Output.IntegrationTestFolder);
+        MakeDir(Config.Output.UnitTestFolder);
 
         projectGenerator.CreateDotNetProject();
 
@@ -35,11 +38,14 @@ public class Generator : BaseGenerator
         graphQlGenerator.GenerateGraphQl();
 
         projectGenerator.ModifyDefaultFiles();
-        
+
         dockerGenerator.GenerateDockerFiles();
-        testGenerator.GenerateTests();
+        integrationTestGenerator.GenerateIntegrationTests();
+        unitTestGenerator.GenerateUnitTests();
         readmeGenerator.GenerateReadme();
 
         databaseGenerator.CreateInitialMigration();
+
+        projectGenerator.FormatCode();
     }
 }

@@ -8,7 +8,7 @@
 
     public void CreateClientClass()
     {
-        var fm = StartTestUtilsFile("Client");
+        var fm = StartIntegrationTestUtilsFile("Client");
         var cm = fm.AddClass("Client");
         cm.Modifiers.Clear();
         cm.Modifiers.Add("static");

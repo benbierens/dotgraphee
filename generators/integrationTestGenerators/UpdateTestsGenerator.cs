@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-public class UpdateTestsGenerator : BaseGenerator
+public class UpdateTestsGenerator : BaseTestGenerator
 {
     public UpdateTestsGenerator(GeneratorConfig config)
         : base(config)
@@ -9,7 +9,7 @@ public class UpdateTestsGenerator : BaseGenerator
 
     public void CreateUpdateTests()
     {
-        var fm = StartTestFile("UpdateTests");
+        var fm = StartIntegrationTestFile("UpdateTests");
         var cm = fm.AddClass("UpdateTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
@@ -36,19 +36,22 @@ public class UpdateTestsGenerator : BaseGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task UpdateShouldReturnUpdated" + m.Name + "()", liner =>
         {
-            liner.Add("await CreateTest" + m.Name + "();");
+            AddCreateLine(liner, m);
             liner.AddBlankLine();
 
             liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
-            AddAssertNoErrors(liner);
+            AddAssert(liner).NoErrors();
             liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsUpdateMethod + m.Name + ";");
-            AddAssertEntityNotNull(liner, Config.GraphQl.GqlMutationsUpdateMethod);
+            if (IsFailedToFindStrategyNullObject())
+            {
+                AddAssert(liner).EntityNotNull(Config.GraphQl.GqlMutationsUpdateMethod);
+            }
             liner.AddBlankLine();
 
-            AddAssertId(liner, m, "Update failed.");
+            AddAssert(liner).IdEquals(m, "Update failed.");
             foreach (var f in m.Fields)
             {
-                AddAssertEqualsTestScalar(liner, m, f, "Update failed.");
+                AddAssert(liner).EqualsTestScalar(m, f, "Update failed.");
             }
         });
     }
@@ -60,23 +63,23 @@ public class UpdateTestsGenerator : BaseGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task QueryShouldReturnUpdated" + m.Name + "()", liner =>
         {
-            liner.Add("await CreateTest" + m.Name + "();");
+            AddCreateLine(liner, m);
             liner.AddBlankLine();
 
             liner.Add("await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
             liner.AddBlankLine();            
 
             liner.Add("var gqlData = await Gql.QueryAll" + m.Name + "s();");
-            AddAssertNoErrors(liner);
-            liner.Add("var all = gqlData.Data." + m.Name + "s;");
+            AddAssert(liner).NoErrors();
+            AddDereferenceToAllVariable(liner, m);
             liner.AddBlankLine();
 
-            AddAssertCollectionOne(liner, m, "all");
+            AddAssert(liner).CollectionOne(m, "all");
             liner.Add("var entity = all[0];");
-            AddAssertId(liner, m, "Update failed.");
+            AddAssert(liner).IdEquals(m, "Update failed.");
             foreach (var f in m.Fields)
             {
-                AddAssertEqualsTestScalar(liner, m, f, "Update failed.");
+                AddAssert(liner).EqualsTestScalar(m, f, "Update failed.");
             }
         });
     }
@@ -92,7 +95,7 @@ public class UpdateTestsGenerator : BaseGenerator
             liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
 
-            AddAssertsForFailedToFindMutationResponse(liner, m, Config.GraphQl.GqlMutationsUpdateMethod);
+            AddAssert(liner).FailedToFindMutationResponse(m, Config.GraphQl.GqlMutationsUpdateMethod);
         });
     }
 }

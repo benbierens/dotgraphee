@@ -1,3 +1,5 @@
+using System;
+
 public class SubscriptionHandleClassGenerator : BaseGenerator 
 {
     public SubscriptionHandleClassGenerator(GeneratorConfig config)
@@ -7,9 +9,9 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
 
     public void CreateSubscriptionHandleClass()
     {
-        var fm = StartTestUtilsFile("SubscriptionHandle");
+        var fm = StartIntegrationTestUtilsFile("SubscriptionHandle");
         var im = fm.AddInterface("ISubscriptionHandle");
-        im.AddLine("Task Subscribe();");
+        im.AddLine("Task Subscribe<TOutput>();");
         im.AddLine("Task Unsubscribe();");
 
         var cm = fm.AddClass("SubscriptionHandle<T>");
@@ -38,11 +40,11 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("ws.Options.AddSubProtocol(\"graphql-ws\");");
         });
 
-        cm.AddClosure("public async Task Subscribe()", liner => 
+        cm.AddClosure("public async Task Subscribe<TOutput>()", liner => 
         {
             liner.Add("await ws.ConnectAsync(new Uri(Client.WsUrl), cts.Token);");
             liner.Add("var _ = Task.Run(ReceivingLoop);");
-            liner.Add("var query = GqlBuild.Subscription(subscription).WithOutput<T>().Build();");
+            liner.Add("var query = GqlBuild.Subscription(subscription).WithOutput<TOutput>().Build();");
             liner.Add("await Send(\"{type: \\\"connection_init\\\", payload: {}}\");");
             liner.Add("await Send(\"{\\\"id\\\":\\\"1\\\",\\\"type\\\":\\\"start\\\",\\\"payload\\\":\" + query + \"}\");");
         });
@@ -57,14 +59,12 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         {
             liner.Add("var line = GetSubscriptionLine();");
             liner.StartClosure("if (line.Contains(\"errors\"))");
-            AddSubscriptionDebugLine(liner);
             liner.Add("Assert.Fail(\"Response contains errors:\" + line);");
             liner.Add("throw new Exception();");
             liner.EndClosure();
-            liner.Add("var sub = line.Substring(line.IndexOf(subscription));");
-            liner.Add("sub = sub.Substring(sub.IndexOf('{'));");
-            liner.Add("sub = sub.Substring(0, sub.IndexOf('}') + 1);");
-            liner.Add("return JsonConvert.DeserializeObject<T>(sub);");
+
+            liner.Add("var response = JsonConvert.DeserializeObject<SubscriptionResponse<T>>(line);");
+            liner.Add("return response.Payload.Data;");
         });
 
         cm.AddClosure("private string GetSubscriptionLine()", liner =>
@@ -87,18 +87,42 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("var buffer = new ArraySegment<byte>(bytes);");
             liner.Add("var receive = await ws.ReceiveAsync(buffer, cts.Token);");
             liner.Add("var l = bytes.Take(receive.Count).ToArray();");
-            liner.Add("received.Add(Encoding.UTF8.GetString(l));");
+            liner.Add("var line = Encoding.UTF8.GetString(l);");
+            liner.Add("received.Add(line);");
+            liner.Add("TestContext.WriteLine(\"Subscription channel received: \" + line);");
             liner.EndClosure();
         });
 
         cm.AddClosure("private async Task Send(string query)", liner => 
         {            
+            liner.Add("TestContext.WriteLine(\"Subscription channel send: '\" + query + \"'\");");
             liner.Add("var qbytes = Encoding.UTF8.GetBytes(query);");
             liner.Add("var segment= new ArraySegment<byte>(qbytes);");
             liner.Add("await ws.SendAsync(segment, WebSocketMessageType.Text, true, cts.Token);");
         });
 
+        AddSubscriptionResponseClass(fm);
+        AddPayloadClass(fm);
+
         fm.Build();
+    }
+
+    private void AddPayloadClass(FileMaker fm)
+    {
+        var cm = fm.AddClass("Payload<T>");
+        cm.AddProperty("Data")
+            .IsType("T")
+            .DefaultInitializer()
+            .Build();
+    }
+
+    private void AddSubscriptionResponseClass(FileMaker fm)
+    {
+        var cm = fm.AddClass("SubscriptionResponse<T>");
+        cm.AddProperty("Payload")
+            .IsType("Payload<T>")
+            .InitializeAsExplicitNull()
+            .Build();
     }
 
     private void AddSubscriptionDebugLine(Liner liner)

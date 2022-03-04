@@ -1,4 +1,4 @@
-﻿public class CreateTestsGenerator : BaseGenerator
+﻿public class CreateTestsGenerator : BaseTestGenerator
 {
     public CreateTestsGenerator(GeneratorConfig config)
         : base(config)
@@ -7,7 +7,7 @@
 
     public void CreateCreateTests()
     {
-        var fm = StartTestFile("CreateTests");
+        var fm = StartIntegrationTestFile("CreateTests");
         var cm = fm.AddClass("CreateTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
@@ -16,7 +16,10 @@
 
         foreach (var m in Models)
         {
-            AddCreateTest(cm, m);
+            if (!IsRequiredSubModel(m))
+            {
+                AddCreateTest(cm, m);
+            }
         }
 
         fm.Build();
@@ -29,7 +32,16 @@
         {
             liner.Add("var entity = await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
-            AddEntityFieldAsserts(liner, m, "Incorrect entity returned after creation:");
+            AddAssert(liner).EntityField(m, "Incorrect entity returned after creation:");
+
+            var requiredSingulars = GetMyRequiredSubModels(m);
+            foreach (var r in requiredSingulars)
+            {
+                liner.AddBlankLine();
+                AddAssert(liner, "entity." + r.Name)
+                    .EntityField(r, "Incorrect sub-entity returned after creation:");
+                
+            }
         });
     }
 }

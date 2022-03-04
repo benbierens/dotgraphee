@@ -12,6 +12,7 @@ public class PropertyMaker
     private bool explicitNullInitializer;
     private bool noInitializer;
     private bool defaultInitializer;
+    private string customInitializer;
 
     public PropertyMaker(ClassMaker cm, string name)
     {
@@ -73,6 +74,12 @@ public class PropertyMaker
         return this;
     }
 
+    public PropertyMaker WithCustomInitializer(string initializer)
+    {
+        customInitializer = initializer;
+        return this;
+    }
+
     public void Build()
     {
         cm.AddLine("public " + 
@@ -110,6 +117,7 @@ public class PropertyMaker
 
     private string GetInitializer()
     {
+        if (customInitializer != null) return customInitializer;
         if (noInitializer) return "";
         if (explicitNullInitializer) return " = null!;";
         if (defaultInitializer) return " = default(" + type + ")!;";

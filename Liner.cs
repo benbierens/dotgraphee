@@ -27,7 +27,7 @@ public class Liner
     {
         Deindent();
         Add("}" + additionalPostfix);
-        Add("");
+        AddBlankLine();
     }
 
     public void Add(string l)
@@ -40,7 +40,7 @@ public class Liner
 
     public void AddBlankLine()
     {
-        Add("");
+        lines.Add("");
     }
 
     public string[] GetLines()

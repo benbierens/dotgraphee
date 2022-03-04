@@ -34,6 +34,18 @@ public class ClassMaker
         AddLine("");
     }
 
+    public void BeginRegion(string name)
+    {
+        AddLine("#region " + name);
+        AddBlankLine();
+    }
+
+    public void EndRegion()
+    {
+        AddLine("#endregion");
+        AddBlankLine();
+    }
+
     public PropertyMaker AddProperty(string name)
     {
         return new PropertyMaker(this, name);
@@ -46,7 +58,7 @@ public class ClassMaker
 
     public void AddUsing(string name)
     {
-        if (!string.IsNullOrWhiteSpace(name))
+        if (!string.IsNullOrWhiteSpace(name) && !usings.Contains(name))
         {
             usings.Add(name);
         }

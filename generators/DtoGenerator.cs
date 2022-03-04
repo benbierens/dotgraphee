@@ -11,6 +11,8 @@ public class DtoGenerator : BaseGenerator
     {
         MakeSrcDir(Config.Output.GeneratedFolder, Config.Output.DataTypeObjectsSubFolder);
 
+        CreateEntityInterface();
+
         foreach (var model in Models)
         {
             var fm = StartSrcFile(Config.Output.DataTypeObjectsSubFolder, model.Name);
@@ -50,6 +52,12 @@ public class DtoGenerator : BaseGenerator
                     .IsType(m)
                     .IsNullable()
                     .Build();
+
+                cm.AddProperty(m + "Id")
+                    .WithModifier("virtual")
+                    .IsType(Config.IdType)
+                    .IsNullable()
+                    .Build();
             }
             AddForeignProperties(cm, model);
 
@@ -57,12 +65,17 @@ public class DtoGenerator : BaseGenerator
         }
     }
 
+    private void CreateEntityInterface()
+    {
+        var fm = StartSrcFile(Config.Output.DataTypeObjectsSubFolder, "Entity");
+        var cm = fm.AddInterface("IEntity");
+        cm.AddLine(Config.IdType + " Id { get; set; }");
+        fm.Build();
+    }
+
     private void AddDtoInherritance(ClassMaker cm)
     {
-        if (Config.IdType == "string")
-        {
-            cm.AddInherrit("IHasId");
-        }
+        cm.AddInherrit("IEntity");
     }
 
     private void AddForeignProperties(ClassMaker cm, GeneratorConfig.ModelConfig model)

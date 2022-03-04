@@ -6,11 +6,19 @@ namespace generator
 {
     public class Program
     {
+        private const string Version = "v1.0.3-dev";
+
         public static void Main(string[] args)
         {
             if (!args.Any())
             {
                 DeployDefaultConfig();
+                return;
+            }
+
+            if (IsVersionCall(args))
+            {
+                Log.Write("Version: " + Version);
                 return;
             }
 
@@ -27,6 +35,15 @@ namespace generator
         {
             var generator = new DefaultConfigGenerator();
             generator.CreateDefaultConfig();
+        }
+
+        private static bool IsVersionCall(string[] args)
+        {
+            return args.Any(a =>
+            {
+                var lower = a.ToLowerInvariant();
+                return lower == "-v" || lower == "--version";
+            });
         }
 
         private static void RunGenerator(string configFile)

@@ -10,7 +10,7 @@ public class ReadmeGenerator : BaseGenerator
     public void GenerateReadme()
     {
         var src = Config.Output.SourceFolder;
-        var test = Config.Output.TestFolder;
+        var intTest = Config.Output.IntegrationTestFolder;
 
         WriteRawFile(liner =>
         {
@@ -20,10 +20,10 @@ public class ReadmeGenerator : BaseGenerator
             Add2(liner, "## Run:");
             Add2(liner, "`dotnet run --project " + src + "`");
             Add2(liner, "## Test:");
-            Add2(liner, "### All:");
-            Add2(liner, "`dotnet test " + test + "`");
-            Add2(liner, "### Without GraphQl container tests:");
-            Add2(liner, "`dotnet test " + test + " --filter TestCategory!=" + Config.Tests.TestCategory + "`");
+            Add2(liner, "### Integration Tests:");
+            Add2(liner, "`dotnet test " + intTest + "`");
+            Add2(liner, "### Unit tests:");
+            Add2(liner, "`dotnet test TODO");
             Add2(liner, "## Build Release & Run Docker Image:");
             Add1(liner, "`dotnet publish " + src + " -c Release`");
             Add2(liner, "`docker-compose up -d`");

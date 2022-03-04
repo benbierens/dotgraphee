@@ -1,24 +1,20 @@
-//// DotGraphEE Generator Configuration ///
+//// DotGraphEE Generator Configuration ////
+// Version: 1.0.3-dev 
+
 {
   // Data model configuration.
-  // Each model requires a 'name', any number of 'fields' entries, any number of 'hasMany' entries.
+  // Each model requires a 'name', any number of 'fields' entries, any number of 'hasOne', 'hasMany', and 'maybeHasOne' entries.
   // Each 'fields' entry requires a 'name' and a 'type'.
   // Supported types are: int, bool, string, float, double, DateTime.
   // Each 'hasMany' entry must equal the 'name' of a model.
+  // Each 'hasOne' and 'maybeHasOne' entry must equal the 'name' of a different model.
   "models": [
     {
-      "name": "User",
+      "name": "UserAccount",
+      "features": [ "paging", "filtering", "sorting" ],
       "fields": [
         {
-          "name": "Name",
-          "type": "string"
-        },
-        {
-          "name": "EmailAddress",
-          "type": "string"
-        },
-        {
-          "name": "DisplayName",
+          "name": "AccountName",
           "type": "string"
         }
       ],
@@ -26,47 +22,49 @@
         "Post"
       ],
       "hasOne": [
-        "Profile"
+        "UserProfile"
       ],
       "maybeHasOne": [
-        "ContactInfo"
+        "Color"
       ]
     },
     {
-      "name": "Profile",
+      "name": "UserProfile",
+      "features": [ "filtering" ],
       "fields": [
         {
-          "name": "IconUrl",
+          "name": "DisplayName",
           "type": "string"
         },
         {
-          "name": "Description",
+          "name": "EmailAddress",
+          "type": "string"
+        },
+        {
+          "name": "IconUrl",
           "type": "string"
         }
       ]
     },
     {
-      "name": "ContactInfo",
+      "name": "Color",
       "fields": [
         {
-          "name": "PhoneNumber",
-          "type": "string"
-        },
-        {
-          "name": "StreetAddress",
+          "name": "Rgba",
           "type": "string"
         }
       ]
     },
     {
       "name": "Post",
+      "features": [ "paging", "filtering", "sorting" ],
       "fields": [
         {
-          "name": "AssetUrl",
+          "name": "Title",
           "type": "string"
         },
         {
-          "name": "Title",
+          "name": "Content",
           "type": "string"
         },
         {
@@ -76,27 +74,17 @@
         {
           "name": "ViewCount",
           "type": "int"
-        },
-        {
-          "name": "FloatValue",
-          "type": "float"
-        },
-        {
-          "name": "DoubleValue",
-          "type": "double"
-        },
-        {
-          "name": "IsEnabled",
-          "type": "bool"
         }
-
+      ],
+      "hasMany": [
+        "Post"
       ]
     }
   ],
 
   "config": {
     "generateNamespace": "DotGraphEE_Demo",
-    "HeaderComment": "// This file has been generated.",
+    "headerComment": "// This file has been generated.",
 
     // "idType" options are "int", "string".
     // Determines which scalar type to use for identifiers.
@@ -114,10 +102,9 @@
     // Prefix used for any self-referencing property of a model.
     "selfRefNavigationPropertyPrefix": "Parent",
 
-    "packages": [
+    "sourcePackages": [
       "Microsoft.EntityFrameworkCore",
       "Microsoft.EntityFrameworkCore.Design",
-      "Microsoft.EntityFrameworkCore.Proxies",
       "HotChocolate.AspNetCore",
       "HotChocolate.AspNetCore.Subscriptions",
       "HotChocolate.AspNetCore.Playground",
@@ -125,12 +112,22 @@
       "HotChocolate.Subscriptions.InMemory",
       "Npgsql.EntityFrameworkCore.PostgreSQL"
     ],
+    "integrationTestPackages": [
+      "Microsoft.EntityFrameworkCore",
+      "Microsoft.EntityFrameworkCore.Design"
+    ],
+    "unitTestPackages": [
+      "Microsoft.EntityFrameworkCore",
+      "Microsoft.EntityFrameworkCore.Design",
+      "Moq"
+    ],
 
     // Output path configuration.
     "output": {
-      "projectRoot": "dotgraphee-demo",
+      "projectRoot": "../dotgraphee-demo",
       "sourceFolder": "src",
-      "testFolder": "test",
+      "integrationTestFolder": "integrationTests",
+      "unitTestFolder": "unitTests",
       "generatedFolder": "generated",
       "dataTypeObjectsSubFolder": "dto",
       "databaseSubFolder": "db",
@@ -138,7 +135,7 @@
     },
 
     // Database configuration, both for local development and docker-compose.
-    "Database": {
+    "database": {
       "dbContextClassName": "DatabaseContext",
       "dbContextFileName": "DatabaseContext",
       "dbAccesserClassName": "DbService",
@@ -158,7 +155,7 @@
     },
 
     // GraphQL names.
-    "GraphQl": {
+    "graphQl": {
       "gqlTypesFileName": "GraphQlTypes",
       "gqlQueriesClassName": "Queries",
       "gqlQueriesFileName": "Queries",
@@ -179,10 +176,9 @@
       "gqlSubscriptionDeletedMethod": "Deleted"
     },
 
-    // Test configuration.
-    "Tests": {
+    // Integration test configuration.
+    "integrationTests": {
       "testCategory": "GraphQlTests",
-      "subFolder": "graphQlTests",
       "utilsFolder": "utils"
     }
   }
