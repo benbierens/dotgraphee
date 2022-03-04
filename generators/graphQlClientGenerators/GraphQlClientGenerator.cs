@@ -26,7 +26,7 @@ public class GraphQlClientGenerator : BaseGenerator
 
         GenerateQueries();
         GenerateMutations();
-    
+        GenerateSubscriptions();
     }
 
     #region Queries
@@ -114,6 +114,39 @@ public class GraphQlClientGenerator : BaseGenerator
         var nameWithId = m.Name.FirstToLower() + "Id";
         liner.StartClosureInLine("mutation " + methodName + "($" + nameWithId + ": " + GetGqlIdType() + ")");
         liner.Add(methodName.FirstToLower() + $"(input: {{ {nameWithId}: ${nameWithId} }})");
+        liner.EndClosure();
+    }
+
+    #endregion
+
+    #region Subscriptions
+
+    private void GenerateSubscriptions()
+    {
+        foreach (var m in Models)
+        {
+            GenerateSubscriptions(m);
+        }
+    }
+
+    private void GenerateSubscriptions(GeneratorConfig.ModelConfig m)
+    {
+        WriteRawFile(liner =>
+        {
+            AddSubscription(liner, m, Config.GraphQl.GqlSubscriptionCreatedMethod);
+            AddSubscription(liner, m, Config.GraphQl.GqlSubscriptionUpdatedMethod);
+            AddSubscription(liner, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
+
+        }, Config.Output.GraphQlClientFolder, SubscriptionsFolder, m.Name + SubscriptionsFilePostfix);
+    }
+
+    private void AddSubscription(Liner liner, GeneratorConfig.ModelConfig m, string gqlSubscriptionCreatedMethod)
+    {
+        var methodName = m.Name + gqlSubscriptionCreatedMethod;
+        liner.StartClosureInLine("subscription " + methodName);
+        liner.StartClosureInLine(methodName.FirstToLower());
+        IncludeModelFields(liner, m);
+        liner.EndClosure();
         liner.EndClosure();
     }
 
