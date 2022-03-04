@@ -7,6 +7,9 @@ public class GraphQlClientGenerator : BaseGenerator
     private readonly string QueriesFolder = "queries";
     private readonly string MutationsFolder = "mutations";
     private readonly string SubscriptionsFolder = "subscriptions";
+    private readonly string QueriesFilePostfix = "Queries.graphql";
+    private readonly string MutationsFilePostfix = "Mutations.graphql";
+    private readonly string SubscriptionsFilePostfix = "Subscriptions.graphql";
 
     public GraphQlClientGenerator(GeneratorConfig config)
         : base(config)
@@ -22,7 +25,11 @@ public class GraphQlClientGenerator : BaseGenerator
         MakeDir(Config.Output.GraphQlClientFolder, SubscriptionsFolder);
 
         GenerateQueries();
+        GenerateMutations();
+    
     }
+
+    #region Queries
 
     private void GenerateQueries()
     {
@@ -39,7 +46,7 @@ public class GraphQlClientGenerator : BaseGenerator
             AddAllQuery(liner, m);
             liner.AddBlankLine();
             AddOneQuery(liner, m);
-        }, Config.Output.GraphQlClientFolder, QueriesFolder, m.Name + "Queries.graphql");
+        }, Config.Output.GraphQlClientFolder, QueriesFolder, m.Name + QueriesFilePostfix);
     }
 
     private void AddAllQuery(Liner liner, GeneratorConfig.ModelConfig m)
@@ -67,6 +74,50 @@ public class GraphQlClientGenerator : BaseGenerator
         liner.EndClosure();
         liner.EndClosure();
     }
+
+    #endregion
+
+    #region Mutations
+
+    private void GenerateMutations()
+    {
+        foreach (var model in Models)
+        {
+            GenerateMutationsForModel(model);
+        }
+    }
+
+    private void GenerateMutationsForModel(GeneratorConfig.ModelConfig m)
+    {
+        var inputTypeNames = GetInputTypeNames(m);
+        WriteRawFile(liner =>
+        {
+            GenerateMutation(liner, m, Config.GraphQl.GqlMutationsCreateMethod, inputTypeNames.Create);
+            GenerateMutation(liner, m, Config.GraphQl.GqlMutationsUpdateMethod, inputTypeNames.Update);
+            GenerateDeleteMutation(liner, m, Config.GraphQl.GqlMutationsDeleteMethod);
+        }, Config.Output.GraphQlClientFolder, MutationsFolder, m.Name + MutationsFilePostfix);
+    }
+
+    private void GenerateMutation(Liner liner, GeneratorConfig.ModelConfig m, string mutationMethodName, string inputTypeName)
+    {
+        var methodName = mutationMethodName + m.Name;
+        liner.StartClosureInLine("mutation " + methodName + "($input: " + inputTypeName + "!)");
+        liner.StartClosureInLine(methodName.FirstToLower() + "(input: $input)");
+        IncludeModelFields(liner, m);
+        liner.EndClosure();
+        liner.EndClosure();
+    }
+
+    private void GenerateDeleteMutation(Liner liner, GeneratorConfig.ModelConfig m, string mutationMethodName)
+    {
+        var methodName = mutationMethodName + m.Name;
+        var nameWithId = m.Name.FirstToLower() + "Id";
+        liner.StartClosureInLine("mutation " + methodName + "($" + nameWithId + ": " + GetGqlIdType() + ")");
+        liner.Add(methodName.FirstToLower() + $"(input: {{ {nameWithId}: ${nameWithId} }})");
+        liner.EndClosure();
+    }
+
+    #endregion
 
     private void IncludeModelFields(Liner liner, GeneratorConfig.ModelConfig m)
     {
