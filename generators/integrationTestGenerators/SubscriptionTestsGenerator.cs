@@ -65,12 +65,12 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldPublishSubscriptionOnCreate" + m.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionCreatedMethod + "();");
+            liner.Add("var handle = Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionCreatedMethod + "();");
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
             AddAssertReceiveToEntityVariable(liner, m, Config.GraphQl.GqlSubscriptionCreatedMethod);
-            AddAssert(liner).EntityField(m, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionCreatedMethod + " subscription:");
+            AddAssert(liner).EntityFields(m, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionCreatedMethod + " subscription:");
         });
     }
 
@@ -79,12 +79,12 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task Create" + m.Name + "ShouldPublishSubscriptionOnCreate" + r.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + r.Name + Config.GraphQl.GqlSubscriptionCreatedMethod + "();");
+            liner.Add("var handle = Gql.SubscribeTo" + r.Name + Config.GraphQl.GqlSubscriptionCreatedMethod + "();");
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
             AddAssertReceiveToEntityVariable(liner, r, Config.GraphQl.GqlSubscriptionCreatedMethod);
-            AddAssert(liner).EntityField(r, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionCreatedMethod + " subscription:");
+            AddAssert(liner).EntityFields(r, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionCreatedMethod + " subscription:");
         });
     }
 
@@ -95,7 +95,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldPublishSubscriptionOnUpdate" + m.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionUpdatedMethod + "();");
+            liner.Add("var handle = Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionUpdatedMethod + "();");
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
@@ -132,7 +132,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldPublishSubscriptionOnDelete" + m.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionDeletedMethod + "();");
+            liner.Add("var handle = Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionDeletedMethod + "();");
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
@@ -151,7 +151,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task Delete" + m.Name + "ShouldPublishSubscriptionOnDelete" + r.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + r.Name + Config.GraphQl.GqlSubscriptionDeletedMethod + "();");
+            liner.Add("var handle = Gql.SubscribeTo" + r.Name + Config.GraphQl.GqlSubscriptionDeletedMethod + "();");
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
@@ -166,6 +166,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
     private void AddAssertReceiveToEntityVariable(Liner liner, GeneratorConfig.ModelConfig m, string methodName)
     {
         liner.Add("var entity = handle.AssertReceived()." + m.Name + methodName + ";");
+        AddAssert(liner).EntityNotNull(m.Name + methodName);
     }
 
 }

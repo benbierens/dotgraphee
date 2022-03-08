@@ -135,14 +135,6 @@ public class QueryClassGenerator : BaseGenerator
         cm.AddProperty("Error")
             .IsListOfType("GqlError")
             .Build();
-
-        cm.AddBlankLine();
-        cm.AddClosure("public void AssertNoErrors()", liner =>
-        {
-            liner.StartClosure("if (Errors.Any())");
-            liner.Add("throw new Exception(\"Expected no errors but found: \" + string.Join(\", \", Errors.Select(e => e.Message)));");
-            liner.EndClosure();
-        });
     }
 
     private void CreateQueryErrorClass(FileMaker fm)

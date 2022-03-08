@@ -16,18 +16,39 @@
     {
         var fm = StartIntegrationTestUtilsFile("Gql");
         var cm = fm.AddClass("Gql");
-        
+
+        cm.AddUsing("System");
         cm.AddUsing("System.Collections.Generic");
         cm.AddUsing("System.Threading.Tasks");
-        cm.AddUsing(Config.GenerateNamespace);
+        cm.AddUsing(Config.GenerateNamespace + ".Client");
+        cm.AddUsing("Microsoft.Extensions.DependencyInjection");
+        cm.AddUsing("StrawberryShake");
 
+        cm.AddLine("private readonly IDotGraphEE_DemoClient client = null!;");
         cm.AddLine("private readonly List<ISubscriptionHandle> handles = new List<ISubscriptionHandle>();");
         cm.AddBlankLine();
 
-        cm.AddClosure("public async Task CloseActiveSubscriptionHandles()", liner =>
+        var address = "localhost:5000/graphql";
+
+        cm.AddClosure("public Gql()", liner =>
+        {
+            liner.Add("var serviceCollection = new ServiceCollection();");
+            liner.AddBlankLine();
+            liner.Add("serviceCollection");
+            liner.Indent();
+            liner.Add(".Add" + ClientName + "()");
+            liner.Add(".ConfigureHttpClient(client => client.BaseAddress = new Uri(\"http://" + address + "\"))");
+            liner.Add(".ConfigureWebSocketClient(client => client.Uri = new Uri(\"ws://" + address + "\"));");
+            liner.Deindent();
+            liner.AddBlankLine();
+            liner.Add("IServiceProvider services = serviceCollection.BuildServiceProvider();");
+            liner.Add("client = services.GetRequiredService<I" + ClientName + ">();");
+        });
+
+        cm.AddClosure("public void CloseActiveSubscriptionHandles()", liner =>
         {
             liner.StartClosure("foreach (var h in handles)");
-            liner.Add("await h.Unsubscribe();");
+            liner.Add("h.Unsubscribe();");
             liner.EndClosure();
             liner.Add("handles.Clear();");
         });
@@ -42,10 +63,10 @@
             cm.EndRegion();
         }
 
-        cm.AddClosure("private async Task<SubscriptionHandle<TPayload>> SubscribeTo<TPayload, TOutput>(string modelName)", liner =>
+        cm.AddClosure("private SubscriptionHandle<TResult> SubscribeTo<TResult>(Func<IDotGraphEE_DemoClient, IObservable<IOperationResult<TResult>>> selector) where TResult : class", liner =>
         {
-            liner.Add("var s = new SubscriptionHandle<TPayload>(modelName);");
-            liner.Add("await s.Subscribe<TOutput>();");
+            liner.Add("var s = new SubscriptionHandle<TResult>(client);");
+            liner.Add("s.Subscribe(selector);");
             liner.Add("handles.Add(s);");
             liner.Add("return s;");
         });
@@ -53,7 +74,7 @@
         fm.Build();
     }
 
-    public class QueryMethodsSubgenerator : BaseGqlGenerator
+    public class QueryMethodsSubgenerator : BaseTestGenerator
     {
         public QueryMethodsSubgenerator(GeneratorConfig config)
             : base(config)
@@ -62,24 +83,22 @@
 
         public void AddQueryAllMethod(ClassMaker cm, GeneratorConfig.ModelConfig m)
         {
-            cm.AddClosure("public async Task<GqlData<All" + m.Name + "sQuery>> QueryAll" + m.Name + "s()", liner =>
+            cm.AddClosure("public async Task<IOperationResult<IAll" + m.Name + "sResult>> QueryAll" + m.Name + "s()", liner =>
             {
-                AddQueryAll(liner, m);
-                liner.Add("return await Client.PostRequest<All" + m.Name + "sQuery>(request);");
+                liner.Add("return await client.All" + m.Name + "s.ExecuteAsync();");
             });
         }
 
         public void AddQueryOneMethod(ClassMaker cm, GeneratorConfig.ModelConfig m)
         {
-            cm.AddClosure("public async Task<GqlData<One" + m.Name + "Query>> QueryOne" + m.Name + "(" + Config.IdType + " id)", liner =>
+            cm.AddClosure("public async Task<IOperationResult<IOne" + m.Name + "Result>> QueryOne" + m.Name + "(" + Config.IdType + " id)", liner =>
             {
-                AddQueryOne(liner, m);
-                liner.Add("return await Client.PostRequest<One" + m.Name + "Query>(request);");
+                liner.Add("return await client.One" + m.Name + ".ExecuteAsync(id);");
             });
         }
     }
 
-    public class MutationMethodsSubgenerator : BaseGqlGenerator
+    public class MutationMethodsSubgenerator : BaseTestGenerator
     {
         public MutationMethodsSubgenerator(GeneratorConfig config)
             : base(config)
@@ -91,7 +110,7 @@
             var inputNames = GetInputTypeNames(m);
             AddCreateMutationMethod(cm, m, inputNames);
             AddUpdateMutationMethod(cm, m, inputNames);
-            AddDeleteMutationMethod(cm, m, inputNames);
+            AddDeleteMutationMethod(cm, m);
         }
 
         private void AddCreateMutationMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
@@ -99,43 +118,40 @@
             if (IsRequiredSubModel(m)) return;
 
             var templateField = Config.GraphQl.GqlMutationsCreateMethod + m.Name;
-            var templateType = templateField + "Response";
+            var templateType = templateField + "Result";
 
-            cm.AddClosure("public async Task<GqlData<" + templateType + ">> Create" + m.Name + "(" + inputNames.Create + " input)", liner =>
+            cm.AddClosure("public async Task<IOperationResult<I" + templateType + ">> Create" + m.Name + "(" + inputNames.Create + " input)", liner =>
             {
-                AddMutation(liner, m, templateField);
-                liner.Add("return await Client.PostRequest<" + templateType + ">(request);");
+                liner.Add("return await client." + templateField + ".ExecuteAsync(input);");
             });
         }
 
         private void AddUpdateMutationMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
         {
             var templateField = Config.GraphQl.GqlMutationsUpdateMethod + m.Name;
-            var templateType = templateField + "Response";
+            var templateType = templateField + "Result";
 
-            cm.AddClosure("public async Task<GqlData<" + templateType + ">> Update" + m.Name + "(" + inputNames.Update + " input)", liner =>
+            cm.AddClosure("public async Task<IOperationResult<I" + templateType + ">> Update" + m.Name + "(" + inputNames.Update + " input)", liner =>
             {
-                AddMutation(liner, m, templateField);
-                liner.Add("return await Client.PostRequest<" + templateType + ">(request);");
+                liner.Add("return await client." + templateField + ".ExecuteAsync(input);");
             });
         }
 
-        private void AddDeleteMutationMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
+        private void AddDeleteMutationMethod(ClassMaker cm, GeneratorConfig.ModelConfig m)
         {
             if (IsRequiredSubModel(m)) return;
-            
-            var templateField = Config.GraphQl.GqlMutationsDeleteMethod + m.Name;
-            var templateType = templateField + "Response";
 
-            cm.AddClosure("public async Task<GqlData<" + templateType+ ">> Delete" + m.Name + "(" + inputNames.Delete + " input)", liner =>
+            var templateField = Config.GraphQl.GqlMutationsDeleteMethod + m.Name;
+            var templateType = templateField + "Result";
+
+            cm.AddClosure("public async Task<IOperationResult<I" + templateType + ">> Delete" + m.Name + "(" + Config.IdType + " input)", liner =>
             {
-                liner.Add("var request = GqlBuild.Mutation(\"" + templateField.FirstToLower() + "\").WithInput(input)" + GetBuildTag());
-                liner.Add("return await Client.PostRequest<" + templateType + ">(request);");
+                liner.Add("return await client." + templateField + ".ExecuteAsync(input);");
             });
         }
     }
 
-    public class SubscriptionMethodsSubgenerator : BaseGqlGenerator
+    public class SubscriptionMethodsSubgenerator : BaseTestGenerator
     {
         public SubscriptionMethodsSubgenerator(GeneratorConfig config)
             : base(config)
@@ -151,78 +167,11 @@
 
         private void AddSubscribeMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, string methodName)
         {
-            cm.AddClosure("public async Task<SubscriptionHandle<" + m.Name + methodName + "Payload>> SubscribeTo" + m.Name + methodName + "()", liner =>
+            var nameMethod = m.Name + methodName;
+            cm.AddClosure($"public SubscriptionHandle<I{nameMethod}Result> SubscribeTo{nameMethod}()", liner =>
             {
-                liner.Add("return await SubscribeTo<" + m.Name + methodName + "Payload, " + m.Name + ">(\"" + m.Name.FirstToLower() + methodName + "\");");
+                liner.Add($"return SubscribeTo(c => c.{nameMethod}.Watch());");
             });
-        }
-    }
-
-    public abstract class BaseGqlGenerator : BaseTestGenerator
-    {
-        protected BaseGqlGenerator(GeneratorConfig config)
-            : base(config)
-        {
-        }
-
-        public void AddQueryAll(Liner liner, GeneratorConfig.ModelConfig m)
-        {
-            Add(liner, m, "Query", m.Name.FirstToLower() + "s", GetPagingAndBuildTag(m));
-        }
-
-        public void AddQueryOne(Liner liner, GeneratorConfig.ModelConfig m)
-        {
-            Add(liner, m, "Query", m.Name.FirstToLower(), GetBuildTag(), ".WithId(id)");
-        }
-
-        public void AddMutation(Liner liner, GeneratorConfig.ModelConfig m, string templateField)
-        {
-            Add(liner, m, "Mutation", templateField.FirstToLower(), GetBuildTag(), ".WithInput(input)");
-        }
-
-        private void Add(Liner liner, GeneratorConfig.ModelConfig m, string verb, string target, string closer, string input = "")
-        {
-            if (!HasRequiredSubModels(m))
-            {
-                liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">()" + closer);
-            }
-            else
-            {
-                liner.Add("var request = GqlBuild." + verb + "(\"" + target + "\")" + input + ".WithOutput<" + m.Name + ">(i => i");
-                var subs = GetMyRequiredSubModels(m);
-                foreach (var sub in subs) AddInclusion(liner, m, sub);
-                liner.Add(")" + closer);
-            }
-            liner.AddBlankLine();
-        }
-
-        private string GetPagingAndBuildTag(GeneratorConfig.ModelConfig m)
-        {
-            if (m.HasPagingFeature()) return ".WithPaging()" + GetBuildTag();
-            return GetBuildTag();
-        }
-
-        public string GetBuildTag()
-        {
-            return ".Build();";
-        }
-
-        private void AddInclusion(Liner liner, GeneratorConfig.ModelConfig model, GeneratorConfig.ModelConfig subModel)
-        {
-            var l = model.Name.FirstToLower();
-            liner.Indent();
-            if (!HasRequiredSubModels(subModel))
-            {
-                liner.Add(".Include(" + l + " => " + l + "." + subModel.Name + ")");
-            }
-            else
-            {
-                liner.Add(".Include(" + l + " => " + l + "." + subModel.Name + ", i => i");
-                var subSubs = GetMyRequiredSubModels(subModel);
-                foreach (var sub in subSubs) AddInclusion(liner, subModel, sub);
-                liner.Add(")");
-            }
-            liner.Deindent();
         }
     }
 }

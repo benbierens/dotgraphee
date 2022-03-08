@@ -21,6 +21,8 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     {
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
+        cm.AddUsing("StrawberryShake");
+        cm.AddUsing(Config.GenerateNamespace + ".Client");
 
         cm.AddAttribute("Category(\"" + Config.IntegrationTests.TestCategory + "\")");
 
@@ -32,9 +34,9 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
         });
 
         cm.AddLine("[TearDown]");
-        cm.AddClosure("public async Task GqlTearDown()", liner =>
+        cm.AddClosure("public void GqlTearDown()", liner =>
         {
-            liner.Add("await Gql.CloseActiveSubscriptionHandles();");
+            liner.Add("Gql.CloseActiveSubscriptionHandles();");
             liner.Add("DockerController.ClearData();");
             liner.Add("DockerController.Restart();");
         });
@@ -49,12 +51,20 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
         cm.AddBlankLine();
         AddCreateTestModelMethods(cm);
+
+        AddAssertNoErrors(cm);
+    }
+
+    private void AddAssertNoErrors(ClassMaker cm)
+    {
+        cm.AddClosure("public void AssertNoErrors(IOperationResult gqlData)", liner =>
+        {
+            liner.Add("gqlData.EnsureNoErrors();");
+        });
     }
 
     private void AddCreateTestModelMethods(ClassMaker cm)
     {
-        cm.AddUsing(Config.GenerateNamespace);
-
         IterateModelsInDependencyOrder(m =>
         {
             if (!IsRequiredSubModel(m))
@@ -67,13 +77,16 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     private void AddCreateTestModelMethod(ClassMaker cm, GeneratorConfig.ModelConfig m)
     {
         var inputTypes = GetInputTypeNames(m);
+        var methodName = Config.GraphQl.GqlMutationsCreateMethod + m.Name;
+        var returnType = "I" + methodName + "_" + methodName;
 
-        cm.AddClosure("public async Task<" + m.Name + "> CreateTest" + m.Name + "()", liner =>
+        cm.AddClosure("public async Task<" + returnType + "> CreateTest" + m.Name + "()", liner =>
         {
             var args = GetCreateInputArguments(liner, m);
             liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
             AddAssert(liner).NoErrors();
-            liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsCreateMethod + m.Name + ";");
+            liner.Add("var entity = gqlData.Data!." + methodName + ";");
+            AddAssert(liner).EntityNotNull("CreateTest" + m.Name);
             AddAssignIdToTestData(liner, m, "entity");
             liner.Add("return entity;");
         });

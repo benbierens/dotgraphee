@@ -11,122 +11,91 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
     {
         var fm = StartIntegrationTestUtilsFile("SubscriptionHandle");
         var im = fm.AddInterface("ISubscriptionHandle");
-        im.AddLine("Task Subscribe<TOutput>();");
-        im.AddLine("Task Unsubscribe();");
+        im.AddLine("void Unsubscribe();");
 
-        var cm = fm.AddClass("SubscriptionHandle<T>");
-        cm.AddInherrit("ISubscriptionHandle");
+        var cm = fm.AddClass("SubscriptionHandle<TResult>");
+        cm.AddInherrit("ISubscriptionHandle where TResult : class");
         cm.AddUsing("System");
         cm.AddUsing("System.Collections.Generic");
         cm.AddUsing("System.Linq");
-        cm.AddUsing("System.Net.WebSockets");
-        cm.AddUsing("System.Text");
-        cm.AddUsing("System.Threading");
-        cm.AddUsing("System.Threading.Tasks");
-        cm.AddUsing("Newtonsoft.Json");
         cm.AddUsing("NUnit.Framework");
+        cm.AddUsing("StrawberryShake");
+        cm.AddUsing(Config.GenerateNamespace + ".Client");
 
-        cm.AddLine("private readonly string subscription;");
-        cm.AddLine("private readonly CancellationTokenSource cts = new CancellationTokenSource();");
-        cm.AddLine("private readonly ClientWebSocket ws = new ClientWebSocket();");
-        cm.AddLine("private readonly List<string> received = new List<string>();");
-        cm.AddLine("private bool running;");
+        cm.AddLine($"private readonly I{ClientName} client;");
+        cm.AddLine("private readonly List<TResult> received = new List<TResult>();");
+        cm.AddLine("private readonly List<string> errors = new List<string>();");
+        cm.AddLine("private IDisposable handle = null!;");
         cm.AddBlankLine();
 
-        cm.AddClosure("public SubscriptionHandle(string subscription)", liner => 
+        cm.AddClosure($"public SubscriptionHandle(I{ClientName} client)", liner =>
         {
-            liner.Add("this.subscription = subscription;");
-            liner.Add("running = true;");
-            liner.Add("ws.Options.AddSubProtocol(\"graphql-ws\");");
+            liner.Add("this.client = client;");
         });
 
-        cm.AddClosure("public async Task Subscribe<TOutput>()", liner => 
+        cm.AddClosure($"public void Subscribe(Func<I{ClientName}, IObservable<IOperationResult<TResult>>> subSelector)", liner => 
         {
-            liner.Add("await ws.ConnectAsync(new Uri(Client.WsUrl), cts.Token);");
-            liner.Add("var _ = Task.Run(ReceivingLoop);");
-            liner.Add("var query = GqlBuild.Subscription(subscription).WithOutput<TOutput>().Build();");
-            liner.Add("await Send(\"{type: \\\"connection_init\\\", payload: {}}\");");
-            liner.Add("await Send(\"{\\\"id\\\":\\\"1\\\",\\\"type\\\":\\\"start\\\",\\\"payload\\\":\" + query + \"}\");");
+            liner.Add("var observable = subSelector(client);");
+            liner.Add("handle = observable.Subscribe(new SubscriptionListener<TResult>(received, errors));");
         });
 
-        cm.AddClosure("public async Task Unsubscribe()", liner => 
+        cm.AddClosure("public void Unsubscribe()", liner => 
         {
-            liner.Add("running = false;");
-            liner.Add("await Send(\"{\\\"id\\\":\\\"1\\\",\\\"type\\\":\\\"stop\\\"}\");");
+            liner.Add("handle.Dispose();");
         });
 
-        cm.AddClosure("public T AssertReceived()", liner => 
+        cm.AddClosure("public TResult AssertReceived()", liner => 
         {
-            liner.Add("var line = GetSubscriptionLine();");
-            liner.StartClosure("if (line.Contains(\"errors\"))");
-            liner.Add("Assert.Fail(\"Response contains errors:\" + line);");
+            liner.StartClosure("if (errors.Any())");
+            liner.Add("Assert.Fail(\"Response contains errors: \" + string.Join(\", \", errors));");
             liner.Add("throw new Exception();");
             liner.EndClosure();
 
-            liner.Add("var response = JsonConvert.DeserializeObject<SubscriptionResponse<T>>(line);");
-            liner.Add("return response.Payload.Data;");
-        });
-
-        cm.AddClosure("private string GetSubscriptionLine()", liner =>
-        {
-            liner.Add("var start = DateTime.Now;");
-            liner.StartClosure("while ((DateTime.Now - start) < TimeSpan.FromSeconds(15))");
-            liner.Add("var line = received.SingleOrDefault(l => l.Contains(subscription));");
-            liner.Add("if (line != null) return line;");
-            liner.Add("Thread.Sleep(100);");
+            liner.StartClosure("if (!received.Any())");
+            liner.Add("Assert.Fail(\"Expected subscription of type '\" + typeof(TResult) + \"', but was not received..\");");
             liner.EndClosure();
-            AddSubscriptionDebugLine(liner);
-            liner.Add("Assert.Fail(\"Expected subscription '\" + subscription + \"', but was not received.\");");
-            liner.Add("throw new Exception();");
+
+            liner.Add("return received.Last();");
         });
 
-        cm.AddClosure("private async Task ReceivingLoop()", liner => 
-        {
-            liner.StartClosure("while (running)");
-            liner.Add("var bytes = new byte[1024];");
-            liner.Add("var buffer = new ArraySegment<byte>(bytes);");
-            liner.Add("var receive = await ws.ReceiveAsync(buffer, cts.Token);");
-            liner.Add("var l = bytes.Take(receive.Count).ToArray();");
-            liner.Add("var line = Encoding.UTF8.GetString(l);");
-            liner.Add("received.Add(line);");
-            liner.Add("TestContext.WriteLine(\"Subscription channel received: \" + line);");
-            liner.EndClosure();
-        });
-
-        cm.AddClosure("private async Task Send(string query)", liner => 
-        {            
-            liner.Add("TestContext.WriteLine(\"Subscription channel send: '\" + query + \"'\");");
-            liner.Add("var qbytes = Encoding.UTF8.GetBytes(query);");
-            liner.Add("var segment= new ArraySegment<byte>(qbytes);");
-            liner.Add("await ws.SendAsync(segment, WebSocketMessageType.Text, true, cts.Token);");
-        });
-
-        AddSubscriptionResponseClass(fm);
-        AddPayloadClass(fm);
+        AddSubscriptionListenerClass(fm);
 
         fm.Build();
     }
 
-    private void AddPayloadClass(FileMaker fm)
-    {
-        var cm = fm.AddClass("Payload<T>");
-        cm.AddProperty("Data")
-            .IsType("T")
-            .DefaultInitializer()
-            .Build();
-    }
 
-    private void AddSubscriptionResponseClass(FileMaker fm)
-    {
-        var cm = fm.AddClass("SubscriptionResponse<T>");
-        cm.AddProperty("Payload")
-            .IsType("Payload<T>")
-            .InitializeAsExplicitNull()
-            .Build();
-    }
+    //public class SubscriptionListener<TResult> : IObserver<IOperationResult<TResult>> where TResult : class
+    //{
+  
+    //}
 
-    private void AddSubscriptionDebugLine(Liner liner)
+    private void AddSubscriptionListenerClass(FileMaker fm)
     {
-        liner.Add("TestContext.WriteLine(\"Subscription channel received: \" + string.Join(Environment.NewLine, received));");
+        var cm = fm.AddClass("SubscriptionListener<TResult>");
+        cm.AddInherrit("IObserver<IOperationResult<TResult>> where TResult : class");
+
+        cm.AddLine("private readonly List<TResult> entities;");
+        cm.AddLine("private readonly List<string> errors;");
+
+        cm.AddClosure("public SubscriptionListener(List<TResult> entities, List<string> errors)", liner =>
+        {
+            liner.Add("this.entities = entities;");
+            liner.Add("this.errors = errors;");
+        });
+
+        cm.AddClosure("public void OnCompleted()", liner => { });
+
+        cm.AddClosure("public void OnError(Exception error)", liner => 
+        {
+            liner.Add("errors.Add(error.ToString());");
+        });
+
+        cm.AddClosure("public void OnNext(IOperationResult<TResult> value)", liner =>
+        {
+            liner.Add("var entity = value.Data;");
+            liner.StartClosure("if (entity != null)");
+            liner.Add("entities.Add(entity);");
+            liner.EndClosure();
+        });
     }
 }
