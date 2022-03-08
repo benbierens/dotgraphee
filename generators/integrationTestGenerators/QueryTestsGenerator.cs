@@ -39,22 +39,12 @@ public class QueryTestsGenerator : BaseTestGenerator
             AddDereferenceToAllVariable(liner, m);
 
             liner.AddBlankLine();
+            AddAssert(liner, "all").EntityNotNull("QueryAll" + m.Name);
             AddAssert(liner).CollectionOne(m, "all");
             liner.AddBlankLine();
 
             liner.Add("var entity = all[0];");
-            foreach (var f in m.Fields)
-            {
-                AddAssert(liner).EqualsTestEntity(m, f, "All-query incorrect.");
-            }
-            var foreignProperties = GetForeignProperties(m);
-            foreach (var f in foreignProperties)
-            {
-                if (!f.IsSelfReference)
-                {
-                    AddAssert(liner).ForeignIdEquals(m, f, "All-query incorrect.");
-                }
-            }
+            AddAssert(liner).EntityFields(m, "All-query incorrect.");
         });
     }
 
@@ -67,34 +57,21 @@ public class QueryTestsGenerator : BaseTestGenerator
             liner.AddBlankLine();
             liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData." + m.Name + "1.Id);");
             AddAssert(liner).NoErrors();
-            liner.Add("var entity = gqlData.Data." + m.Name + ";");
+            liner.Add("var entity = gqlData.Data?." + m.Name + ";");
             AddAssert(liner).EntityNotNull("QueryOne" + m.Name);
             liner.AddBlankLine();
-
-            foreach (var f in m.Fields)
-            {
-                AddAssert(liner).EqualsTestEntity(m, f, "One-query incorrect.");
-            }
-            var foreignProperties = GetForeignProperties(m);
-            foreach (var f in foreignProperties)
-            {
-                if (!f.IsSelfReference)
-                {
-                    AddAssert(liner).ForeignIdEquals(m, f, "One-query incorrect.");
-                }
-            }
+            AddAssert(liner).EntityFields(m, "One-query incorrect.");
         });
     }
 
     private void AddQueryOneFailedToFindTest(ClassMaker cm, GeneratorConfig.ModelConfig m)
     {
         cm.AddLine("[Test]");
-        cm.AddClosure("public async Task ShouldReturn" + GetErrorOrNull() + "WhenQueryOne" + m.Name + "ByIncorrectId()", liner =>
+        cm.AddClosure("public async Task ShouldReturnNullWhenQueryOne" + m.Name + "ByIncorrectId()", liner =>
         {
             liner.Add("var gqlData = await Gql.QueryOne" + m.Name + "(TestData." + Config.IdType.FirstToUpper() + ");");
-            liner.Add("var errors = gqlData.Errors;");
+            AddAssert(liner).NoErrors();
             liner.AddBlankLine();
-            AddAssert(liner).NoErrors("query");
             AddAssert(liner).NullReturned(m, "");
         });
     }

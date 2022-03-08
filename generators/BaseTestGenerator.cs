@@ -27,9 +27,9 @@ public abstract class BaseTestGenerator : BaseGenerator
     {
         if (!m.HasPagingFeature())
         {
-            return ".Data." + m.Name + "s";
+            return ".Data?." + m.Name + "s";
         }
-        return ".Data." + m.Name + "s.Nodes";
+        return ".Data?." + m.Name + "s?.Nodes";
     }
 
     protected void AddDereferenceToAllVariable(Liner liner, GeneratorConfig.ModelConfig m)

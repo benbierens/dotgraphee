@@ -93,7 +93,7 @@ public class AssertMaker
     public void NullReturned(GeneratorConfig.ModelConfig m, string mutation)
     {
         var field = mutation + m.Name;
-        liner.Add("Assert.That(gqlData.Data." + field + ", Is.Null, \"Expected null object to be returned.\");");
+        liner.Add("Assert.That(gqlData.Data?." + field + ", Is.Null, \"Expected null object to be returned.\");");
     }
 
     public void NoErrors()
@@ -106,10 +106,10 @@ public class AssertMaker
         var field = baseGenerator.Config.GraphQl.GqlMutationsDeleteMethod + m.Name;
         if (baseGenerator.IsFailedToFindStrategyNullObject())
         {
-            liner.Add("if (response.Data." + field + " == null) throw new AssertionException(\"Unexpected null returned by " + 
+            liner.Add("if (response.Data?." + field + " == null) throw new AssertionException(\"Unexpected null returned by " + 
                 baseGenerator.Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
         }
-        liner.Add("Assert.That(response.Data." + field + ", Is.EqualTo(TestData." + m.Name + "1.Id), \"Incorrect Id returned by " + 
+        liner.Add("Assert.That(response.Data?." + field + ", Is.EqualTo(TestData." + m.Name + "1.Id), \"Incorrect Id returned by " + 
             baseGenerator.Config.GraphQl.GqlMutationsDeleteMethod + " mutation.\");");
     }
 

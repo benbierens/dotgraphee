@@ -15,8 +15,8 @@ public class ProjectGenerator : BaseGenerator
 
         AddSourceAssembly();
         AddGraphClientAssembly();
-        AddIntegrationTestAssembly();
         AddUnitTestAssembly();
+        AddIntegrationTestAssembly();
 
         // Reference from IntegrationTestAssembly to UnitTestAssembly, to share test data.
         RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.UnitTestFolder + "/" + Config.Output.UnitTestFolder + ".csproj");
@@ -47,6 +47,7 @@ public class ProjectGenerator : BaseGenerator
     private void AddIntegrationTestAssembly()
     {
         AddTestAssembly(Config.Output.IntegrationTestFolder, Config.IntegrationTestPackages);
+        RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.UnitTestFolder + "/" + Config.Output.UnitTestFolder + ".csproj");
     }
 
     private void AddUnitTestAssembly()

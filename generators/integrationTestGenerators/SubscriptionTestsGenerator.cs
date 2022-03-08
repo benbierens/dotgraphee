@@ -100,7 +100,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
             AddCreateLine(liner, m);
             liner.AddBlankLine();
 
-            liner.Add("await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
+            liner.Add("await Gql.Update" + m.Name + "(TestInput.To" + inputTypes.Update + "());");
             liner.AddBlankLine();
 
             AddAssertReceiveToEntityVariable(liner, m, Config.GraphQl.GqlSubscriptionUpdatedMethod);
@@ -136,7 +136,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
-            liner.Add("await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            liner.Add("await Gql.Delete" + m.Name + "(TestInput.To" + inputTypes.Delete + "());");
             liner.AddBlankLine();
 
             AddAssertReceiveToEntityVariable(liner, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
@@ -155,7 +155,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
-            liner.Add("await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            liner.Add("await Gql.Delete" + m.Name + "(TestInput.To" + inputTypes.Delete + "());");
             liner.AddBlankLine();
 
             AddAssertReceiveToEntityVariable(liner, r, Config.GraphQl.GqlSubscriptionDeletedMethod);

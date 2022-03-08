@@ -43,7 +43,7 @@ public class DeleteTestsGenerator : BaseTestGenerator
             liner.Add("await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
 
-            liner.Add("var response = await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            liner.Add("var response = await Gql.Delete" + m.Name + "(TestInput.To" + inputTypes.Delete + "());");
             AddAssert(liner).DeleteResponse(m);
             liner.AddBlankLine();
             
@@ -65,7 +65,7 @@ public class DeleteTestsGenerator : BaseTestGenerator
             liner.Add("await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
 
-            liner.Add("var response = await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            liner.Add("var response = await Gql.Delete" + m.Name + "(TestInput.To" + inputTypes.Delete + "());");
             AddAssert(liner).DeleteResponse(m);
             liner.AddBlankLine();
             
@@ -84,7 +84,7 @@ public class DeleteTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task DeleteShouldReturn" + GetErrorOrNull() + "WhenFailedToFind" + m.Name + "()", liner =>
         {
-            liner.Add("var gqlData = await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            liner.Add("var gqlData = await Gql.Delete" + m.Name + "(TestInput.To" + inputTypes.Delete + "());");
             liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
 

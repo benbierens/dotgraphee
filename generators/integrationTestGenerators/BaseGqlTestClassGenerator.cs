@@ -30,6 +30,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
         cm.AddClosure("public async Task GqlSetUp()", liner =>
         {
             liner.Add("TestData = new TestData();");
+            liner.Add("TestInput = new TestInput(TestData);");
             liner.Add("await DockerController.Up();");
         });
 
@@ -43,6 +44,12 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
         cm.AddProperty("TestData")
             .IsType("TestData")
+            .InitializeAsExplicitNull()
+            .Build();
+
+        cm.AddProperty("TestInput")
+            .IsType("TestInput")
+            .InitializeAsExplicitNull()
             .Build();
 
         cm.AddProperty("Gql")
@@ -82,8 +89,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
         cm.AddClosure("public async Task<" + returnType + "> CreateTest" + m.Name + "()", liner =>
         {
-            var args = GetCreateInputArguments(liner, m);
-            liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
+            liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestInput.To" + inputTypes.Create + "());");
             AddAssert(liner).NoErrors();
             liner.Add("var entity = gqlData.Data!." + methodName + ";");
             AddAssert(liner).EntityNotNull("CreateTest" + m.Name);
@@ -102,27 +108,6 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
         {
             AddAssignIdToTestData(liner, subModel, accessors.Concat(new[] { subModel.Name }).ToArray());
         }
-    }
-
-    private string GetCreateInputArguments(Liner liner, GeneratorConfig.ModelConfig m)
-    {
-        var foreignProperties = GetForeignProperties(m);
-
-        var arguments = new List<string>();
-        foreach (var f in foreignProperties)
-        {
-            if (!f.IsSelfReference)
-            {
-                liner.Add("await CreateTest" + f.Type + "();");
-                arguments.Add("TestData." + f.Type + "1.Id");
-            }
-            else
-            {
-                arguments.Add("null");
-            }
-        }
-
-        return string.Join(", ", arguments);
     }
 
     private void AddDockerInitializer(ClassMaker cm)
