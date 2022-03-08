@@ -48,6 +48,7 @@ public class ProjectGenerator : BaseGenerator
     {
         AddTestAssembly(Config.Output.IntegrationTestFolder, Config.IntegrationTestPackages);
         RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.UnitTestFolder + "/" + Config.Output.UnitTestFolder + ".csproj");
+        RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.GraphQlClientFolder + "/" + Config.Output.GraphQlClientFolder + ".csproj");
     }
 
     private void AddUnitTestAssembly()
