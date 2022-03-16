@@ -112,7 +112,6 @@ public class ProjectGenerator : BaseGenerator
         mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<IInputConverter, InputConverter>());");
         mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<IPublisher, Publisher>());");
         mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<I" + Config.Database.DbAccesserClassName + ", " + Config.Database.DbAccesserClassName + ">());");
-        //mf.Insert(23, 3, "services.AddPooledDbContextFactory<" + Config.Database.DbContextClassName + ">(options => { });");
 
         mf.ReplaceLine(".AddQueryType<Query>();", GetServiceDecorators().ToArray());
                 

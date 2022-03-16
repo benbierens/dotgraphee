@@ -10,12 +10,18 @@ public class BaseGenerator
     {
         Config = config.Config;
         Models = config.Models;
-        ClientName = "DotGraphEE_DemoClient";
     }
 
     public GeneratorConfig.ConfigSection Config { get; private set; }
     public GeneratorConfig.ModelConfig[] Models { get; private set; }
-    public string ClientName { get; private set; }
+
+    public string GraphQlClientName
+    {
+        get
+        {
+            return Config.GenerateNamespace + "Client";
+        }
+    }
 
     protected FileMaker StartSrcFile(string subfolder, string filename)
     {

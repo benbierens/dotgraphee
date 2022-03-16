@@ -24,13 +24,14 @@ public class DockerGenerator : BaseGenerator
             liner.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build");
             liner.Add("WORKDIR /app");
             liner.Add("COPY *.sln ./");
+            liner.Add("COPY " + Config.Output.DomainFolder + " ./" + Config.Output.DomainFolder);
             liner.Add("COPY " + Config.Output.SourceFolder + " ./" + Config.Output.SourceFolder);
             liner.Add("RUN dotnet publish ./" + Config.Output.SourceFolder + " -c Release");
             liner.AddBlankLine();
             liner.Add("FROM mcr.microsoft.com/dotnet/aspnet:6.0");
             liner.Add("WORKDIR /app");
             liner.Add("COPY --from=build /app/" + Config.Output.SourceFolder + "/bin/Release/net6.0/publish/ ./");
-            liner.Add("ENTRYPOINT [\"dotnet\", \"src.dll\"]");
+            liner.Add("ENTRYPOINT [\"dotnet\", \"" + Config.Output.SourceFolder + ".dll\"]");
         }, dockerFolder, "Dockerfile");
 
         WriteRawFile(liner =>

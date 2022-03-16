@@ -189,7 +189,7 @@ public class GraphQlClientGenerator : BaseGenerator
             {
                 StrawberryShake = new GraphQlRcExtensionsStrawberryShake
                 {
-                    Name = Config.GenerateNamespace + "Client",
+                    Name = GraphQlClientName,
                     Namespace = Config.GenerateNamespace + ".Client",
                     Url = "http://localhost:5000/graphql",
                     DependencyInjection = true

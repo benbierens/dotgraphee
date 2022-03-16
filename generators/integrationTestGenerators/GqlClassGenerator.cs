@@ -28,7 +28,7 @@
         cm.AddLine("private readonly List<ISubscriptionHandle> handles = new List<ISubscriptionHandle>();");
         cm.AddBlankLine();
 
-        var address = "localhost:5000/graphql";
+        var address = "localhost/graphql";
 
         cm.AddClosure("public Gql()", liner =>
         {
@@ -36,13 +36,13 @@
             liner.AddBlankLine();
             liner.Add("serviceCollection");
             liner.Indent();
-            liner.Add(".Add" + ClientName + "()");
+            liner.Add(".Add" + GraphQlClientName + "()");
             liner.Add(".ConfigureHttpClient(client => client.BaseAddress = new Uri(\"http://" + address + "\"))");
             liner.Add(".ConfigureWebSocketClient(client => client.Uri = new Uri(\"ws://" + address + "\"));");
             liner.Deindent();
             liner.AddBlankLine();
-            liner.Add("IServiceProvider services = serviceCollection.BuildServiceProvider();");
-            liner.Add("client = services.GetRequiredService<I" + ClientName + ">();");
+            liner.Add("var services = serviceCollection.BuildServiceProvider();");
+            liner.Add("client = services.GetRequiredService<I" + GraphQlClientName + ">();");
         });
 
         cm.AddClosure("public void CloseActiveSubscriptionHandles()", liner =>

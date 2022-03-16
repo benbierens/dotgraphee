@@ -22,18 +22,18 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         cm.AddUsing("StrawberryShake");
         cm.AddUsing(Config.GenerateNamespace + ".Client");
 
-        cm.AddLine($"private readonly I{ClientName} client;");
+        cm.AddLine($"private readonly I{GraphQlClientName} client;");
         cm.AddLine("private readonly List<TResult> received = new List<TResult>();");
         cm.AddLine("private readonly List<string> errors = new List<string>();");
         cm.AddLine("private IDisposable handle = null!;");
         cm.AddBlankLine();
 
-        cm.AddClosure($"public SubscriptionHandle(I{ClientName} client)", liner =>
+        cm.AddClosure($"public SubscriptionHandle(I{GraphQlClientName} client)", liner =>
         {
             liner.Add("this.client = client;");
         });
 
-        cm.AddClosure($"public void Subscribe(Func<I{ClientName}, IObservable<IOperationResult<TResult>>> subSelector)", liner => 
+        cm.AddClosure($"public void Subscribe(Func<I{GraphQlClientName}, IObservable<IOperationResult<TResult>>> subSelector)", liner => 
         {
             liner.Add("var observable = subSelector(client);");
             liner.Add("handle = observable.Subscribe(new SubscriptionListener<TResult>(received, errors));");
