@@ -9,7 +9,7 @@ public class DatabaseGenerator : BaseGenerator
 
     public void GenerateDbContext()
     {
-        MakeSrcDir(Config.Output.GeneratedFolder, Config.Output.DatabaseSubFolder);
+        MakeSrcDir(Config.Output.DatabaseSubFolder);
 
         CreateDatabaseContextClass();
         CreateAccessClass();

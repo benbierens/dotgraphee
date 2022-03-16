@@ -20,7 +20,7 @@ public class GraphQlGenerator : BaseGenerator
 
     public void GenerateGraphQl()
     {
-        MakeSrcDir(Config.Output.GeneratedFolder, Config.Output.GraphQlSubFolder);
+        MakeSrcDir(Config.Output.GraphQlSubFolder);
         queriesGenerator.GenerateGraphQlQueries();
         subscriptionsGenerator.GenerateGraphQlSubscriptions();
         typesGenerator.GenerateGraphQlTypes();  

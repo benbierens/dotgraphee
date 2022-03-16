@@ -28,13 +28,14 @@ public class Generator : BaseGenerator
     public void Generate()
     {
         MakeDir();
+        MakeDir(Config.Output.DomainFolder);
         MakeDir(Config.Output.SourceFolder);
+        MakeDir(Config.Output.GraphQlClientFolder);
         MakeDir(Config.Output.IntegrationTestFolder);
         MakeDir(Config.Output.UnitTestFolder);
 
         projectGenerator.CreateDotNetProject();
 
-        MakeSrcDir(Config.Output.GeneratedFolder);
         dtoGenerator.GenerateDtos();
         databaseGenerator.GenerateDbContext();
         graphQlGenerator.GenerateGraphQl();
@@ -48,7 +49,5 @@ public class Generator : BaseGenerator
         readmeGenerator.GenerateReadme();
 
         databaseGenerator.CreateInitialMigration();
-
-        projectGenerator.FormatCode();
     }
 }

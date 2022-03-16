@@ -9,13 +9,13 @@ public class DtoGenerator : BaseGenerator
 
     public void GenerateDtos()
     {
-        MakeSrcDir(Config.Output.GeneratedFolder, Config.Output.DataTypeObjectsSubFolder);
+        MakeDomainDir();
 
         CreateEntityInterface();
 
         foreach (var model in Models)
         {
-            var fm = StartSrcFile(Config.Output.DataTypeObjectsSubFolder, model.Name);
+            var fm = StartDomainFile(model.Name);
 
             var cm = StartClass(fm, model.Name);
             AddDtoInherritance(cm);
@@ -67,7 +67,7 @@ public class DtoGenerator : BaseGenerator
 
     private void CreateEntityInterface()
     {
-        var fm = StartSrcFile(Config.Output.DataTypeObjectsSubFolder, "Entity");
+        var fm = StartDomainFile("Entity");
         var cm = fm.AddInterface("IEntity");
         cm.AddLine(Config.IdType + " Id { get; set; }");
         fm.Build();
