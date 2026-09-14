@@ -50,7 +50,6 @@ public class ProjectGenerator : BaseGenerator
     private void AddGraphClientAssembly()
     {
         RunCommand("dotnet", "new", "tool-manifest");
-        RunCommand("dotnet", "tool", "install", "StrawberryShake.Tools", "--local");
 
         var folder = Config.Output.GraphQlClientFolder;
         RunCommand("dotnet", "new", "classlib", "-o", folder);

@@ -22,7 +22,6 @@
         cm.AddUsing("System.Threading.Tasks");
         cm.AddUsing(Config.GenerateNamespace + ".Client");
         cm.AddUsing("Microsoft.Extensions.DependencyInjection");
-        cm.AddUsing("StrawberryShake");
 
         cm.AddLine("private readonly IDotGraphEE_DemoClient client = null!;");
         cm.AddLine("private readonly List<ISubscriptionHandle> handles = new List<ISubscriptionHandle>();");

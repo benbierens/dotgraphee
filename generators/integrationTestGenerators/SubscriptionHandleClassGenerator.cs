@@ -19,7 +19,6 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         cm.AddUsing("System.Collections.Generic");
         cm.AddUsing("System.Linq");
         cm.AddUsing("NUnit.Framework");
-        cm.AddUsing("StrawberryShake");
         cm.AddUsing(Config.GenerateNamespace + ".Client");
 
         cm.AddLine($"private readonly I{GraphQlClientName} client;");

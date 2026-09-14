@@ -21,7 +21,6 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     {
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
-        cm.AddUsing("StrawberryShake");
         cm.AddUsing(Config.GenerateNamespace + ".Client");
 
         cm.AddAttribute("Category(\"" + Config.IntegrationTests.TestCategory + "\")");

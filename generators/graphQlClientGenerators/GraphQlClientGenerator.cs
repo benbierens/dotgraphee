@@ -18,8 +18,6 @@ public class GraphQlClientGenerator : BaseGenerator
 
     public void GenerateGraphQlClient()
     {
-        CreateGraphqlRlFile();
-
         MakeDir(Config.Output.GraphQlClientFolder, QueriesFolder);
         MakeDir(Config.Output.GraphQlClientFolder, MutationsFolder);
         MakeDir(Config.Output.GraphQlClientFolder, SubscriptionsFolder);
@@ -177,47 +175,5 @@ public class GraphQlClientGenerator : BaseGenerator
     private string GetGqlIdType()
     {
         return Config.IdType.FirstToUpper() + "!";
-    }
-
-    private void CreateGraphqlRlFile()
-    {
-        var graphQlRc = new GraphQlRc
-        {
-            Schema = "schema.graphql",
-            Documents = "**/*.graphql",
-            Extensions = new GraphQlRcExtensions
-            {
-                StrawberryShake = new GraphQlRcExtensionsStrawberryShake
-                {
-                    Name = GraphQlClientName,
-                    Namespace = Config.GenerateNamespace + ".Client",
-                    Url = "http://localhost:5000/graphql",
-                    DependencyInjection = true
-                }
-            }
-        };
-
-        File.WriteAllLines(Path.Join(Config.Output.ProjectRoot, Config.Output.GraphQlClientFolder, ".graphqlrc.json"),
-            new[] { JsonConvert.SerializeObject(graphQlRc, Formatting.Indented) });
-    }
-
-    public class GraphQlRc
-    {
-        public string Schema { get; set; }
-        public string Documents { get; set; }
-        public GraphQlRcExtensions Extensions { get; set; }
-    }
-
-    public class GraphQlRcExtensions
-    {
-        public GraphQlRcExtensionsStrawberryShake StrawberryShake { get; set; }
-    }
-
-    public class GraphQlRcExtensionsStrawberryShake
-    {
-        public string Name { get; set; }
-        public string Namespace { get; set; }
-        public string Url { get; set; }
-        public bool DependencyInjection { get; set; }
     }
 }
