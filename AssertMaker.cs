@@ -56,7 +56,7 @@ public class AssertMaker
 
     public void CollectionEmpty(GeneratorConfig.ModelConfig m, string collectionName)
     {
-        liner.Add("CollectionAssert.IsEmpty(" + collectionName + ", \"Expected 0 " + m.Name + ".\");");
+        liner.Add("Assert.That(" + collectionName + ", Is.Empty, \"Expected 0 " + m.Name + ".\");");
     }
 
     public void ErrorMessage(GeneratorConfig.ModelConfig m, string idTag)
@@ -95,7 +95,7 @@ public class AssertMaker
 
     public void NoErrors(string queryOrMutation)
     {
-        liner.Add("CollectionAssert.IsEmpty(errors, \"Expected " + queryOrMutation + " to not return errors.\");");
+        liner.Add("Assert.That(errors, Is.Empty, \"Expected " + queryOrMutation + " to not return errors.\");");
     }
 
     public void NullReturned(GeneratorConfig.ModelConfig m, string mutation)

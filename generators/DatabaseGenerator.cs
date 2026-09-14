@@ -18,7 +18,7 @@ public class DatabaseGenerator : BaseGenerator
     public void CreateInitialMigration()
     {
         var s = Config.Output.SourceFolder;
-        RunCommand("dotnet", "ef", "-p", s, "-s", s, "migrations", "add", "initial-setup");
+        RunCommand("dotnet", "ef", "-p", s, "-s", s, "migrations", "add", "InitialSetup");
     }
 
     private void CreateDatabaseContextClass()
@@ -54,7 +54,7 @@ public class DatabaseGenerator : BaseGenerator
             liner.Add("var dbName = GetEnvOrDefault(\"DB_DATABASENAME\", \"" + localDev.DbName + "\");");
             liner.Add("var dbUsername = GetEnvOrDefault(\"DB_USERNAME\", \"" + localDev.DbUsername + "\");");
             liner.Add("var dbPassword = GetEnvOrDefault(\"DB_PASSWORD\", \"" + localDev.DbPassword + "\");");
-            liner.Add("var connectionString = \"Host=\" + dbHost + \";Database=\" + dbName + \";Username=\" + dbUsername + \";Password=\" + dbPassword;");
+            liner.Add("var connectionString = \"Host=\" + dbHost + \";Database=\" + dbName + \";Username=\" + dbUsername + \";Password=\" + dbPassword + \";GSS Encryption Mode=Disable\";");
 
             liner.Add("");
             liner.Add("optionsBuilder");
