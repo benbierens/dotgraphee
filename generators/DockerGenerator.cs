@@ -1,6 +1,7 @@
 public class DockerGenerator : BaseGenerator
 {
     private const string dockerFolder = "docker";
+    private const string dotnetVersion = "10.0";
 
     public DockerGenerator(GeneratorConfig config)
         : base(config)
@@ -21,15 +22,15 @@ public class DockerGenerator : BaseGenerator
 
         WriteRawFile(liner =>
         {
-            liner.Add("FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build");
+            liner.Add($"FROM mcr.microsoft.com/dotnet/sdk:{dotnetVersion} AS build");
             liner.Add("WORKDIR /app");
             liner.Add("COPY *.sln ./");
             liner.Add("COPY " + Config.Output.SourceFolder + " ./" + Config.Output.SourceFolder);
             liner.Add("RUN dotnet publish ./" + Config.Output.SourceFolder + " -c Release");
             liner.AddBlankLine();
-            liner.Add("FROM mcr.microsoft.com/dotnet/aspnet:6.0");
+            liner.Add($"FROM mcr.microsoft.com/dotnet/aspnet:{dotnetVersion}");
             liner.Add("WORKDIR /app");
-            liner.Add("COPY --from=build /app/" + Config.Output.SourceFolder + "/bin/Release/net6.0/publish/ ./");
+            liner.Add("COPY --from=build /app/" + Config.Output.SourceFolder + $"/bin/Release/net{dotnetVersion}/publish/ ./");
             liner.Add("ENTRYPOINT [\"dotnet\", \"src.dll\"]");
         }, dockerFolder, "Dockerfile");
 

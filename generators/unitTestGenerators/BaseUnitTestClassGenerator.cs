@@ -67,15 +67,15 @@
         cm.AddClosure("public static void AssertCollectionEquivalent<T>(IQueryable<T> queryable, params T[] list) where T : class", liner =>
         {
             liner.Add("var data = queryable.ToArray();");
-            liner.Add("CollectionAssert.AreEquivalent(list, data);");
+            liner.Add("Assert.That(data, Is.EquivalentTo(list));");
         });
 
         cm.AddClosure("public static void AssertQueryableAreEqual<T>(IQueryable<T> expected, IQueryable<T> actual)", liner =>
         {
             liner.Add("if (ReferenceEquals(expected, actual)) return;");
-            liner.Add("Assert.NotNull(expected);");
-            liner.Add("Assert.NotNull(actual);");
-            liner.Add("CollectionAssert.AreEquivalent(expected.ToArray(), actual.ToArray());");
+            liner.Add("Assert.That(expected, Is.Not.Null);");
+            liner.Add("Assert.That(actual, Is.Not.Null);");
+            liner.Add("Assert.That(actual.ToArray(), Is.EquivalentTo(expected.ToArray()));");
         });
 
         cm.AddClosure("private static Mock<IQueryable<T>> CreateMockQueryable<T>(IQueryable<T> source)", liner =>

@@ -166,12 +166,15 @@ public class BaseGenerator
 
     protected void RunCommand(string cmd, params string[] args)
     {
+        Console.WriteLine($" -> {cmd}({string.Join(",", args)})");
         var info = new ProcessStartInfo();
         info.Arguments = string.Join(" ", args);
         info.FileName = cmd;
         info.WorkingDirectory = Config.Output.ProjectRoot;
         var p = Process.Start(info);
         p.WaitForExit();
+
+        if (p.ExitCode != 0) throw new Exception("Error while executing command " + cmd);
     }
 
     protected void AddModelFields(ClassMaker cm, GeneratorConfig.ModelConfig model)

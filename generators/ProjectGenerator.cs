@@ -10,7 +10,7 @@ public class ProjectGenerator : BaseGenerator
 
     public void CreateDotNetProject()
     {
-        RunCommand("dotnet", "new", "-i", "HotChocolate.Templates.Server");
+        RunCommand("dotnet", "new", "install", "HotChocolate.Templates");
         RunCommand("dotnet", "new", "sln");
 
         AddSourceAssembly();
@@ -80,33 +80,22 @@ public class ProjectGenerator : BaseGenerator
 
     private void ModifyStartupFile()
     {
-        var mf = ModifyFile(Config.Output.SourceFolder, "Startup.cs");
+        var mf = ModifyFile(Config.Output.SourceFolder, "Program.cs");
         mf.AddUsing(Config.GenerateNamespace);
-        mf.AddUsing("HotChocolate.AspNetCore");
 
+        mf.ReplaceLine("builder.AddGraphQL().AddTypes();", GetGraphQLBuilder().ToArray());
 
-        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<IInputConverter, InputConverter>());");
-        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<IPublisher, Publisher>());");
-        mf.Insert(22, 3, "services.Add(ServiceDescriptor.Singleton<I" + Config.Database.DbAccesserClassName + ", " + Config.Database.DbAccesserClassName + ">());");
-        //mf.Insert(23, 3, "services.AddPooledDbContextFactory<" + Config.Database.DbContextClassName + ">(options => { });");
-
-        mf.ReplaceLine(".AddQueryType<Query>();", GetServiceDecorators().ToArray());
-                
-        mf.Insert(27 + GetVariableServiceDecoratorLines(), 3, "services.AddInMemorySubscriptions();");
-
-        mf.ReplaceLine("app.UseDeveloperExceptionPage();",
-            "app.UsePlayground();",
-            "app.UseDeveloperExceptionPage();");
-
-        mf.ReplaceLine("app.UseRouting();", 
-            "app.UseRouting();", 
+        mf.ReplaceLine("app.MapGraphQL();",
+            "app.UseDeveloperExceptionPage();",
+            "app.UseRouting();",
             "app.UseWebSockets();",
-            "DbService.EnsureCreated();");
+            "app.MapGraphQL();",
+            "",
+            "DbService.EnsureCreated();"
+        );
 
         mf.Modify();
-
-        GeneratorPager();
-    }
+   }
 
     private void ModifyIntegrationTestProjectFile()
     {
@@ -118,57 +107,20 @@ public class ProjectGenerator : BaseGenerator
         mf.Modify();
     }
 
-    private IEnumerable<string> GetServiceDecorators()
+    private IEnumerable<string> GetGraphQLBuilder()
     {
-        if (Models.Any(m => m.HasPagingFeature())) yield return ".AddOffsetPagingProvider<OffsetPager>()";
-        if (Models.Any(m => HasAnyNavigationalProperties(m))) yield return ".AddProjections()";
-        if (Models.Any(m => m.HasFilteringFeature())) yield return ".AddFiltering()";
-        if (Models.Any(m => m.HasSortingFeature())) yield return ".AddSorting()";
-
-        yield return ".AddQueryType<" + Config.GraphQl.GqlQueriesClassName + ">()";
-        yield return ".AddMutationType<" + Config.GraphQl.GqlMutationsClassName + ">()";
-        yield return ".AddSubscriptionType<" + Config.GraphQl.GqlSubscriptionsClassName + ">();";
-    }
-
-    private int GetVariableServiceDecoratorLines()
-    {
-        var result = 3;
-
-        //if (model.HasPagingFeature()) cm.AddLine("[UsePaging]");
-        //if (HasAnyNavigationalProperties(model)) cm.AddLine("[UseProjection]");
-        //if (model.HasFilteringFeature()) cm.AddLine("[UseFiltering]");
-        //if (model.HasSortingFeature()) cm.AddLine("[UseSorting]");
-
-        if (Models.Any(m => m.HasPagingFeature())) result++;
-        if (Models.Any(m => HasAnyNavigationalProperties(m))) result++;
-        if (Models.Any(m => m.HasFilteringFeature())) result++;
-        if (Models.Any(m => m.HasSortingFeature())) result++;
-
-        return result;
-    }
-
-    private void GeneratorPager()
-    {
-        if (!Models.Any(m => m.HasPagingFeature())) return;
-
-        var name = "OffsetPager";
-        var fm = StartSrcFile("", name);
-        fm.AddUsing("HotChocolate.Internal");
-        fm.AddUsing("HotChocolate.Types.Pagination");
-
-        var cm = fm.AddClass(name);
-        cm.AddInherrit("OffsetPagingProvider");
-
-        cm.AddClosure("public override bool CanHandle(IExtendedType source)", liner =>
-        {
-            liner.Add("throw new System.NotImplementedException();");
-        });
-
-        cm.AddClosure("protected override OffsetPagingHandler CreateHandler(IExtendedType source, PagingOptions options)", liner =>
-        {
-            liner.Add("throw new System.NotImplementedException();");
-        });
-
-        fm.Build();
+        yield return "builder.AddGraphQL()";
+        yield return "    .AddInMemorySubscriptions()";
+        if (Models.Any(m => m.HasPagingFeature())) yield return "    .AddPagingArguments()";
+        if (Models.Any(HasAnyNavigationalProperties)) yield return "    .AddProjections()";
+        if (Models.Any(m => m.HasFilteringFeature())) yield return "    .AddFiltering()";
+        if (Models.Any(m => m.HasSortingFeature())) yield return "    .AddSorting()";
+        yield return "    .AddQueryType<Queries>()";
+        yield return "    .AddMutationType<Mutations>()";
+        yield return "    .AddSubscriptionType<Subscriptions>();";
+        yield return "";
+        yield return "builder.Services.AddSingleton<IInputConverter, InputConverter>();";
+        yield return "builder.Services.AddSingleton<IPublisher, Publisher>();";
+        yield return "builder.Services.AddSingleton<IDbService, DbService>();";
     }
 }
