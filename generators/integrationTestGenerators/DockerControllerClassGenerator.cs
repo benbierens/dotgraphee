@@ -21,29 +21,29 @@ public class DockerControllerClassGenerator : BaseGenerator
 
         cm.AddClosure("public static async Task BuildImage()", liner =>
         {
-            liner.Add("RunCommand(\"docker-compose\", \"build\", ApplicationContainerName);");
-            liner.Add("RunCommand(\"docker-compose\", \"up\", \"-d\");");
+            liner.Add("RunCommand(\"docker\", \"compose\", \"build\", ApplicationContainerName);");
+            liner.Add("RunCommand(\"docker\", \"compose\", \"up\", \"-d\");");
             liner.AddBlankLine();
             liner.Add("await Client.WaitUntilOnline();");
         });
 
         cm.AddClosure("public static async Task Up()", liner =>
         {
-            liner.Add("RunCommand(\"docker-compose\", \"up\", \"-d\");");
+            liner.Add("RunCommand(\"docker\", \"compose\", \"up\", \"-d\");");
             liner.AddBlankLine();
             liner.Add("await Client.WaitUntilOnline();");
         });
 
         cm.AddClosure("public static void Down()", liner =>
         {
-            liner.Add("RunCommand(\"docker-compose\", \"down\");");
+            liner.Add("RunCommand(\"docker\", \"compose\", \"down\");");
             liner.AddBlankLine();
             liner.Add("Thread.Sleep(TimeSpan.FromSeconds(1.0));");
         });
 
         cm.AddClosure("public static void Restart()", liner =>
         {
-            liner.Add("RunCommand(\"docker-compose\", \"restart\", \"-t 0\", ApplicationContainerName);");
+            liner.Add("RunCommand(\"docker\", \"compose\", \"restart\", \"-t 0\", ApplicationContainerName);");
             liner.AddBlankLine();
             liner.Add("Thread.Sleep(TimeSpan.FromSeconds(1.0));");
         });
@@ -68,14 +68,14 @@ public class DockerControllerClassGenerator : BaseGenerator
             liner.Add("end");
             liner.Add("$$\";");
 
-            liner.Add("RunCommand(\"docker-compose\", \"exec\", \"" + Config.Database.DbContainerName + "\", \"psql\", \"--user=" + Config.Database.Docker.DbUsername + "\", \"" + Config.Database.Docker.DbName + "\", \"-q\", \"-c\", \"\\\"\" + TruncateAllTables + \"\\\"\");");
+            liner.Add("RunCommand(\"docker\", \"compose\", \"exec\", \"" + Config.Database.DbContainerName + "\", \"psql\", \"--user=" + Config.Database.Docker.DbUsername + "\", \"" + Config.Database.Docker.DbName + "\", \"-q\", \"-c\", \"\\\"\" + TruncateAllTables + \"\\\"\");");
             liner.AddBlankLine();
             liner.Add("Thread.Sleep(TimeSpan.FromSeconds(1.0));");
         });
 
         cm.AddClosure("public static void DeleteImage()", liner =>
         {
-            liner.Add("RunCommand(\"docker-compose\", \"down\", \"--rmi\", ApplicationContainerName, \"-v\");");
+            liner.Add("RunCommand(\"docker\", \"compose\", \"down\", \"--rmi\", ApplicationContainerName, \"-v\");");
         });
 
         cm.AddClosure("private static void RunCommand(string cmd, params string[] args)", liner =>

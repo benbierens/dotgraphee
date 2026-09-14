@@ -36,7 +36,6 @@ public class DockerGenerator : BaseGenerator
 
         WriteRawFile(liner =>
         {
-            liner.Add("version: '3'");
             liner.Add("services:");
             liner.Indent();
             AddDatabaseService(liner);
@@ -67,6 +66,15 @@ public class DockerGenerator : BaseGenerator
         liner.Add("- POSTGRES_DB=" + DockerDb.DbName);
         liner.Deindent();
 
+        liner.Add("healthcheck:");
+        liner.Indent();
+        liner.Add("test: [\"CMD-SHELL\", \"pg_isready\", \"-d\", \"" + DockerDb.DbName + "\"]");
+        liner.Add("interval: 30s");
+        liner.Add("timeout: 60s");
+        liner.Add("retries: 5");
+        liner.Add("start_period: 80s");
+        liner.Deindent();
+
         liner.Add("volumes:");
         liner.Indent();
         liner.Add("- db-data:/var/lib/postgresql");
@@ -95,7 +103,7 @@ public class DockerGenerator : BaseGenerator
         liner.Deindent();
         liner.Add("ports:");
         liner.Indent();
-        liner.Add("- \"80:80\"");
+        liner.Add("- \"8080:8080\"");
         liner.Deindent();
         liner.Add("depends_on:");
         liner.Indent();
