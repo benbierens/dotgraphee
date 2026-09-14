@@ -106,10 +106,10 @@
       "Microsoft.EntityFrameworkCore",
       "Microsoft.EntityFrameworkCore.Design",
       "HotChocolate.AspNetCore",
-      "HotChocolate.AspNetCore.Subscriptions",
-      "HotChocolate.AspNetCore.Playground",
+      "HotChocolate.AspNetCore.CommandLine",
+      "HotChocolate.Data",
+      "HotChocolate.Types",
       "HotChocolate.Subscriptions",
-      "HotChocolate.Subscriptions.InMemory",
       "Npgsql.EntityFrameworkCore.PostgreSQL"
     ],
     "graphQlClientPackages": [

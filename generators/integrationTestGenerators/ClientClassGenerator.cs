@@ -1,6 +1,7 @@
 ﻿public class ClientClassGenerator : BaseGenerator
 {
-    private const int Timeout = 30;
+    private const int Timeout = 300;
+    
     public ClientClassGenerator(GeneratorConfig config)
         : base(config)
     {
@@ -21,7 +22,7 @@
         cm.AddUsing("System.Threading.Tasks");
 
         cm.AddLine("private static readonly HttpClient http = new HttpClient();");
-        cm.AddLine("private static readonly string url = \"://localhost/graphql\";");
+        cm.AddLine("private static readonly string url = \"://localhost:8080/graphql\";");
         cm.AddBlankLine();
 
         cm.AddClosure("public static async Task<GqlData<T>> PostRequest<T>(string query)", liner =>
