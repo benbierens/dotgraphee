@@ -2,7 +2,6 @@ public class GraphQlGenerator : BaseGenerator
 {
     private readonly GraphQlQueriesGenerator queriesGenerator;
     private readonly GraphQlSubscriptionsGenerator subscriptionsGenerator;
-    private readonly GraphQlTypesGenerator typesGenerator;
     private readonly GraphQlMutationsGenerator mutationsGenerator;
     private readonly PublisherClassGenerator publisherClassGenerator;
     private readonly InputConverterClassGenerator inputConverterClassGenerator;
@@ -12,7 +11,6 @@ public class GraphQlGenerator : BaseGenerator
     {
         queriesGenerator = new GraphQlQueriesGenerator(config);
         subscriptionsGenerator = new GraphQlSubscriptionsGenerator(config);
-        typesGenerator = new GraphQlTypesGenerator(config);
         mutationsGenerator = new GraphQlMutationsGenerator(config);
         publisherClassGenerator = new PublisherClassGenerator(config);
         inputConverterClassGenerator = new InputConverterClassGenerator(config);
@@ -23,7 +21,6 @@ public class GraphQlGenerator : BaseGenerator
         MakeSrcDir(Config.Output.GraphQlSubFolder);
         queriesGenerator.GenerateGraphQlQueries();
         subscriptionsGenerator.GenerateGraphQlSubscriptions();
-        typesGenerator.GenerateGraphQlTypes();  
         mutationsGenerator.GenerateGraphQlMutations();
         publisherClassGenerator.GeneratePublisher();
         inputConverterClassGenerator.GenerateInputConverter();

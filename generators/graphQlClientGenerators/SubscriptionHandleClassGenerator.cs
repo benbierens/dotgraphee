@@ -58,11 +58,10 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         {
             liner.Add("var line = GetSubscriptionLine();");
             liner.StartClosure("if (line.Contains(\"errors\"))");
-            liner.Add("Assert.Fail(\"Response contains errors:\" + line);");
-            liner.Add("throw new Exception();");
+            liner.Add("throw new Exception(\"Response contains errors:\" + line);");
             liner.EndClosure();
 
-            liner.Add("var response = JsonConvert.DeserializeObject<SubscriptionResponse<T>>(line);");
+            liner.Add("var response = JsonConvert.DeserializeObject<SubscriptionResponse<T>>(line)!;");
             liner.Add("return response.Payload.Data;");
         });
 
@@ -74,9 +73,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("if (line != null) return line;");
             liner.Add("Thread.Sleep(100);");
             liner.EndClosure();
-            AddSubscriptionDebugLine(liner);
-            liner.Add("Assert.Fail(\"Expected subscription '\" + subscription + \"', but was not received.\");");
-            liner.Add("throw new Exception();");
+            liner.Add("throw new Exception(\"Expected subscription '\" + subscription + \"', but was not received.\");");
         });
 
         cm.AddClosure("private async Task ReceivingLoop()", liner => 
@@ -88,13 +85,11 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("var l = bytes.Take(receive.Count).ToArray();");
             liner.Add("var line = Encoding.UTF8.GetString(l);");
             liner.Add("received.Add(line);");
-            liner.Add("TestContext.WriteLine(\"Subscription channel received: \" + line);");
             liner.EndClosure();
         });
 
         cm.AddClosure("private async Task Send(string query)", liner => 
         {            
-            liner.Add("TestContext.WriteLine(\"Subscription channel send: '\" + query + \"'\");");
             liner.Add("var qbytes = Encoding.UTF8.GetBytes(query);");
             liner.Add("var segment= new ArraySegment<byte>(qbytes);");
             liner.Add("await ws.SendAsync(segment, WebSocketMessageType.Text, true, cts.Token);");
@@ -122,10 +117,5 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             .IsType("Payload<T>")
             .InitializeAsExplicitNull()
             .Build();
-    }
-
-    private void AddSubscriptionDebugLine(Liner liner)
-    {
-        liner.Add("TestContext.WriteLine(\"Subscription channel received: \" + string.Join(Environment.NewLine, received));");
     }
 }

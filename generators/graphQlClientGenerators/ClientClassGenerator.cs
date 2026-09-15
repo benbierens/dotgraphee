@@ -26,10 +26,8 @@
 
         cm.AddClosure("public static async Task<GqlData<T>> PostRequest<T>(string query)", liner =>
         {
-            liner.Add("TestContext.WriteLine(\"Request: '\" + query + \"'\");");
             liner.Add("var content = await HttpPost(query);");
-            liner.Add("TestContext.WriteLine(\"Response: '\" + content + \"'\");");
-            liner.Add("return JsonConvert.DeserializeObject<GqlData<T>>(content);");
+            liner.Add("return JsonConvert.DeserializeObject<GqlData<T>>(content)!;");
         });
 
         cm.AddClosure("private static async Task<string> HttpPost(string query)", liner =>

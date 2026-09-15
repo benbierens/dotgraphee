@@ -7,7 +7,7 @@ public class GraphQlTypesGenerator : BaseGenerator
 
     public void GenerateGraphQlTypes()
     {
-        var fm = StartSrcFile(Config.Output.GraphQlSubFolder, Config.GraphQl.GqlTypesFileName);
+        var fm = StartDomainFile(Config.GraphQl.GqlTypesFileName);
         if (Config.IdType == "string")
         {
             fm.AddUsing("System");

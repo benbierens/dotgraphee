@@ -2,7 +2,7 @@
 public class Generator : BaseGenerator
 {
     private readonly ProjectGenerator projectGenerator;
-    private readonly DtoGenerator dtoGenerator;
+    private readonly DomainGenerator domainGenerator;
     private readonly DatabaseGenerator databaseGenerator;
     private readonly GraphQlGenerator graphQlGenerator;
     private readonly DockerGenerator dockerGenerator;
@@ -15,7 +15,7 @@ public class Generator : BaseGenerator
         : base(config)
     {
         projectGenerator = new ProjectGenerator(config);
-        dtoGenerator = new DtoGenerator(config);
+        domainGenerator = new DomainGenerator(config);
         databaseGenerator = new DatabaseGenerator(config);
         graphQlGenerator = new GraphQlGenerator(config);
         dockerGenerator = new DockerGenerator(config);
@@ -36,7 +36,7 @@ public class Generator : BaseGenerator
 
         projectGenerator.CreateDotNetProject();
 
-        dtoGenerator.GenerateDtos();
+        domainGenerator.GenerateDomain();
         databaseGenerator.GenerateDbContext();
         graphQlGenerator.GenerateGraphQl();
 
