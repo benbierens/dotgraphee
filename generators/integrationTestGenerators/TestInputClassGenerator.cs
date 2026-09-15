@@ -10,7 +10,7 @@ public class TestInputClassGenerator : BaseGenerator
     public void CreateTestInputClass()
     {
         var fm = StartIntegrationTestUtilsFile("TestInput");
-        fm.AddUsing(Config.GenerateNamespace + ".Client");
+        fm.AddUsing(Config.GenerateNamespace);
         fm.AddUsing("UnitTests");
 
         var cm = fm.AddClass("TestInput");

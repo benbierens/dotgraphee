@@ -21,7 +21,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     {
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
-        cm.AddUsing(Config.GenerateNamespace + ".Client");
+        cm.AddUsing(Config.GenerateNamespace);
 
         cm.AddAttribute("Category(\"" + Config.IntegrationTests.TestCategory + "\")");
 
@@ -63,7 +63,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
     private void AddAssertNoErrors(ClassMaker cm)
     {
-        cm.AddClosure("public void AssertNoErrors(GqlData gqlData)", liner =>
+        cm.AddClosure("public void AssertNoErrors<T>(GqlData<T> gqlData)", liner =>
         {
             liner.Add("gqlData.EnsureNoErrors();");
         });
@@ -84,7 +84,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     {
         var inputTypes = GetInputTypeNames(m);
         var methodName = Config.GraphQl.GqlMutationsCreateMethod + m.Name;
-        var returnType = "I" + methodName + "_" + methodName;
+        var returnType = methodName + "Response";
 
         cm.AddClosure("public async Task<" + returnType + "> CreateTest" + m.Name + "()", liner =>
         {
