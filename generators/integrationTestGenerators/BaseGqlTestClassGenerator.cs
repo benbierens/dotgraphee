@@ -63,7 +63,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
     private void AddAssertNoErrors(ClassMaker cm)
     {
-        cm.AddClosure("public void AssertNoErrors(IOperationResult gqlData)", liner =>
+        cm.AddClosure("public void AssertNoErrors(GqlData gqlData)", liner =>
         {
             liner.Add("gqlData.EnsureNoErrors();");
         });
