@@ -34,6 +34,13 @@ public class BaseGenerator
         var f = Path.Join(Config.Output.ProjectRoot, Config.Output.DomainFolder, filename + ".cs");
         return new FileMaker(Config, f, Config.GenerateNamespace);
     }
+
+    protected FileMaker StartClientFile(string filename)
+    {
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.GraphQlClientFolder, filename + ".cs");
+        return new FileMaker(Config, f, Config.GenerateNamespace);
+    }
+
     protected FileMaker StartIntegrationTestUtilsFile(string filename)
     {
         var f = Path.Join(Config.Output.ProjectRoot, Config.Output.IntegrationTestFolder, Config.IntegrationTests.UtilsFolder, filename + ".cs");

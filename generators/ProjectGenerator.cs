@@ -55,6 +55,7 @@ public class ProjectGenerator : BaseGenerator
         RunCommand("dotnet", "new", "classlib", "-o", folder);
         RunCommand("dotnet", "sln", "add", folder + "/" + folder + ".csproj");
         InstallPackages(Config.GraphQlClientPackages, folder);
+        DeleteFile(folder, "Class1.cs");
     }
 
     private void AddIntegrationTestAssembly()

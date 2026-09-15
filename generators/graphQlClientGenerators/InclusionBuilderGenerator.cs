@@ -7,11 +7,10 @@
 
     public void CreateInclusionBuilderClass()
     {
-        var fm = StartIntegrationTestUtilsFile("InclusionBuilder");
+        var fm = StartClientFile("InclusionBuilder");
         var cm = fm.AddClass("InclusionBuilder<T>");
         cm.Modifiers.Clear();
 
-        cm.AddUsing("Microsoft.EntityFrameworkCore.Infrastructure;");
         cm.AddUsing("System;");
         cm.AddUsing("System.Collections.Generic;");
         cm.AddUsing("System.Collections.Immutable;");

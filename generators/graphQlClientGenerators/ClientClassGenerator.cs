@@ -9,12 +9,11 @@
 
     public void CreateClientClass()
     {
-        var fm = StartIntegrationTestUtilsFile("Client");
+        var fm = StartClientFile("Client");
         var cm = fm.AddClass("Client");
         cm.Modifiers.Clear();
         cm.Modifiers.Add("static");
         cm.AddUsing("Newtonsoft.Json");
-        cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System");
         cm.AddUsing("System.Net.Http");
         cm.AddUsing("System.Text");

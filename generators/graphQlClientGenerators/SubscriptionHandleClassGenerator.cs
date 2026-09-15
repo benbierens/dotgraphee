@@ -9,7 +9,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
 
     public void CreateSubscriptionHandleClass()
     {
-        var fm = StartIntegrationTestUtilsFile("SubscriptionHandle");
+        var fm = StartClientFile("SubscriptionHandle");
         var im = fm.AddInterface("ISubscriptionHandle");
         im.AddLine("Task Subscribe<TOutput>();");
         im.AddLine("Task Unsubscribe();");
@@ -24,7 +24,6 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         cm.AddUsing("System.Threading");
         cm.AddUsing("System.Threading.Tasks");
         cm.AddUsing("Newtonsoft.Json");
-        cm.AddUsing("NUnit.Framework");
 
         cm.AddLine("private readonly string subscription;");
         cm.AddLine("private readonly CancellationTokenSource cts = new CancellationTokenSource();");

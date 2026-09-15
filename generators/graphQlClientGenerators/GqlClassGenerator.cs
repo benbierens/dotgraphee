@@ -14,7 +14,7 @@
 
     public void CreateGqlClass()
     {
-        var fm = StartIntegrationTestUtilsFile("Gql");
+        var fm = StartClientFile("Gql");
         var cm = fm.AddClass("Gql");
         
         cm.AddUsing("System.Collections.Generic");

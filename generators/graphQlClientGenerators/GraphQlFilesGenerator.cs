@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-public class GraphQlClientGenerator : BaseGenerator
+public class GraphQlFilesGenerator : BaseGenerator
 {
     private readonly string QueriesFolder = "queries";
     private readonly string MutationsFolder = "mutations";
@@ -11,12 +11,12 @@ public class GraphQlClientGenerator : BaseGenerator
     private readonly string MutationsFilePostfix = "Mutations.graphql";
     private readonly string SubscriptionsFilePostfix = "Subscriptions.graphql";
 
-    public GraphQlClientGenerator(GeneratorConfig config)
+    public GraphQlFilesGenerator(GeneratorConfig config)
         : base(config)
     {
     }
 
-    public void GenerateGraphQlClient()
+    public void GenerateGraphQlFiles()
     {
         MakeDir(Config.Output.GraphQlClientFolder, QueriesFolder);
         MakeDir(Config.Output.GraphQlClientFolder, MutationsFolder);
