@@ -88,6 +88,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
         cm.AddClosure("public async Task<" + returnType + "> CreateTest" + m.Name + "()", liner =>
         {
+            CallCreateForDependencies(liner, m);
             liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestInput.To" + inputTypes.Create + "());");
             AddAssert(liner).NoErrors();
             liner.Add("var entity = gqlData.Data!." + methodName + ";");
@@ -95,6 +96,18 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
             AddAssignIdToTestData(liner, m, "entity");
             liner.Add("return entity;");
         });
+    }
+
+    private void CallCreateForDependencies(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        var foreignProperties = GetForeignProperties(m);
+        foreach (var f in foreignProperties)
+        {
+            if (!f.IsSelfReference)
+            {
+                liner.Add("await CreateTest" + f.Type + "();");
+            }
+        }
     }
 
     private void AddAssignIdToTestData(Liner liner, GeneratorConfig.ModelConfig m, params string[] accessors)
