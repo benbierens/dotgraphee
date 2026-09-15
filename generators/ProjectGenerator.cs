@@ -56,6 +56,7 @@ public class ProjectGenerator : BaseGenerator
         RunCommand("dotnet", "sln", "add", folder + "/" + folder + ".csproj");
         InstallPackages(Config.GraphQlClientPackages, folder);
         DeleteFile(folder, "Class1.cs");
+        AddReference(Config.Output.GraphQlClientFolder, Config.Output.DomainFolder);
     }
 
     private void AddIntegrationTestAssembly()
