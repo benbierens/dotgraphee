@@ -65,7 +65,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldPublishSubscriptionOnCreate" + m.Name + "()", liner =>
         {
-            liner.Add("var handle = Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionCreatedMethod + "();");
+            AddHandle(liner, m, Config.GraphQl.GqlSubscriptionCreatedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
@@ -79,7 +79,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task Create" + m.Name + "ShouldPublishSubscriptionOnCreate" + r.Name + "()", liner =>
         {
-            liner.Add("var handle = Gql.SubscribeTo" + r.Name + Config.GraphQl.GqlSubscriptionCreatedMethod + "();");
+            AddHandle(liner, r, Config.GraphQl.GqlSubscriptionCreatedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
@@ -95,7 +95,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldPublishSubscriptionOnUpdate" + m.Name + "()", liner =>
         {
-            liner.Add("var handle = Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionUpdatedMethod + "();");
+            AddHandle(liner, m, Config.GraphQl.GqlSubscriptionUpdatedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
@@ -132,7 +132,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldPublishSubscriptionOnDelete" + m.Name + "()", liner =>
         {
-            liner.Add("var handle = Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionDeletedMethod + "();");
+            AddHandle(liner, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
@@ -151,7 +151,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task Delete" + m.Name + "ShouldPublishSubscriptionOnDelete" + r.Name + "()", liner =>
         {
-            liner.Add("var handle = Gql.SubscribeTo" + r.Name + Config.GraphQl.GqlSubscriptionDeletedMethod + "();");
+            AddHandle(liner, r, Config.GraphQl.GqlSubscriptionDeletedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
@@ -169,4 +169,8 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         AddAssert(liner).EntityNotNull(m.Name + methodName);
     }
 
+    private void AddHandle(Liner liner, GeneratorConfig.ModelConfig m, string subscriptionMethodName)
+    {
+        liner.Add("var handle = await Gql.SubscribeTo" + m.Name + subscriptionMethodName + "();");
+    }
 }

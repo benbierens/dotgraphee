@@ -65,7 +65,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     {
         cm.AddClosure("public void AssertNoErrors<T>(GqlData<T> gqlData)", liner =>
         {
-            liner.Add("gqlData.EnsureNoErrors();");
+            liner.Add("gqlData.AssertNoErrors();");
         });
     }
 
@@ -84,7 +84,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     {
         var inputTypes = GetInputTypeNames(m);
         var methodName = Config.GraphQl.GqlMutationsCreateMethod + m.Name;
-        var returnType = methodName + "Response";
+        var returnType = m.Name;
 
         cm.AddClosure("public async Task<" + returnType + "> CreateTest" + m.Name + "()", liner =>
         {

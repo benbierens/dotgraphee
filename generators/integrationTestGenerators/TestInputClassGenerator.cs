@@ -89,9 +89,11 @@ public class TestInputClassGenerator : BaseGenerator
     private void AddToDeleteInputMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, InputTypeNames inputNames)
     {
         if (IsRequiredSubModel(m)) return;
-        cm.AddClosure("public " + Config.IdType + " To" + inputNames.Delete + "()", liner =>
+        cm.AddClosure("public " + inputNames.Delete + " To" + inputNames.Delete + "()", liner =>
         {
-            liner.Add("return testData." + m.Name + "1.Id;");
+            liner.StartClosure("return new " + inputNames.Delete);
+            liner.Add(m.Name + "Id = testData." + m.Name + "1.Id,");
+            liner.EndClosure(";");
         });
     }
 

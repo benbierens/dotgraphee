@@ -13,6 +13,8 @@ public class DockerControllerClassGenerator : BaseGenerator
         cm.AddUsing("System.Diagnostics");
         cm.AddUsing("System.Threading");
         cm.AddUsing("System.Threading.Tasks");
+        fm.AddUsing(Config.GenerateNamespace);
+        
         cm.Modifiers.Clear();
         cm.Modifiers.Add("static");
 
