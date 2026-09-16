@@ -25,6 +25,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         cm.AddUsing("System.Threading");
         cm.AddUsing("System.Threading.Tasks");
         cm.AddUsing("Newtonsoft.Json");
+        cm.AddUsing("Newtonsoft.Json.Linq");
 
         cm.AddLine("private readonly string subscriptionId = Guid.NewGuid().ToString();");
         cm.AddLine("private readonly string subscription;");
@@ -44,8 +45,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         cm.AddClosure("public SubscriptionHandle(string subscription, Action<T> onPayload)", liner => 
         {
             liner.Add("this.subscription = subscription;");
-            liner.Add("this.onPayload = onPayload;")
-            liner.Add("running = true;");
+            liner.Add("this.onPayload = onPayload;");
             liner.Add("ws.Options.AddSubProtocol(\"graphql-ws\");");
         });
 
@@ -54,7 +54,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.Add("await lifecycleLock.WaitAsync();");
             liner.StartClosure("try");
             liner.StartClosure("if (subscribed || stopped)");
-            liner.Add("throw new InvalidOperationException(\"Can only subscribe once.\")");
+            liner.Add("throw new InvalidOperationException(\"Can only subscribe once.\");");
             liner.EndClosure();
 
             liner.Add("await ws.ConnectAsync(new Uri(Client.WsUrl), cts.Token);");
@@ -87,7 +87,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
             liner.EndClosure();
 
             liner.Add("stopped = true;");
-            liner.StartClosure("subscribed && ws.State == WebSocketState.Open");
+            liner.StartClosure("if (subscribed && ws.State == WebSocketState.Open)");
             liner.Add("await Send(\"{\\\"id\\\":\\\"\" + subscriptionId + \"\\\",\\\"type\\\":\\\"stop\\\"}\");");
             liner.Add("await WaitForCompletion();");
             liner.EndClosure();
@@ -134,7 +134,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         {
             liner.Add("using var message = new MemoryStream();");
             liner.Add("var bytes = new byte[4096];");
-            liner.Add("WebSockerReceiveResult result");
+            liner.Add("WebSocketReceiveResult result;");
             liner.StartClosure("do");
             liner.Add("result = await ws.ReceiveAsync(new ArraySegment<byte>(bytes), cts.Token);");
             liner.StartClosure("if (result.MessageType == WebSocketMessageType.Close)");
@@ -186,7 +186,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
         {
             liner.StartClosure("if (message[\"type\"]?.Value<string>() == \"error\" || message[\"payload\"]?[\"errors\"] != null)");
             liner.Add("errors.Add(\"Response contains errors: \" + line);");
-            liner.Add("return");
+            liner.Add("return;");
             liner.EndClosure();
             liner.Add("var response = JsonConvert.DeserializeObject<SubscriptionResponse<T>>(line)!;");
             liner.StartClosure("lock (payloadHandlerLock)");

@@ -173,7 +173,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
 
     private void AddHandle(Liner liner, GeneratorConfig.ModelConfig m, string subscriptionMethodName)
     {
-        liner.Add("var received = new List<" + m.Name + subscriptionMethodName + "Payload>();")
+        liner.Add("var received = new List<" + m.Name + subscriptionMethodName + "Payload>();");
         liner.Add("var handle = await Gql.SubscribeTo" + m.Name + subscriptionMethodName + "(received.Add);");
     }
 }
