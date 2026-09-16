@@ -42,9 +42,9 @@
             cm.EndRegion();
         }
 
-        cm.AddClosure("private async Task<SubscriptionHandle<TPayload>> SubscribeTo<TPayload, TOutput>(string modelName)", liner =>
+        cm.AddClosure("private async Task<ISubscriptionHandle> SubscribeTo<TPayload, TOutput>(string modelName, Action<TPayload> onPayload)", liner =>
         {
-            liner.Add("var s = new SubscriptionHandle<TPayload>(modelName);");
+            liner.Add("var s = new SubscriptionHandle<TPayload>(modelName, onPayload);");
             liner.Add("await s.Subscribe<TOutput>();");
             liner.Add("handles.Add(s);");
             liner.Add("return s;");
@@ -151,9 +151,10 @@
 
         private void AddSubscribeMethod(ClassMaker cm, GeneratorConfig.ModelConfig m, string methodName)
         {
-            cm.AddClosure("public async Task<SubscriptionHandle<" + m.Name + methodName + "Payload>> SubscribeTo" + m.Name + methodName + "()", liner =>
+            var arg = "Action<" + m.Name + methodName + "Payload> onReceived";
+            cm.AddClosure("public async Task<ISubscriptionHandle> SubscribeTo" + m.Name + methodName + "(" + arg + ")", liner =>
             {
-                liner.Add("return await SubscribeTo<" + m.Name + methodName + "Payload, " + m.Name + ">(\"" + m.Name.FirstToLower() + methodName + "\");");
+                liner.Add("return await SubscribeTo<" + m.Name + methodName + "Payload, " + m.Name + ">(\"" + m.Name.FirstToLower() + methodName + "\", onReceived);");
             });
         }
     }

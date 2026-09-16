@@ -13,6 +13,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         var cm = fm.AddClass("SubscriptionTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
+        cm.AddUsing(Config.GenerateNamespace);
         cm.AddInherrit("BaseGqlTest");
         cm.Modifiers.Clear();
 
@@ -165,12 +166,14 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
 
     private void AddAssertReceiveToEntityVariable(Liner liner, GeneratorConfig.ModelConfig m, string methodName)
     {
-        liner.Add("var entity = handle.AssertReceived()." + m.Name + methodName + ";");
+        liner.Add("Assert.That(received.Count, Is.EqualTo(1));");
+        liner.Add("var entity = received.Single()." + m.Name + methodName + ";");
         AddAssert(liner).EntityNotNull(m.Name + methodName);
     }
 
     private void AddHandle(Liner liner, GeneratorConfig.ModelConfig m, string subscriptionMethodName)
     {
-        liner.Add("var handle = await Gql.SubscribeTo" + m.Name + subscriptionMethodName + "();");
+        liner.Add("var received = new List<" + m.Name + subscriptionMethodName + "Payload>();")
+        liner.Add("var handle = await Gql.SubscribeTo" + m.Name + subscriptionMethodName + "(received.Add);");
     }
 }
