@@ -59,7 +59,7 @@ public class SubscriptionHandleClassGenerator : BaseGenerator
 
             liner.Add("await ws.ConnectAsync(new Uri(Client.WsUrl), cts.Token);");
             liner.Add("receiving = ReceiveMessages();");
-            liner.Add("await Send(\"{type: \\\"connection_init\\\", payload: {}}\");");
+            liner.Add("await Send(\"{\\\"type\\\": \\\"connection_init\\\", \\\"payload\\\": \\\"{}\\\"}\");");
             liner.Add("await acknowledged.Task.WaitAsync(cts.Token);");
             liner.AddBlankLine();
 
