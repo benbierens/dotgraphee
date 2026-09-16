@@ -9,8 +9,7 @@ public class QueryClassGenerator : BaseGenerator
     
     public void CreateQueryClasses()
     {
-        var fm = StartIntegrationTestUtilsFile("QueryClasses");
-        CreateQueryDataClass(fm);
+        var fm = StartClientFile("QueryClasses");
         CreateQueryErrorClass(fm);
         CreateNodesWrapperClass(fm);
 
@@ -118,31 +117,6 @@ public class QueryClassGenerator : BaseGenerator
         {
             AddSubscriptionResponseClass(fm, m, type, mutationMethod);
         }
-    }
-
-    private void CreateQueryDataClass(FileMaker fm)
-    {
-        var cm = AddClass(fm, "GqlData<T>");
-        cm.AddUsing(Config.GenerateNamespace);
-        cm.AddUsing("System");
-        cm.AddUsing("System.Linq");
-
-        cm.AddProperty("Data")
-            .IsType("T")
-            .DefaultInitializer()
-            .Build();
-
-        cm.AddProperty("Error")
-            .IsListOfType("GqlError")
-            .Build();
-
-        cm.AddBlankLine();
-        cm.AddClosure("public void AssertNoErrors()", liner =>
-        {
-            liner.StartClosure("if (Errors.Any())");
-            liner.Add("throw new Exception(\"Expected no errors but found: \" + string.Join(\", \", Errors.Select(e => e.Message)));");
-            liner.EndClosure();
-        });
     }
 
     private void CreateQueryErrorClass(FileMaker fm)

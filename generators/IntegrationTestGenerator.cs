@@ -8,6 +8,7 @@ public class IntegrationTestGenerator : BaseGenerator
     private readonly InclusionBuilderGenerator inclusionBuilderGenerator;
     private readonly GqlBuildClassGenerator gqlBuildClassGenerator;
     private readonly ClientClassGenerator clientClassGenerator;
+    private readonly TestInputClassGenerator testInputClassGenerator;
 
     private readonly CreateTestsGenerator createTestsGenerator;
     private readonly QueryTestsGenerator queryTestsGenerator;
@@ -26,6 +27,7 @@ public class IntegrationTestGenerator : BaseGenerator
         inclusionBuilderGenerator = new InclusionBuilderGenerator(config);
         gqlBuildClassGenerator = new GqlBuildClassGenerator(config);
         clientClassGenerator = new ClientClassGenerator(config);
+        testInputClassGenerator = new TestInputClassGenerator(config);
 
         createTestsGenerator = new CreateTestsGenerator(config);
         queryTestsGenerator = new QueryTestsGenerator(config);
@@ -46,6 +48,7 @@ public class IntegrationTestGenerator : BaseGenerator
         inclusionBuilderGenerator.CreateInclusionBuilderClass();
         gqlBuildClassGenerator.CreateGqlBuildClass();
         clientClassGenerator.CreateClientClass();
+        testInputClassGenerator.CreateTestInputClass();
 
         createTestsGenerator.CreateCreateTests();
         queryTestsGenerator.CreateQueryTests();

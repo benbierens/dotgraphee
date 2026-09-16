@@ -49,6 +49,7 @@ public class GeneratorConfig
         [Check(CheckType.NotEmpty)]
         public string SelfRefNavigationPropertyPrefix { get; set; }
         public string[] SourcePackages { get; set; }
+        public string[] GraphQlClientPackages { get; set; }
         public string[] IntegrationTestPackages { get; set; }
         public string[] UnitTestPackages { get; set; }
 
@@ -65,13 +66,13 @@ public class GeneratorConfig
         [Check(CheckType.NotEmpty)]
         public string SourceFolder { get; set; }
         [Check(CheckType.NotEmpty)]
+        public string DomainFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
+        public string GraphQlClientFolder { get; set; }
+        [Check(CheckType.NotEmpty)]
         public string IntegrationTestFolder { get; set; }
         [Check(CheckType.NotEmpty)]
         public string UnitTestFolder { get; set; }
-        [Check(CheckType.NotEmpty)]
-        public string GeneratedFolder { get; set; }
-        [Check(CheckType.NotEmpty)]
-        public string DataTypeObjectsSubFolder { get; set; }
         [Check(CheckType.NotEmpty)]
         public string DatabaseSubFolder { get; set; }
         [Check(CheckType.NotEmpty)]

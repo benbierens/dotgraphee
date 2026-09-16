@@ -15,9 +15,29 @@ public class BaseGenerator
     public GeneratorConfig.ConfigSection Config { get; private set; }
     public GeneratorConfig.ModelConfig[] Models { get; private set; }
 
+    public string GraphQlClientName
+    {
+        get
+        {
+            return Config.GenerateNamespace + "Client";
+        }
+    }
+
     protected FileMaker StartSrcFile(string subfolder, string filename)
     {
-        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.SourceFolder, Config.Output.GeneratedFolder, subfolder, filename + ".cs");
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.SourceFolder, subfolder, filename + ".cs");
+        return new FileMaker(Config, f, Config.GenerateNamespace);
+    }
+
+    protected FileMaker StartDomainFile(string filename)
+    {
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.DomainFolder, filename + ".cs");
+        return new FileMaker(Config, f, Config.GenerateNamespace);
+    }
+
+    protected FileMaker StartClientFile(string filename)
+    {
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.GraphQlClientFolder, filename + ".cs");
         return new FileMaker(Config, f, Config.GenerateNamespace);
     }
 
@@ -35,13 +55,13 @@ public class BaseGenerator
 
     protected FileMaker StartUnitTestFile(string filename, string subFolder)
     {
-        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.UnitTestFolder, Config.Output.GeneratedFolder, subFolder, filename + ".Tests.cs");
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.UnitTestFolder, subFolder, filename + ".Tests.cs");
         return new FileMaker(Config, f, Config.Output.UnitTestFolder.FirstToUpper());
     }
 
     protected FileMaker StartUnitTestUtilsFile(string filename)
     {
-        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.UnitTestFolder, Config.Output.GeneratedFolder, filename + ".cs");
+        var f = Path.Join(Config.Output.ProjectRoot, Config.Output.UnitTestFolder, filename + ".cs");
         return new FileMaker(Config, f, Config.Output.UnitTestFolder.FirstToUpper());
     }
 
@@ -74,6 +94,12 @@ public class BaseGenerator
     protected void MakeSrcDir(params string[] path)
     {
         var arr = new[] { Config.Output.SourceFolder }.Concat(path).ToArray();
+        MakeDir(arr);
+    }
+
+    protected void MakeDomainDir(params string[] path)
+    {
+        var arr = new[] { Config.Output.DomainFolder }.Concat(path).ToArray();
         MakeDir(arr);
     }
 

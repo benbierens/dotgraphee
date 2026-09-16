@@ -112,6 +112,9 @@
       "HotChocolate.Subscriptions",
       "Npgsql.EntityFrameworkCore.PostgreSQL"
     ],
+    "graphQlClientPackages": [
+      "Newtonsoft.Json"
+    ],
     "integrationTestPackages": [
       "Microsoft.EntityFrameworkCore",
       "Microsoft.EntityFrameworkCore.Design"
@@ -125,13 +128,14 @@
     // Output path configuration.
     "output": {
       "projectRoot": "../dotgraphee-demo",
-      "sourceFolder": "src",
-      "integrationTestFolder": "integrationTests",
-      "unitTestFolder": "unitTests",
-      "generatedFolder": "generated",
-      "dataTypeObjectsSubFolder": "dto",
-      "databaseSubFolder": "db",
-      "graphQlSubFolder": "gql"
+      "domainFolder": "Domain",
+      "sourceFolder": "Src",
+      "graphQlClientFolder": "GraphQlClientLib",
+      "integrationTestFolder": "IntegrationTests",
+      "unitTestFolder": "UnitTests",
+      "generatedFolder": "Generated",
+      "databaseSubFolder": "Db",
+      "graphQlSubFolder": "Gql"
     },
 
     // Database configuration, both for local development and docker-compose.

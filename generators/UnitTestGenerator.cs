@@ -20,12 +20,11 @@
 
     public void GenerateUnitTests()
     {
-        MakeUnitTestDir(Config.Output.GeneratedFolder);
         testDataClassGenerator.GenerateTestData();
         unitTestInputGenerator.GenerateUnitTestInput();
         baseUnitTestGenerator.GenerateBaseUnitTestClass();
 
-        MakeUnitTestDir(Config.Output.GeneratedFolder, Config.Output.GraphQlSubFolder);
+        MakeUnitTestDir(Config.Output.GraphQlSubFolder);
         queriesUnitTestsGenerator.GenerateQueriesUnitTests();
         subscriptionsUnitTestsGenerator.GenerateSubscriptionsUnitTests();
         mutationsUnitTestsGenerator.GenerateMutationUnitTests();

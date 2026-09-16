@@ -13,10 +13,12 @@ public class DockerControllerClassGenerator : BaseGenerator
         cm.AddUsing("System.Diagnostics");
         cm.AddUsing("System.Threading");
         cm.AddUsing("System.Threading.Tasks");
+        fm.AddUsing(Config.GenerateNamespace);
+        
         cm.Modifiers.Clear();
         cm.Modifiers.Add("static");
 
-        cm.AddLine("private static String ApplicationContainerName = \"graphql\";");
+        cm.AddLine("private static string ApplicationContainerName = \"graphql\";");
         cm.AddBlankLine();
 
         cm.AddClosure("public static async Task BuildImage()", liner =>

@@ -13,6 +13,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         var cm = fm.AddClass("SubscriptionTests");
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
+        cm.AddUsing(Config.GenerateNamespace);
         cm.AddInherrit("BaseGqlTest");
         cm.Modifiers.Clear();
 
@@ -65,12 +66,12 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldPublishSubscriptionOnCreate" + m.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionCreatedMethod + "();");
+            AddHandle(liner, m, Config.GraphQl.GqlSubscriptionCreatedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
             AddAssertReceiveToEntityVariable(liner, m, Config.GraphQl.GqlSubscriptionCreatedMethod);
-            AddAssert(liner).EntityField(m, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionCreatedMethod + " subscription:");
+            AddAssert(liner).EntityFields(m, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionCreatedMethod + " subscription:");
         });
     }
 
@@ -79,12 +80,12 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task Create" + m.Name + "ShouldPublishSubscriptionOnCreate" + r.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + r.Name + Config.GraphQl.GqlSubscriptionCreatedMethod + "();");
+            AddHandle(liner, r, Config.GraphQl.GqlSubscriptionCreatedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
             AddAssertReceiveToEntityVariable(liner, r, Config.GraphQl.GqlSubscriptionCreatedMethod);
-            AddAssert(liner).EntityField(r, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionCreatedMethod + " subscription:");
+            AddAssert(liner).EntityFields(r, "Incorrect entity published with " + Config.GraphQl.GqlSubscriptionCreatedMethod + " subscription:");
         });
     }
 
@@ -95,12 +96,12 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldPublishSubscriptionOnUpdate" + m.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionUpdatedMethod + "();");
+            AddHandle(liner, m, Config.GraphQl.GqlSubscriptionUpdatedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
 
-            liner.Add("await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
+            liner.Add("await Gql.Update" + m.Name + "(TestInput.To" + inputTypes.Update + "());");
             liner.AddBlankLine();
 
             AddAssertReceiveToEntityVariable(liner, m, Config.GraphQl.GqlSubscriptionUpdatedMethod);
@@ -132,11 +133,11 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task ShouldPublishSubscriptionOnDelete" + m.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + m.Name + Config.GraphQl.GqlSubscriptionDeletedMethod + "();");
+            AddHandle(liner, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
-            liner.Add("await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            liner.Add("await Gql.Delete" + m.Name + "(TestInput.To" + inputTypes.Delete + "());");
             liner.AddBlankLine();
 
             AddAssertReceiveToEntityVariable(liner, m, Config.GraphQl.GqlSubscriptionDeletedMethod);
@@ -151,11 +152,11 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task Delete" + m.Name + "ShouldPublishSubscriptionOnDelete" + r.Name + "()", liner =>
         {
-            liner.Add("var handle = await Gql.SubscribeTo" + r.Name + Config.GraphQl.GqlSubscriptionDeletedMethod + "();");
+            AddHandle(liner, r, Config.GraphQl.GqlSubscriptionDeletedMethod);
             liner.AddBlankLine();
             AddCreateLine(liner, m);
             liner.AddBlankLine();
-            liner.Add("await Gql.Delete" + m.Name + "(TestData.To" + inputTypes.Delete + "());");
+            liner.Add("await Gql.Delete" + m.Name + "(TestInput.To" + inputTypes.Delete + "());");
             liner.AddBlankLine();
 
             AddAssertReceiveToEntityVariable(liner, r, Config.GraphQl.GqlSubscriptionDeletedMethod);
@@ -165,7 +166,14 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
 
     private void AddAssertReceiveToEntityVariable(Liner liner, GeneratorConfig.ModelConfig m, string methodName)
     {
-        liner.Add("var entity = handle.AssertReceived()." + m.Name + methodName + ";");
+        liner.Add("Assert.That(() => received.Count, Is.EqualTo(1).After(1).Seconds);");
+        liner.Add("var entity = received.Single()." + m.Name + methodName + ";");
+        AddAssert(liner).EntityNotNull(m.Name + methodName);
     }
 
+    private void AddHandle(Liner liner, GeneratorConfig.ModelConfig m, string subscriptionMethodName)
+    {
+        liner.Add("var received = new List<" + m.Name + subscriptionMethodName + "Payload>();");
+        liner.Add("var handle = await Gql.SubscribeTo" + m.Name + subscriptionMethodName + "(received.Add);");
+    }
 }

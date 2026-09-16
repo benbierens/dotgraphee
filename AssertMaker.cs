@@ -11,19 +11,11 @@ public class AssertMaker
         this.target = target;
     }
     
-    public void EntityField(GeneratorConfig.ModelConfig m, string errorMessage)
+    public void EntityFields(GeneratorConfig.ModelConfig m, string errorMessage)
     {
         foreach (var f in m.Fields)
         {
             EqualsTestEntity(m, f, errorMessage);
-        }
-        var foreignProperties = baseGenerator.GetForeignProperties(m);
-        foreach (var f in foreignProperties)
-        {
-            if (!f.IsSelfReference)
-            {
-                ForeignIdEquals(m, f, errorMessage);
-            }
         }
     }
 
@@ -106,7 +98,7 @@ public class AssertMaker
 
     public void NoErrors()
     {
-        liner.Add("gqlData.AssertNoErrors();");
+        liner.Add("AssertNoErrors(gqlData);");
     }
 
     public void DeleteResponse(GeneratorConfig.ModelConfig m)

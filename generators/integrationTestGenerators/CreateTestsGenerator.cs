@@ -32,14 +32,14 @@
         {
             liner.Add("var entity = await CreateTest" + m.Name + "();");
             liner.AddBlankLine();
-            AddAssert(liner).EntityField(m, "Incorrect entity returned after creation:");
+            AddAssert(liner).EntityFields(m, "Incorrect entity returned after creation:");
 
             var requiredSingulars = GetMyRequiredSubModels(m);
             foreach (var r in requiredSingulars)
             {
                 liner.AddBlankLine();
                 AddAssert(liner, "entity." + r.Name)
-                    .EntityField(r, "Incorrect sub-entity returned after creation:");
+                    .EntityFields(r, "Incorrect sub-entity returned after creation:");
                 
             }
         });

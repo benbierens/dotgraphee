@@ -7,16 +7,16 @@
 
     public void CreateInclusionBuilderClass()
     {
-        var fm = StartIntegrationTestUtilsFile("InclusionBuilder");
+        var fm = StartClientFile("InclusionBuilder");
         var cm = fm.AddClass("InclusionBuilder<T>");
         cm.Modifiers.Clear();
 
-        cm.AddUsing("Microsoft.EntityFrameworkCore.Infrastructure;");
         cm.AddUsing("System;");
         cm.AddUsing("System.Collections.Generic;");
         cm.AddUsing("System.Collections.Immutable;");
         cm.AddUsing("System.Linq;");
         cm.AddUsing("System.Linq.Expressions;");
+        cm.AddUsing("System.Reflection;");
 
         cm.AddLine("private readonly List<string> _inclusionPaths = new();");
         cm.AddBlankLine();
@@ -35,7 +35,6 @@
             liner.Add("_inclusionPaths.Add(GetPropertyName(selector));");
             liner.Add("return this;");
         });
-
 
         cm.AddClosure("public InclusionBuilder<T> Include<TProperty>(Expression<Func<T, TProperty>> selector, Action<InclusionBuilder<TProperty>> nestedBuilder)", liner =>
         {
@@ -56,9 +55,14 @@
 
         cm.AddClosure("private string GetPropertyName<TProperty>(Expression<Func<T, TProperty>> selector)", liner =>
         {
-            liner.Add("var propertyInfo = selector.GetPropertyAccess();");
-            liner.Add("var propertyName = propertyInfo.Name;");
-            liner.Add("return propertyName;");
+            liner.Add("var expression = selector.Body;");
+            liner.StartClosure("if (expression is UnaryExpression { NodeType: ExpressionType.Convert } conversion)");
+            liner.Add("expression = conversion.Operand;");
+            liner.EndClosure();
+            liner.StartClosure("if (expression is MemberExpression { Member: PropertyInfo propertyInfo })");
+            liner.Add("return propertyInfo.Name;");
+            liner.EndClosure();
+            liner.Add("throw new ArgumentException(\"Selector must access a property.\");");
         });
 
         fm.Build();

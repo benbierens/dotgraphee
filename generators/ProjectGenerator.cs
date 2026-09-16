@@ -13,12 +13,27 @@ public class ProjectGenerator : BaseGenerator
         RunCommand("dotnet", "new", "install", "HotChocolate.Templates");
         RunCommand("dotnet", "new", "sln");
 
+        AddDomainAssembly();
         AddSourceAssembly();
-        AddIntegrationTestAssembly();
+        AddGraphClientAssembly();
         AddUnitTestAssembly();
+        AddIntegrationTestAssembly();
 
-        // Reference from IntegrationTestAssembly to UnitTestAssembly, to share test data.
-        RunCommand("dotnet", "add", Config.Output.IntegrationTestFolder, "reference", Config.Output.UnitTestFolder + "/" + Config.Output.UnitTestFolder + ".csproj");
+        RunCommand("dotnet", "new", "gitignore");
+    }
+
+    public void ModifyDefaultFiles()
+    {
+        ModifyStartupFile();
+        ModifyIntegrationTestProjectFile();
+    }
+
+    private void AddDomainAssembly()
+    {
+        var folder = Config.Output.DomainFolder;
+        RunCommand("dotnet", "new", "classlib", "-o", folder);
+        RunCommand("dotnet", "sln", "add", folder + "/" + folder + ".csproj");
+        DeleteFile(folder, "Class1.cs");
     }
 
     private void AddSourceAssembly()
@@ -29,11 +44,26 @@ public class ProjectGenerator : BaseGenerator
         RunCommand("dotnet", "sln", "add", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
         DeleteFile(Config.Output.SourceFolder, "Query.cs");
         RunCommand("dotnet", "tool", "install", "--global", "dotnet-ef");
+        AddReference(Config.Output.SourceFolder, Config.Output.DomainFolder);
+    }
+
+    private void AddGraphClientAssembly()
+    {
+        RunCommand("dotnet", "new", "tool-manifest");
+
+        var folder = Config.Output.GraphQlClientFolder;
+        RunCommand("dotnet", "new", "classlib", "-o", folder);
+        RunCommand("dotnet", "sln", "add", folder + "/" + folder + ".csproj");
+        InstallPackages(Config.GraphQlClientPackages, folder);
+        DeleteFile(folder, "Class1.cs");
+        AddReference(Config.Output.GraphQlClientFolder, Config.Output.DomainFolder);
     }
 
     private void AddIntegrationTestAssembly()
     {
         AddTestAssembly(Config.Output.IntegrationTestFolder, Config.IntegrationTestPackages);
+        AddReference(Config.Output.IntegrationTestFolder, Config.Output.GraphQlClientFolder);
+        AddReference(Config.Output.IntegrationTestFolder, Config.Output.UnitTestFolder);
     }
 
     private void AddUnitTestAssembly()
@@ -45,20 +75,10 @@ public class ProjectGenerator : BaseGenerator
     {
         RunCommand("dotnet", "new", "nunit", "-o", folder);
         RunCommand("dotnet", "sln", "add", folder + "/" + folder + ".csproj");
-        RunCommand("dotnet", "add", folder, "reference", Config.Output.SourceFolder + "/" + Config.Output.SourceFolder + ".csproj");
+        AddReference(folder, Config.Output.SourceFolder);
+        AddReference(folder, Config.Output.DomainFolder);
         InstallPackages(packages, folder);
         DeleteFile(folder, "UnitTest1.cs");
-    }
-
-    public void ModifyDefaultFiles()
-    {
-        ModifyStartupFile();
-        ModifyIntegrationTestProjectFile();
-    }
-
-    public void FormatCode()
-    {
-        RunCommand("dotnet", "format");
     }
 
     private void BumpProjectToDotNetSix()
@@ -68,6 +88,11 @@ public class ProjectGenerator : BaseGenerator
             "<TargetFramework>net6.0</TargetFramework>");
 
         mf.Modify();
+    }
+
+    private void AddReference(string from, string to)
+    {
+        RunCommand("dotnet", "add", from, "reference", to + "/" + to + ".csproj");
     }
 
     private void InstallPackages(string[] packages, string folder)

@@ -21,6 +21,7 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     {
         cm.AddUsing("NUnit.Framework");
         cm.AddUsing("System.Threading.Tasks");
+        cm.AddUsing(Config.GenerateNamespace);
 
         cm.AddAttribute("Category(\"" + Config.IntegrationTests.TestCategory + "\")");
 
@@ -28,19 +29,26 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
         cm.AddClosure("public async Task GqlSetUp()", liner =>
         {
             liner.Add("TestData = new TestData();");
+            liner.Add("TestInput = new TestInput(TestData);");
             liner.Add("await DockerController.Up();");
         });
 
         cm.AddLine("[TearDown]");
-        cm.AddClosure("public async Task GqlTearDown()", liner =>
+        cm.AddClosure("public void GqlTearDown()", liner =>
         {
-            liner.Add("await Gql.CloseActiveSubscriptionHandles();");
+            liner.Add("Gql.CloseActiveSubscriptionHandles();");
             liner.Add("DockerController.ClearData();");
             liner.Add("DockerController.Restart();");
         });
 
         cm.AddProperty("TestData")
             .IsType("TestData")
+            .InitializeAsExplicitNull()
+            .Build();
+
+        cm.AddProperty("TestInput")
+            .IsType("TestInput")
+            .InitializeAsExplicitNull()
             .Build();
 
         cm.AddProperty("Gql")
@@ -49,12 +57,20 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
 
         cm.AddBlankLine();
         AddCreateTestModelMethods(cm);
+
+        AddAssertNoErrors(cm);
+    }
+
+    private void AddAssertNoErrors(ClassMaker cm)
+    {
+        cm.AddClosure("public void AssertNoErrors<T>(GqlData<T> gqlData)", liner =>
+        {
+            liner.Add("gqlData.AssertNoErrors();");
+        });
     }
 
     private void AddCreateTestModelMethods(ClassMaker cm)
     {
-        cm.AddUsing(Config.GenerateNamespace);
-
         IterateModelsInDependencyOrder(m =>
         {
             if (!IsRequiredSubModel(m))
@@ -67,16 +83,31 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
     private void AddCreateTestModelMethod(ClassMaker cm, GeneratorConfig.ModelConfig m)
     {
         var inputTypes = GetInputTypeNames(m);
+        var methodName = Config.GraphQl.GqlMutationsCreateMethod + m.Name;
+        var returnType = m.Name;
 
-        cm.AddClosure("public async Task<" + m.Name + "> CreateTest" + m.Name + "()", liner =>
+        cm.AddClosure("public async Task<" + returnType + "> CreateTest" + m.Name + "()", liner =>
         {
-            var args = GetCreateInputArguments(liner, m);
-            liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestData.To" + inputTypes.Create + "(" + args + "));");
+            CallCreateForDependencies(liner, m);
+            liner.Add("var gqlData = await Gql.Create" + m.Name + "(TestInput.To" + inputTypes.Create + "());");
             AddAssert(liner).NoErrors();
-            liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsCreateMethod + m.Name + ";");
+            liner.Add("var entity = gqlData.Data!." + methodName + ";");
+            AddAssert(liner).EntityNotNull("CreateTest" + m.Name);
             AddAssignIdToTestData(liner, m, "entity");
             liner.Add("return entity;");
         });
+    }
+
+    private void CallCreateForDependencies(Liner liner, GeneratorConfig.ModelConfig m)
+    {
+        var foreignProperties = GetForeignProperties(m);
+        foreach (var f in foreignProperties)
+        {
+            if (!f.IsSelfReference)
+            {
+                liner.Add("await CreateTest" + f.Type + "();");
+            }
+        }
     }
 
     private void AddAssignIdToTestData(Liner liner, GeneratorConfig.ModelConfig m, params string[] accessors)
@@ -89,27 +120,6 @@ public class BaseGqlTestClassGenerator : BaseTestGenerator
         {
             AddAssignIdToTestData(liner, subModel, accessors.Concat(new[] { subModel.Name }).ToArray());
         }
-    }
-
-    private string GetCreateInputArguments(Liner liner, GeneratorConfig.ModelConfig m)
-    {
-        var foreignProperties = GetForeignProperties(m);
-
-        var arguments = new List<string>();
-        foreach (var f in foreignProperties)
-        {
-            if (!f.IsSelfReference)
-            {
-                liner.Add("await CreateTest" + f.Type + "();");
-                arguments.Add("TestData." + f.Type + "1.Id");
-            }
-            else
-            {
-                arguments.Add("null");
-            }
-        }
-
-        return string.Join(", ", arguments);
     }
 
     private void AddDockerInitializer(ClassMaker cm)

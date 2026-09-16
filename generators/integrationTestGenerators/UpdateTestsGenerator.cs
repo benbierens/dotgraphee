@@ -39,13 +39,10 @@ public class UpdateTestsGenerator : BaseTestGenerator
             AddCreateLine(liner, m);
             liner.AddBlankLine();
 
-            liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
+            liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestInput.To" + inputTypes.Update + "());");
             AddAssert(liner).NoErrors();
-            liner.Add("var entity = gqlData.Data." + Config.GraphQl.GqlMutationsUpdateMethod + m.Name + ";");
-            if (IsFailedToFindStrategyNullObject())
-            {
-                AddAssert(liner).EntityNotNull(Config.GraphQl.GqlMutationsUpdateMethod);
-            }
+            liner.Add("var entity = gqlData.Data?." + Config.GraphQl.GqlMutationsUpdateMethod + m.Name + ";");
+            AddAssert(liner).EntityNotNull(Config.GraphQl.GqlMutationsUpdateMethod);
             liner.AddBlankLine();
 
             AddAssert(liner).IdEquals(m, "Update failed.");
@@ -66,12 +63,13 @@ public class UpdateTestsGenerator : BaseTestGenerator
             AddCreateLine(liner, m);
             liner.AddBlankLine();
 
-            liner.Add("await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
+            liner.Add("await Gql.Update" + m.Name + "(TestInput.To" + inputTypes.Update + "());");
             liner.AddBlankLine();            
 
             liner.Add("var gqlData = await Gql.QueryAll" + m.Name + "s();");
             AddAssert(liner).NoErrors();
             AddDereferenceToAllVariable(liner, m);
+            AddAssert(liner, "all").EntityNotNull(Config.GraphQl.GqlMutationsUpdateMethod);
             liner.AddBlankLine();
 
             AddAssert(liner).CollectionOne(m, "all");
@@ -91,7 +89,7 @@ public class UpdateTestsGenerator : BaseTestGenerator
         cm.AddLine("[Test]");
         cm.AddClosure("public async Task UpdateShouldReturn" + GetErrorOrNull() + "WhenFailedToFind" + m.Name + "()", liner =>
         {
-            liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestData.To" + inputTypes.Update + "());");
+            liner.Add("var gqlData = await Gql.Update" + m.Name + "(TestInput.To" + inputTypes.Update + "());");
             liner.Add("var errors = gqlData.Errors;");
             liner.AddBlankLine();
 
