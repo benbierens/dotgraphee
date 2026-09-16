@@ -166,7 +166,7 @@ public class SubscriptionTestsGenerator : BaseTestGenerator
 
     private void AddAssertReceiveToEntityVariable(Liner liner, GeneratorConfig.ModelConfig m, string methodName)
     {
-        liner.Add("Assert.That(received.Count, Is.EqualTo(1));");
+        liner.Add("Assert.That(() => received.Count, Is.EqualTo(1).After(1).Seconds);");
         liner.Add("var entity = received.Single()." + m.Name + methodName + ";");
         AddAssert(liner).EntityNotNull(m.Name + methodName);
     }
